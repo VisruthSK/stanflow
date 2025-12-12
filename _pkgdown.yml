@@ -1,0 +1,7 @@
+url: https://visruthsk.github.io/stanflow/
+
+template:
+  package: pkgdownconfig
+
+development:
+  mode: auto

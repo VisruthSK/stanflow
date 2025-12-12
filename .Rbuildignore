@@ -1,0 +1,8 @@
+^stanflow\.Rproj$
+^\.Rproj\.user$
+^[.]?air[.]toml$
+^\.vscode$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
