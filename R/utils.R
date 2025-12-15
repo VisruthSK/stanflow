@@ -1,3 +1,17 @@
+# nocov start
+core <- c("bayesplot", "loo", "posterior", "projpred", "shinystan")
+backends <- c("brms", "cmdstanr", "rstan", "rstanarm")
+stanflow_pkgs <- c(core, backends)
+
+compliance_imports <- function() {
+  bayesplot::abline_01
+  loo::compare
+  posterior::as_draws
+  projpred::augdat_ilink_binom
+  shinystan::as.shinystan
+}
+# nocov end
+
 wrapped_startup <- function(msg, ...) {
   if (is.null(msg)) {
     return()
