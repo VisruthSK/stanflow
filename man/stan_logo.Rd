@@ -12,3 +12,6 @@ Invisibly returns the character vector that was printed.
 \description{
 Emits the Stan ASCII art logo via \code{cli::cat_line()}.
 }
+\examples{
+stan_logo()
+}

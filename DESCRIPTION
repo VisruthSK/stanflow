@@ -15,7 +15,7 @@ Imports:
     posterior (>= 1.6.0),
     projpred (>= 2.10.0),
     shinystan (>= 2.7.0),
-    utils (>= 2.13.0)
+    utils
 Suggests:
     cmdstanr,
     rstan

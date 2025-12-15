@@ -20,12 +20,6 @@ stanflow_conflicts <- function(only = NULL) {
     envs <- envs[names(envs) %in% paste0("package:", only)]
   }
 
-  conflicts <- Filter(function(x) length(x) > 1, invert(lapply(envs, ls_env)))
-  conflicts <- Filter(
-    function(pkg) any(pkg %in% paste0("package:", stanflow_pkgs)),
-    conflicts
-  )
-
   conflicts <- invert(lapply(envs, ls_env)) |>
     Filter(function(x) length(x) > 1, x = _) |>
     Filter(
@@ -33,9 +27,8 @@ stanflow_conflicts <- function(only = NULL) {
       x = _
     )
 
-  conflict_funs <- Map(confirm_conflict, conflicts, names(conflicts))
-
-  conflict_funs <- Filter(Negate(is.null), conflict_funs)
+  conflict_funs <- Map(confirm_conflict, conflicts, names(conflicts)) |>
+    Filter(Negate(is.null), x = _)
 
   class(conflict_funs) <- "stanflow_conflicts"
   conflict_funs
@@ -103,14 +96,13 @@ confirm_conflict <- function(packages, name) {
     return(NULL)
   }
 
-  objs <- objs[!duplicated(objs)]
-  packages <- packages[!duplicated(packages)]
+  objs <- unique(objs)
 
   if (length(objs) == 1) {
     return(NULL)
   }
 
-  packages
+  packages[!duplicated(packages)]
 }
 
 ls_env <- function(env) {

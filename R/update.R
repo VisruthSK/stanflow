@@ -101,12 +101,14 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
   )
 
   cli::cat_line()
+
   cli::cat_line("Start a clean R session then run:")
-
-  pkg_str <- paste0(deparse(behind$package), collapse = "\n")
-
-  repo_cmd <- sprintf('repos = c("%s", getOption("repos"))', stan_repos(dev))
-
-  cli::cat_line("install.packages(", pkg_str, ", ", repo_cmd, ")")
+  cli::cat_line(
+    "install.packages(",
+    paste0(deparse(behind$package), collapse = "\n"),
+    ", ",
+    sprintf('repos = c("%s", getOption("repos"))', stan_repos(dev)),
+    ")"
+  )
   invisible(behind)
 }

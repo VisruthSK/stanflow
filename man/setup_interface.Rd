@@ -9,7 +9,8 @@ setup_interface(
   dev = FALSE,
   prefer_cmdstanr = FALSE,
   quiet = FALSE,
-  force = FALSE
+  force = FALSE,
+  skip_setup = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ to use the \code{cmdstanr} backend instead of the default \code{rstan}.}
 
 \item{force}{Logical. If \code{TRUE}, forces re-installation/setup. Required
 for installation in non-interactive sessions.}
+
+\item{skip_setup}{Logical. If \code{TRUE}, packages are only attached and no
+backend-specific configuration is run.}
 }
 \value{
 Returns \code{NULL} invisibly.
