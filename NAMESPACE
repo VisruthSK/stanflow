@@ -2,6 +2,8 @@
 
 S3method(print,stanflow_conflicts)
 export(setup_interface)
+export(stan_logo)
 export(stanflow_conflicts)
 export(stanflow_deps)
+export(stanflow_logo)
 export(stanflow_update)
