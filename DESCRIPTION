@@ -2,11 +2,20 @@ Package: stanflow
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre"))
+    person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0005-9097-0688"))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: BSD_3_clause + file LICENSE
+URL: https://visruthsk.github.io/stanflow/
+BugReports: https://github.com/VisruthSK/stanflow/issues/
+Imports:
+    bayesplot (>= 1.15.0),
+    cli (>= 3.6.5),
+    loo (>= 2.8.0),
+    posterior (>= 1.6.0),
+    projpred (>= 2.10.0),
+    shinystan (>= 2.7.0),
+    utils (>= 2.13.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-URL: https://visruthsk.github.io/stanflow/

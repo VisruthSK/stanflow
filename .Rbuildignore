@@ -3,6 +3,7 @@
 ^[.]?air[.]toml$
 ^\.vscode$
 ^\.github$
+^LICENSE\.md$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
