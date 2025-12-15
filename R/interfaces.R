@@ -12,6 +12,8 @@
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @param force Logical. If `TRUE`, forces re-installation/setup. Required
 #'   for installation in non-interactive sessions.
+#' @param skip_setup Logical. If `TRUE`, packages are only attached and no
+#'   backend-specific configuration is run.
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_interface <- function(
@@ -19,7 +21,8 @@ setup_interface <- function(
   dev = FALSE,
   prefer_cmdstanr = FALSE,
   quiet = FALSE,
-  force = FALSE
+  force = FALSE,
+  skip_setup = FALSE
 ) {
   interface <- match.arg(interface, several.ok = TRUE)
 
@@ -43,13 +46,15 @@ setup_interface <- function(
 
     suppressPackageStartupMessages(same_library(pkg))
 
-    switch(
-      pkg,
-      "cmdstanr" = setup_cmdstanr(quiet, force),
-      "rstan" = setup_rstan(quiet),
-      "brms" = setup_brms(quiet, prefer_cmdstanr),
-      "rstanarm" = setup_rstanarm(quiet, prefer_cmdstanr)@LJ
-    )
+    if (!skip_setup) {
+      switch(
+        pkg,
+        "cmdstanr" = setup_cmdstanr(quiet, force),
+        "rstan" = setup_rstan(quiet),
+        "brms" = setup_brms(quiet, prefer_cmdstanr),
+        "rstanarm" = setup_rstanarm(quiet, prefer_cmdstanr)
+      )
+    }
   }
 
   if (!quiet) {
@@ -72,7 +77,7 @@ install_backend_package <- function(pkg, dev, quiet, force) {
   if (!interactive() && !force) {
     cli::cli_abort(c(
       "Package {.pkg {pkg}} is missing.",
-      "x" = "Cannot install automatically in a non-interactive session.",
+      "x" = "Cannot naively install automatically in a non-interactive session.",
       "i" = "Run interactively or set {.code force = TRUE} to allow automated installation."
     ))
   }
