@@ -2,3 +2,5 @@
 
 S3method(print,stanflow_conflicts)
 export(stanflow_conflicts)
+export(stanflow_deps)
+export(stanflow_update)
