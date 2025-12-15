@@ -12,3 +12,11 @@ stanflow_pkgs <- c(core, backends)
     wrapped_startup(stanflow_conflict_message(conflicts))
   }
 }
+
+compliance_imports <- function() {
+  bayesplot::abline_01
+  loo::compare
+  posterior::as_draws
+  projpred::augdat_ilink_binom
+  shinystan::as.shinystan
+}
