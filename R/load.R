@@ -1,6 +1,3 @@
-core <- c("bayesplot", "loo", "posterior", "projpred", "shinystan")
-backends <- c("brms", "cmdstanr", "rstan", "rstanarm")
-
 find_unloaded <- function(pkgs) pkgs[!paste0("package:", pkgs) %in% search()]
 
 # Attach the package from the same package library it was loaded from before.
@@ -87,10 +84,11 @@ message_packages <- function(packages, header) {
   paste0(header, "\n", paste(info, collapse = "\n"))
 }
 
-# TODO: could rewrite as single pipeline
 package_version_h <- function(pkg) {
-  x <- as.character(utils::packageVersion(pkg))
-  pieces <- strsplit(x, ".", fixed = TRUE)
-  pieces <- lapply(pieces, function(x) ifelse(x == "9000", cli::col_red(x), x))
-  vapply(pieces, paste, collapse = ".", FUN.VALUE = character(1))
+  pkg |>
+    utils::packageVersion() |>
+    as.character() |>
+    strsplit(".", fixed = TRUE) |>
+    lapply(function(x) ifelse(x == "9000", cli::col_red(x), x)) |>
+    vapply(paste, collapse = ".", FUN.VALUE = character(1))
 }
