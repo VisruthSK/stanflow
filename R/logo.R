@@ -4,6 +4,8 @@
 #'
 #' @return Invisibly returns the character vector that was printed.
 #' @export
+#' @examples
+#' stan_logo()
 stan_logo <- function() {
   lines <- c(
     "           G08GLG80G           ",
@@ -34,6 +36,8 @@ stan_logo <- function() {
 #'
 #' @return Invisibly returns the character vector that was printed.
 #' @export
+#' @examples
+#' stanflow_logo()
 stanflow_logo <- function() {
   lines <- c(
     "",

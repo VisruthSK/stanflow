@@ -61,7 +61,8 @@ backends_attach_message <- function() {
   )
 
   header <- cli::rule(
-    left = cli::style_bold("Available Stan interfaces")
+    left = cli::style_bold("Available Stan interfaces"),
+    right = "setup_interface()"
   )
 
   message_packages(packages, header)

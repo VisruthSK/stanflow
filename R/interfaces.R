@@ -48,13 +48,16 @@ setup_interface <- function(
       "cmdstanr" = setup_cmdstanr(quiet, force),
       "rstan" = setup_rstan(quiet),
       "brms" = setup_brms(quiet, prefer_cmdstanr),
-      "rstanarm" = setup_rstanarm(quiet, prefer_cmdstanr)
+      "rstanarm" = setup_rstanarm(quiet, prefer_cmdstanr)@LJ
     )
   }
 
   if (!quiet) {
+    attached_pkgs <- paste0("{.pkg ", interface, "}", collapse = ", ")
     cli::cli_alert_success(
-      "Setup complete. Packages are attached; you do not need to run {.code library()}."
+      cli::format_inline(
+        "Setup complete. {attached_pkgs} are attached; you do not need to run {.code library()}."
+      )
     )
   }
 
@@ -228,16 +231,15 @@ setup_rstan <- function(quiet) {
 setup_brms <- function(quiet, prefer_cmdstanr) {
   options(mc.cores = parallel::detectCores())
 
-  backend_msg <- ""
+  msg <- "Configured {.pkg brms}: set {.code options(mc.cores = parallel::detectCores())}"
+
   if (prefer_cmdstanr) {
     options(brms.backend = "cmdstanr")
-    backend_msg <- " and {.code options(brms.backend = 'cmdstanr')}"
+    msg <- paste0(msg, " and {.code options(brms.backend = 'cmdstanr')}")
   }
 
   if (!quiet) {
-    cli::cli_alert_info(
-      "Configured {.pkg brms}: set {.code options(mc.cores = parallel::detectCores())}{backend_msg}"
-    )
+    cli::cli_alert_info(msg)
   }
 }
 
