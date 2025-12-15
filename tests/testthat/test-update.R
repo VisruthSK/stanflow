@@ -1,3 +1,14 @@
+run_update_with <- function(deps_df, update_fun, check = NULL) {
+  stopifnot(is.function(update_fun))
+  with_mocked_bindings(
+    stanflow_deps = function(recursive, dev) {
+      if (!is.null(check)) check(recursive, dev)
+      deps_df
+    },
+    update_fun()
+  )
+}
+
 test_that("stanflow_update reports when nothing is behind", {
   testthat::local_reproducible_output(width = 60)
   old_repos <- options("repos")
@@ -12,10 +23,7 @@ test_that("stanflow_update reports when nothing is behind", {
   )
 
   expect_snapshot_output(
-    with_mocked_bindings(
-      stanflow_deps = function(recursive, dev) empty,
-      stanflow_update()
-    )
+    run_update_with(empty, function() stanflow_update())
   )
 })
 
@@ -34,15 +42,12 @@ test_that("stanflow_update lists behind packages", {
   )
 
   expect_snapshot_output(
-    with_mocked_bindings(
-      stanflow_deps = function(recursive, dev) behind,
-      stanflow_update()
-    )
+    run_update_with(behind, function() stanflow_update())
   )
 
-  result <- with_mocked_bindings(
-    stanflow_deps = function(recursive, dev) behind,
-    {
+  result <- run_update_with(
+    behind,
+    function() {
       utils::capture.output(out <- stanflow_update())
       out
     }
@@ -66,22 +71,67 @@ test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)
   )
 
   expect_snapshot_output(
-    with_mocked_bindings(
-      stanflow_deps = function(recursive_flag, dev) {
+    run_update_with(
+      recursive,
+      function() stanflow_update(recursive = TRUE),
+      check = function(recursive_flag, dev_flag) {
         expect_true(recursive_flag)
-        recursive
-      },
-      stanflow_update(recursive = TRUE)
+        expect_false(dev_flag)
+      }
     )
   )
 
-  result <- with_mocked_bindings(
-    stanflow_deps = function(recursive_flag, dev) recursive,
-    {
+  result <- run_update_with(
+    recursive,
+    function() {
       utils::capture.output(out <- stanflow_update(recursive = TRUE))
       out
+    },
+    check = function(recursive_flag, dev_flag) {
+      expect_true(recursive_flag)
+      expect_false(dev_flag)
     }
   )
 
   expect_identical(result, recursive[recursive$behind, , drop = FALSE])
+})
+
+test_that("stanflow_update uses Stan universe when dev = TRUE", {
+  testthat::local_reproducible_output(width = 60)
+  old_repos <- options("repos")
+  on.exit(options(old_repos), add = TRUE)
+  options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+  behind <- data.frame(
+    package = c("cmdstanr", "posterior"),
+    remote = c("1.2.0", "1.6.0"),
+    local = c("1.1.0", "1.5.0"),
+    behind = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+
+  expect_snapshot_output(
+    run_update_with(
+      behind,
+      function() stanflow_update(dev = TRUE),
+      check = function(recursive_flag, dev_flag) {
+        expect_false(recursive_flag)
+        expect_true(dev_flag)
+      }
+    )
+  )
+
+  result <- run_update_with(
+    behind,
+    function() {
+      utils::capture.output(out <- stanflow_update(dev = TRUE))
+      out
+    },
+    check = function(recursive_flag, dev_flag) {
+      expect_false(recursive_flag)
+      expect_true(dev_flag)
+    }
+  )
+
+  expect_identical(result, behind)
 })

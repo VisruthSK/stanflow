@@ -107,7 +107,7 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
     "install.packages(",
     paste0(deparse(behind$package), collapse = "\n"),
     ", ",
-    sprintf('repos = c("%s", getOption("repos"))', stan_repos(dev)),
+    sprintf('repos = c("%s", getOption("repos"))', stan_repos(dev)[1]),
     ")"
   )
   invisible(behind)

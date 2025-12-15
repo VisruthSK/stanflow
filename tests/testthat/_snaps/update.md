@@ -11,7 +11,6 @@
     
     Start a clean R session then run:
     install.packages(c("cmdstanr", "posterior"), repos = c("https://community.r-multiverse.org", getOption("repos")))
-    install.packages(c("cmdstanr", "posterior"), repos = c("https://cloud.r-project.org", getOption("repos")))
 
 # stanflow_update surfaces transitive dependencies (loo -> matrixStats)
 
@@ -23,5 +22,14 @@
     
     Start a clean R session then run:
     install.packages(c("cmdstanr", "posterior", "matrixStats"), repos = c("https://community.r-multiverse.org", getOption("repos")))
-    install.packages(c("cmdstanr", "posterior", "matrixStats"), repos = c("https://cloud.r-project.org", getOption("repos")))
+
+# stanflow_update uses Stan universe when dev = TRUE
+
+    The following packages are out of date:
+    
+    * cmdstanr  (1.1.0 -> 1.2.0)
+    * posterior (1.5.0 -> 1.6.0)
+    
+    Start a clean R session then run:
+    install.packages(c("cmdstanr", "posterior"), repos = c("https://stan-dev.r-universe.dev", getOption("repos")))
 
