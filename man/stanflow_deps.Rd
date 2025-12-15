@@ -9,7 +9,7 @@ stanflow_deps(recursive = FALSE, dev = FALSE)
 \arguments{
 \item{recursive}{If \code{TRUE}, will also list all dependencies.}
 
-\item{dev}{If \code{FALSE} (default), checks for updates in the R-multiverse
+\item{dev}{If \code{FALSE} (default), checks for updates in the R-multiverse or CRAN
 (stable releases). If \code{TRUE}, checks the Stan R-universe (dev versions).}
 }
 \description{
