@@ -5,4 +5,5 @@ wrapped_startup <- function(msg, ...) {
   packageStartupMessage(msg, ...)
 }
 
-# is_attached <- function(x) paste0("package:", x) %in% search()
+is_attached <- function(x) paste0("package:", x) %in% search()
+is_installed <- function(x) length(find.package(x, quiet = TRUE)) > 0
