@@ -45,3 +45,22 @@ test_that("backends_attach_message shows installed vs missing", {
     )
   )
 })
+
+test_that("message_packages balances odd package counts", {
+  header <- "Header"
+  packages <- c("pkgA", "pkgB", "pkgC")
+  output <- message_packages(packages, header)
+
+  expect_match(output, "^Header", perl = TRUE)
+  expect_match(output, "pkgA", fixed = TRUE)
+  expect_match(output, "pkgC", fixed = TRUE)
+})
+
+test_that("package_version_h highlights development versions", {
+  col_version <- with_mocked_bindings(
+    packageVersion = function(pkg) base::package_version("1.2.9000"),
+    .package = "utils",
+    package_version_h("dummy")
+  )
+  expect_match(col_version, "9000")
+})

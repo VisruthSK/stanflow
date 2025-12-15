@@ -38,3 +38,35 @@ test_that("stanflow_conflict_message renders deterministic output", {
 
   expect_snapshot_output(cat(stanflow_conflict_message(conflicts)))
 })
+
+test_that("stanflow_conflicts filters by requested packages", {
+  env_target <- "package:projpred"
+  env_other <- "package:stanflow_conflict_only_peer"
+
+  attach(list(conflicted_fun = function() "target"), name = env_target)
+  attach(list(conflicted_fun = function() "other"), name = env_other)
+  on.exit(detach(env_other, character.only = TRUE), add = TRUE)
+  on.exit(detach(env_target, character.only = TRUE), add = TRUE)
+
+  conflicts <- with_mocked_bindings(
+    stanflow_pkgs = c("projpred", "stanflow_conflict_only_peer"),
+    stanflow_conflicts(only = "projpred"),
+    .package = "stanflow"
+  )
+  expect_named(conflicts, "conflicted_fun")
+  expect_setequal(conflicts[[1]], c(env_target, env_other))
+})
+
+test_that("print.stanflow_conflicts returns input invisibly", {
+  testthat::local_reproducible_output(width = 60)
+  conflicts <- structure(
+    list(
+      compare = c("package:stanflow", "package:stats")
+    ),
+    class = "stanflow_conflicts"
+  )
+
+  output <- capture.output(res <- print(conflicts))
+  expect_true(any(grepl("Conflicts", output)))
+  expect_identical(res, conflicts)
+})

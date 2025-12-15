@@ -69,6 +69,7 @@ setup_interface <- function(
   invisible(NULL)
 }
 
+# nocov start
 install_backend_package <- function(pkg, dev, quiet, force) {
   if (!quiet) {
     cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
@@ -221,6 +222,7 @@ setup_cmdstanr <- function(quiet, force) {
 
   if (!quiet) cli::cli_process_done()
 }
+# nocov end
 
 setup_rstan <- function(quiet) {
   options(mc.cores = parallel::detectCores())
