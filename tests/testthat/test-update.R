@@ -7,7 +7,8 @@ run_update_with <- function(deps_df, update_fun, check = NULL) {
       }
       deps_df
     },
-    update_fun()
+    update_fun(),
+    .package = "stanflow"
   )
 }
 
@@ -56,6 +57,68 @@ test_that("stanflow_update lists behind packages", {
   )
 
   expect_identical(result, behind)
+})
+
+test_that("stanflow_deps computes remote/local state", {
+  fake_available <- matrix(
+    c("1.2.0", "1.6.0", "2.8.0"),
+    nrow = 3,
+    dimnames = list(c("cmdstanr", "posterior", "base"), "Version")
+  )
+
+  local_mocked_bindings(
+    stan_repos = function(dev) "https://fake.repo",
+    is_installed = function(pkg) pkg == "cmdstanr",
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    available.packages = function(repos) fake_available,
+    packageVersion = function(pkg) package_version("1.1.0"),
+    .package = "utils"
+  )
+  local_mocked_bindings(
+    package_dependencies = function(pkgs, db, recursive) {
+      list(stanflow = c("cmdstanr", "posterior", "base"))
+    },
+    .package = "tools"
+  )
+
+  deps <- stanflow_deps(recursive = TRUE, dev = FALSE)
+
+  expect_equal(deps$package, c("cmdstanr", "posterior"))
+  expect_equal(deps$local, c("1.1.0", "0"))
+  expect_true(all(deps$behind))
+})
+
+test_that("stanflow_deps handles missing repo versions", {
+  fake_available <- matrix(
+    c(NA, "1.6.0"),
+    nrow = 2,
+    dimnames = list(c("cmdstanr", "posterior"), "Version")
+  )
+
+  local_mocked_bindings(
+    stan_repos = function(dev) "https://fake.repo",
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    available.packages = function(repos) fake_available,
+    packageVersion = function(pkg) package_version("0"),
+    .package = "utils"
+  )
+  local_mocked_bindings(
+    package_dependencies = function(pkgs, db, recursive) {
+      list(stanflow = c("cmdstanr", "posterior"))
+    },
+    .package = "tools"
+  )
+
+  deps <- stanflow_deps(recursive = FALSE, dev = TRUE)
+
+  expect_false(deps$behind[1])
+  expect_true(deps$behind[2])
+  expect_true(is.na(deps$remote[1]))
 })
 
 test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)", {

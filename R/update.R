@@ -5,13 +5,10 @@
 #'   (stable releases). If `TRUE`, checks the Stan R-universe (dev versions).
 #' @export
 stanflow_deps <- function(recursive = FALSE, dev = FALSE) {
-  repos <- stan_repos(dev)
-
-  pkgs <- utils::available.packages(repos = repos)
+  pkgs <- utils::available.packages(repos = stan_repos(dev))
   pkg_deps <- tools::package_dependencies(
     "stanflow",
-    # pkgs,
-    utils::installed.packages(),
+    pkgs,
     recursive = recursive
   ) |>
     unlist() |>

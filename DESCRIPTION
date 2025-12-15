@@ -17,13 +17,15 @@ Imports:
     shinystan (>= 2.7.0),
     utils
 Suggests:
+    brms,
     cmdstanr,
     rstan,
+    rstanarm,
     testthat (>= 3.0.0)
 Additional_repositories:
     https://community.r-multiverse.org,
     https://mc-stan-org.r-universe.dev
+Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Config/testthat/edition: 3
