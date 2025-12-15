@@ -15,6 +15,14 @@ same_library <- function(pkg) {
   library(pkg, lib.loc = loc, character.only = TRUE, warn.conflicts = FALSE)
 }
 
+stan_repos <- function(dev = FALSE) {
+  if (dev) {
+    c("https://stan-dev.r-universe.dev", getOption("repos"))
+  } else {
+    c("https://community.r-multiverse.org", getOption("repos"))
+  }
+}
+
 invert <- function(x) {
   if (length(x) == 0) {
     return(list())

@@ -5,11 +5,7 @@
 #'   (stable releases). If `TRUE`, checks the Stan R-universe (dev versions).
 #' @export
 stanflow_deps <- function(recursive = FALSE, dev = FALSE) {
-  repos <- if (dev) {
-    c("https://stan-dev.r-universe.dev", getOption("repos"))
-  } else {
-    c("https://community.r-multiverse.org", getOption("repos"))
-  }
+  repos <- stan_repos(dev)
 
   pkgs <- utils::available.packages(repos = repos)
   pkg_deps <- tools::package_dependencies(
@@ -109,21 +105,8 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
 
   pkg_str <- paste0(deparse(behind$package), collapse = "\n")
 
-  repo_url <- if (dev) {
-    "https://stan-dev.r-universe.dev"
-  } else {
-    "https://community.r-multiverse.org"
-  }
-  repo_cmd <- sprintf('repos = c("%s", getOption("repos"))', repo_url)
+  repo_cmd <- sprintf('repos = c("%s", getOption("repos"))', stan_repos(dev))
 
   cli::cat_line("install.packages(", pkg_str, ", ", repo_cmd, ")")
   invisible(behind)
-}
-
-stan_repos <- function(dev = FALSE) {
-  if (dev) {
-    c(stan = "https://stan-dev.r-universe.dev", getOption("repos"))
-  } else {
-    c(multiverse = "https://community.r-multiverse.org", getOption("repos"))
-  }
 }

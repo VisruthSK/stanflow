@@ -20,7 +20,7 @@ Suggests:
     cmdstanr,
     rstan
 Additional_repositories:
-    https://r-multiverse.org,
+    https://community.r-multiverse.org,
     https://mc-stan-org.r-universe.dev
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
