@@ -80,7 +80,8 @@ universe (dev)) and performs necessary one-time setup (like installing CmdStan).
 <span>  dev <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  prefer_cmdstanr <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  force <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  force <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  skip_setup <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -109,6 +110,11 @@ to use the <code>cmdstanr</code> backend instead of the default <code>rstan</cod
 <dt id="arg-force">force<a class="anchor" aria-label="anchor" href="#arg-force"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, forces re-installation/setup. Required
 for installation in non-interactive sessions.</p></dd>
+
+
+<dt id="arg-skip-setup">skip_setup<a class="anchor" aria-label="anchor" href="#arg-skip-setup"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, packages are only attached and no
+backend-specific configuration is run.</p></dd>
 
 </dl></div>
     <div class="section level2">

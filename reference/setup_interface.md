@@ -13,7 +13,8 @@ setup_interface(
   dev = FALSE,
   prefer_cmdstanr = FALSE,
   quiet = FALSE,
-  force = FALSE
+  force = FALSE,
+  skip_setup = FALSE
 )
 ```
 
@@ -43,6 +44,11 @@ setup_interface(
 
   Logical. If `TRUE`, forces re-installation/setup. Required for
   installation in non-interactive sessions.
+
+- skip_setup:
+
+  Logical. If `TRUE`, packages are only attached and no backend-specific
+  configuration is run.
 
 ## Value
 
