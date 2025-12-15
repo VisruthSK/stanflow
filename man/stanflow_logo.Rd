@@ -2,10 +2,13 @@
 % Please edit documentation in R/logo.R
 \name{stanflow_logo}
 \alias{stanflow_logo}
-\title{Print the stanflow logo to the console.}
+\title{Print the stanflow ASCII art logo}
 \usage{
 stanflow_logo()
 }
+\value{
+Invisibly returns the character vector that was printed.
+}
 \description{
-Print the stanflow logo to the console.
+Emits the stanflow ASCII art logo via \code{cli::cat_line()}.
 }

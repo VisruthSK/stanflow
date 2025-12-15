@@ -32,7 +32,6 @@ setup_interface <- function(
     interface <- c(interface, "cmdstanr")
   }
 
-  # Use a for loop since we are strictly doing side effects
   for (pkg in interface) {
     if (!is_installed(pkg) || force) {
       install_backend_package(pkg, dev, quiet, force)
@@ -41,6 +40,7 @@ setup_interface <- function(
     if (!quiet) {
       cli::cli_alert_info("Attaching {.pkg {pkg}}...")
     }
+
     suppressPackageStartupMessages(same_library(pkg))
 
     switch(
@@ -165,7 +165,7 @@ setup_cmdstanr <- function(quiet, force) {
   if (needs_install) {
     action_msg <- "CmdStan binaries are missing or force-reinstall requested."
   } else if (needs_update) {
-    action_msg <- glue::glue("Update available: v{local_ver} -> v{latest_ver}")
+    action_msg <- sprintf("Update available: v%s -> v%s", local_ver, latest_ver)
   } else {
     return(invisible(TRUE))
   }

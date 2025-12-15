@@ -16,6 +16,9 @@ Imports:
     projpred (>= 2.10.0),
     shinystan (>= 2.7.0),
     utils (>= 2.13.0)
+Suggests:
+    cmdstanr,
+    rstan
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
