@@ -2,7 +2,9 @@ run_update_with <- function(deps_df, update_fun, check = NULL) {
   stopifnot(is.function(update_fun))
   with_mocked_bindings(
     stanflow_deps = function(recursive, dev) {
-      if (!is.null(check)) check(recursive, dev)
+      if (!is.null(check)) {
+        check(recursive, dev)
+      }
       deps_df
     },
     update_fun()
