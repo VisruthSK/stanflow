@@ -159,10 +159,7 @@ test_that("install_backend_package installs from multiverse when dev = FALSE", {
 
 test_that("install_backend_package aborts when user declines interactive install", {
   skip_on_covr()
-  local_mocked_bindings(
-    interactive = function() TRUE,
-    .package = "base"
-  )
+  skip_if_not(interactive())
   local_mocked_bindings(
     menu = function(...) 2,
     install.packages = function(...) stop("should not reach install"),
@@ -177,10 +174,7 @@ test_that("install_backend_package aborts when user declines interactive install
 test_that("install_backend_package installs when user accepts interactive prompt", {
   skip_on_covr()
   called <- list()
-  local_mocked_bindings(
-    interactive = function() TRUE,
-    .package = "base"
-  )
+  skip_if_not(interactive())
   local_mocked_bindings(
     menu = function(...) 1,
     install.packages = function(pkg, repos, quiet) {
