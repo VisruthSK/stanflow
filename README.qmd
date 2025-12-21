@@ -15,15 +15,7 @@ cache: true
 [![pkgdown](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
-```{r}
-#| echo: false
-#| comment: ""
-stanflow::stanflow_logo()
-```
-
-`stanflow` offers an integrated, mildly opinionated access to a Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [tidyverse package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling.
-
-`stanflow` draws heavy inspiration from the `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R implementations.
+`stanflow` offers an integrated, mildly opinionated access to a Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [tidyverse package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration from `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R whenever necessary.
 
 ## Installation
 
@@ -47,12 +39,12 @@ setup_interface(
   force = FALSE,
   skip_setup = FALSE
 )
-set.seed(1234)
 ```
 
 With these two commands (with the `setup_interface()` call being unnecessarily verbose), users have access to everything they need to fit and interrogate Bayesian models. Specifically, those two commands will load the core stanflow packages: `bayesplot`, `loo`, `posterior`, `projpred` and `shinystan`, as well as setup `brms` to use the `cmdstanr` backend with as many cores as are available on your machine. These package (inlcuding `brms` and `cmdstanr`) are all "`library()`d" as well, so we can proceed with our analysis immediately.
 
 ```{r}
+set.seed(1234)
 cmdstanr_example()
 
 fit1 <- brm(

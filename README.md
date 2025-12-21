@@ -7,26 +7,15 @@
 [![pkgdown](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
-
-              █████                            ██████  ████                          
-             ░░███                            ███░░███░░███                          
-      █████  ███████    ██████   ████████    ░███ ░░░  ░███   ██████  █████ ███ █████
-     ███░░  ░░░███░    ░░░░░███ ░░███░░███  ███████    ░███  ███░░███░░███ ░███░░███ 
-    ░░█████   ░███      ███████  ░███ ░███ ░░░███░     ░███ ░███ ░███ ░███ ░███ ░███ 
-     ░░░░███  ░███ ███ ███░░███  ░███ ░███   ░███      ░███ ░███ ░███ ░░███████████  
-     ██████   ░░█████ ░░████████ ████ █████  █████     █████░░██████   ░░████░████   
-    ░░░░░░     ░░░░░   ░░░░░░░░ ░░░░ ░░░░░  ░░░░░     ░░░░░  ░░░░░░     ░░░░ ░░░░    
-
 `stanflow` offers an integrated, mildly opinionated access to a
 Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman
 et al. 2020). Much like the famous [tidyverse
 package](https://github.com/tidyverse/tidyverse), `stanflow` is a
 metapackage which installs and attaches relevant Stan R packages,
-serving as a one-stop-shop for Bayesian modelling.
-
-`stanflow` draws heavy inspiration from the `tidyverse`, and reuses
-portions of its codebase–however, `stanflow` eschews `tidyverse`
-packages (i.e., `purrr`, `dplyr`, etc.) for base R implementations.
+serving as a one-stop-shop for Bayesian modelling. `stanflow` draws
+heavy inspiration from `tidyverse`, and reuses portions of its
+codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
+`purrr`, `dplyr`, etc.) for base R whenever necessary.
 
 ## Installation
 
@@ -60,7 +49,6 @@ setup_interface(
 #> The C++ toolchain required for CmdStan is setup properly!
 #> ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'
 #> ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.
-set.seed(1234)
 ```
 
 With these two commands (with the `setup_interface()` call being
@@ -73,6 +61,7 @@ These package (inlcuding `brms` and `cmdstanr`) are all “`library()`d”
 as well, so we can proceed with our analysis immediately.
 
 ``` r
+set.seed(1234)
 cmdstanr_example()
 #>    variable   mean median   sd  mad     q5    q95 rhat ess_bulk ess_tail
 #>  lp__       -66.02 -65.68 1.50 1.27 -68.96 -64.31 1.00     1723     2491
@@ -95,8 +84,17 @@ fit1 <- brm(
   silent = TRUE,
   refresh = 0
 )
-#> Compiling Stan program...
 #> Start sampling
+#> Running MCMC with 4 chains, at most 20 in parallel...
+#> 
+#> Chain 1 finished in 18.5 seconds.
+#> Chain 4 finished in 19.0 seconds.
+#> Chain 3 finished in 19.1 seconds.
+#> Chain 2 finished in 19.2 seconds.
+#> 
+#> All 4 chains finished successfully.
+#> Mean chain execution time: 18.9 seconds.
+#> Total execution time: 19.3 seconds.
 summary(fit1)
 #>  Family: poisson 
 #>   Links: mu = log 
@@ -108,24 +106,24 @@ summary(fit1)
 #> Multilevel Hyperparameters:
 #> ~patient (Number of levels: 59) 
 #>               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-#> sd(Intercept)     0.58      0.07     0.47     0.73 1.00      763     1532
+#> sd(Intercept)     0.59      0.07     0.47     0.75 1.00      807     1782
 #> 
 #> Regression Coefficients:
 #>            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-#> Intercept      1.77      0.12     1.52     2.00 1.00      522     1071
-#> zAge           0.09      0.09    -0.07     0.27 1.00      767     1503
-#> zBase          0.71      0.12     0.47     0.93 1.00      703     1272
-#> Trt1          -0.27      0.16    -0.59     0.06 1.00      639     1253
-#> zBase:Trt1     0.05      0.16    -0.26     0.37 1.00      811     1721
+#> Intercept      1.77      0.12     1.52     2.00 1.01      653     1224
+#> zAge           0.09      0.09    -0.08     0.27 1.01      746     1180
+#> zBase          0.70      0.12     0.47     0.94 1.00      828     1465
+#> Trt1          -0.26      0.17    -0.59     0.06 1.00      674     1165
+#> zBase:Trt1     0.06      0.16    -0.26     0.38 1.00      935     1570
 #> 
-#> Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+#> Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
 #> and Tail_ESS are effective sample size measures, and Rhat is the potential
 #> scale reduction factor on split chains (at convergence, Rhat = 1).
 
 plot(fit1, variable = c("b_Trt1", "b_zBase"))
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png"
+<img src="man/figures/README-unnamed-chunk-2-1.png"
 style="width:100.0%" />
 
 ``` r
@@ -137,8 +135,17 @@ fit2 <- brm(
   silent = TRUE,
   refresh = 0
 )
-#> Compiling Stan program...
 #> Start sampling
+#> Running MCMC with 4 chains, at most 20 in parallel...
+#> 
+#> Chain 1 finished in 18.3 seconds.
+#> Chain 4 finished in 18.3 seconds.
+#> Chain 3 finished in 19.0 seconds.
+#> Chain 2 finished in 20.7 seconds.
+#> 
+#> All 4 chains finished successfully.
+#> Mean chain execution time: 19.1 seconds.
+#> Total execution time: 20.8 seconds.
 summary(fit2)
 #>  Family: poisson 
 #>   Links: mu = log 
@@ -150,29 +157,29 @@ summary(fit2)
 #> Multilevel Hyperparameters:
 #> ~obs (Number of levels: 236) 
 #>               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-#> sd(Intercept)     0.37      0.04     0.29     0.46 1.00     1244     1988
+#> sd(Intercept)     0.37      0.04     0.29     0.46 1.01     1155     1688
 #> 
 #> ~patient (Number of levels: 59) 
 #>               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-#> sd(Intercept)     0.54      0.08     0.41     0.71 1.00     1034     1887
+#> sd(Intercept)     0.54      0.07     0.42     0.71 1.00     1180     2138
 #> 
 #> Regression Coefficients:
 #>            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-#> Intercept      1.72      0.12     1.48     1.96 1.00      977     1542
-#> zAge           0.09      0.09    -0.08     0.26 1.00      972     1738
-#> zBase          0.70      0.12     0.47     0.93 1.01      991     1542
-#> Trt1          -0.26      0.17    -0.60     0.06 1.00     1098     1550
-#> zBase:Trt1     0.06      0.16    -0.26     0.39 1.01     1032     1705
+#> Intercept      1.72      0.12     1.49     1.97 1.00      961     1666
+#> zAge           0.09      0.09    -0.08     0.26 1.00     1137     1859
+#> zBase          0.71      0.12     0.46     0.94 1.00     1011     1473
+#> Trt1          -0.26      0.17    -0.59     0.06 1.01      951     1400
+#> zBase:Trt1     0.05      0.17    -0.27     0.39 1.00     1127     1621
 #> 
-#> Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+#> Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
 #> and Tail_ESS are effective sample size measures, and Rhat is the potential
 #> scale reduction factor on split chains (at convergence, Rhat = 1).
 
 loo(fit1, fit2)
-#> Warning: Found 9 observations with a pareto_k > 0.7 in model 'fit1'. We
+#> Warning: Found 7 observations with a pareto_k > 0.7 in model 'fit1'. We
 #> recommend to set 'moment_match = TRUE' in order to perform moment matching for
 #> problematic observations.
-#> Warning: Found 61 observations with a pareto_k > 0.7 in model 'fit2'. We
+#> Warning: Found 57 observations with a pareto_k > 0.7 in model 'fit2'. We
 #> recommend to set 'moment_match = TRUE' in order to perform moment matching for
 #> problematic observations.
 #> Output of model 'fit1':
@@ -180,17 +187,17 @@ loo(fit1, fit2)
 #> Computed from 4000 by 236 log-likelihood matrix.
 #> 
 #>          Estimate   SE
-#> elpd_loo   -672.5 37.2
-#> p_loo        94.9 14.8
-#> looic      1345.0 74.3
+#> elpd_loo   -672.0 37.4
+#> p_loo        94.6 15.0
+#> looic      1344.1 74.7
 #> ------
 #> MCSE of elpd_loo is NA.
-#> MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 2.4]).
+#> MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 2.1]).
 #> 
 #> Pareto k diagnostic values:
 #>                          Count Pct.    Min. ESS
-#> (-Inf, 0.7]   (good)     227   96.2%   196     
-#>    (0.7, 1]   (bad)        8    3.4%   <NA>    
+#> (-Inf, 0.7]   (good)     229   97.0%   135     
+#>    (0.7, 1]   (bad)        6    2.5%   <NA>    
 #>    (1, Inf)   (very bad)   1    0.4%   <NA>    
 #> See help('pareto-k-diagnostic') for details.
 #> 
@@ -199,24 +206,24 @@ loo(fit1, fit2)
 #> Computed from 4000 by 236 log-likelihood matrix.
 #> 
 #>          Estimate   SE
-#> elpd_loo   -595.4 14.1
-#> p_loo       108.2  7.4
-#> looic      1190.9 28.2
+#> elpd_loo   -595.1 14.0
+#> p_loo       107.9  7.2
+#> looic      1190.2 28.0
 #> ------
 #> MCSE of elpd_loo is NA.
 #> MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 1.6]).
 #> 
 #> Pareto k diagnostic values:
 #>                          Count Pct.    Min. ESS
-#> (-Inf, 0.7]   (good)     175   74.2%   168     
-#>    (0.7, 1]   (bad)       53   22.5%   <NA>    
-#>    (1, Inf)   (very bad)   8    3.4%   <NA>    
+#> (-Inf, 0.7]   (good)     179   75.8%   151     
+#>    (0.7, 1]   (bad)       52   22.0%   <NA>    
+#>    (1, Inf)   (very bad)   5    2.1%   <NA>    
 #> See help('pareto-k-diagnostic') for details.
 #> 
 #> Model comparisons:
 #>      elpd_diff se_diff
 #> fit2   0.0       0.0  
-#> fit1 -77.1      27.9
+#> fit1 -77.0      28.1
 ```
 
 Code snippets above are taken from the [`brms`
