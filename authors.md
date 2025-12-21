@@ -6,19 +6,19 @@
   [](https://orcid.org/0009-0005-9097-0688)
 
 - **tidyverse authors**. Copyright holder.  
-  Code adapted from tidyverse package (MIT)
+  Some code adapted from tidyverse package (MIT)
 
 ## Citation
 
 Source:
 [`DESCRIPTION`](https://github.com/VisruthSK/stanflow/blob/main/DESCRIPTION)
 
-Srimath Kandali V (2025). *stanflow: What the Package Does (One Line,
-Title Case)*. R package version 0.0.0.9000,
+Srimath Kandali V (2025). *stanflow: An integrated Stan-based Bayesian
+Workflow*. R package version 0.0.0.9000,
 <https://visruthsk.github.io/stanflow/>.
 
     @Manual{,
-      title = {stanflow: What the Package Does (One Line, Title Case)},
+      title = {stanflow: An integrated Stan-based Bayesian Workflow},
       author = {Visruth {Srimath Kandali}},
       year = {2025},
       note = {R package version 0.0.0.9000},
