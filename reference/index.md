@@ -2,6 +2,8 @@
 
 ## All functions
 
+- [`flow_check()`](https://visruthsk.github.io/stanflow/reference/flow_check.md)
+  : Print stanflow status and conflicts
 - [`setup_interface()`](https://visruthsk.github.io/stanflow/reference/setup_interface.md)
   : Setup and Load Stan Interfaces
 - [`stan_logo()`](https://visruthsk.github.io/stanflow/reference/stan_logo.md)
