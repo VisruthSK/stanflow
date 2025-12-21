@@ -5,5 +5,7 @@ The following files include code adapted from the tidyverse package (MIT):
 - R/conflicts.R (stanflow_conflicts and helpers)
 - R/update.R (stanflow_deps, stanflow_update)
 - R/load.R (startup attach messaging helpers)
+- R/logo.R (stan_logo, stanflow_logo)
+- R/zzz.R (.onAttach)
 
 The tidyverse package is Copyright (c) 2021 tidyverse authors and is licensed under the MIT license.
