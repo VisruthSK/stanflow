@@ -3,7 +3,9 @@ Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
     person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0009-0005-9097-0688"))
+           comment = c(ORCID = "0009-0005-9097-0688")),
+    person("tidyverse", "authors", role = "cph",
+           comment = "Code adapted from tidyverse package (MIT)")
 Description: What the package does (one paragraph).
 License: BSD_3_clause + file LICENSE
 URL: https://visruthsk.github.io/stanflow/
@@ -14,8 +16,7 @@ Imports:
     loo (>= 2.8.0),
     posterior (>= 1.6.0),
     projpred (>= 2.10.0),
-    shinystan (>= 2.7.0),
-    utils
+    shinystan (>= 2.7.0)
 Suggests:
     brms,
     cmdstanr,

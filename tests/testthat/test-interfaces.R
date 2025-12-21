@@ -245,6 +245,7 @@ test_that("setup_rstanarm sets mc.cores regardless of prefer flag", {
 })
 
 test_that("setup_cmdstanr aborts when toolchain check fails", {
+  skip_on_cran()
   skip_if_not_installed("cmdstanr")
   expect_error(
     {
@@ -259,6 +260,7 @@ test_that("setup_cmdstanr aborts when toolchain check fails", {
 })
 
 test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
+  skip_on_cran()
   skip_if_not_installed("cmdstanr")
   installed <- FALSE
 
@@ -276,6 +278,7 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
 })
 
 test_that("setup_cmdstanr returns invisibly when up to date", {
+  skip_on_cran()
   skip_if_not_installed("cmdstanr")
   local_mocked_bindings(
     check_cmdstan_toolchain = function(...) TRUE,

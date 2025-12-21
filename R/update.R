@@ -1,3 +1,6 @@
+# Portions of this file are adapted from the tidyverse package.
+# Copyright (c) 2021 tidyverse authors. Licensed under the MIT license.
+# See LICENSE.note for details.
 #' List all stanflow dependencies
 #'
 #' @param recursive If `TRUE`, will also list all dependencies.

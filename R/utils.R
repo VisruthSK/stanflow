@@ -1,3 +1,6 @@
+# Portions of this file are adapted from the tidyverse package.
+# Copyright (c) 2021 tidyverse authors. Licensed under the MIT license.
+# See LICENSE.note for details.
 # nocov start
 core <- c("bayesplot", "loo", "posterior", "projpred", "shinystan")
 backends <- c("brms", "cmdstanr", "rstan", "rstanarm")

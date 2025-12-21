@@ -1,3 +1,6 @@
+# Portions of this file are adapted from the tidyverse package.
+# Copyright (c) 2021 tidyverse authors. Licensed under the MIT license.
+# See LICENSE.note for details.
 #' Conflicts between stanflow and other packages
 #'
 #' This function lists all the conflicts between packages in stanflow
