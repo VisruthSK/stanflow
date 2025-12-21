@@ -8,3 +8,5 @@
 ^docs$
 ^pkgdown$
 ^codecov\.yml$
+^README\.qmd$
+^README_cache$

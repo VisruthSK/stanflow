@@ -1,0 +1,71 @@
+---
+title: stanflow
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+    fig.path: "man/figures/README-"
+    out.width: "100%"
+format: gfm
+cache: true
+---
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml)
+<!-- badges: end -->
+
+```{r}
+#| echo: false
+#| comment: ""
+stanflow::stanflow_logo()
+```
+
+## Installation
+
+You can install the development version of stanflow from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("VisruthSK/stanflow")
+```
+## Example
+
+The package allows for quick access to the full Stan modelling pipeline, with flexibility with regards to your fitting procedure. Here, we load stanflow and decide to use cmdstanr as the backend for brms. 
+
+```{r}
+library(stanflow)
+setup_interface(
+  interface = "brms",
+  dev = FALSE,
+  prefer_cmdstanr = TRUE,
+  quiet = FALSE,
+  force = FALSE,
+  skip_setup = FALSE
+)
+```
+
+With these two commands (with the `setup_interface()` call being unnecessarily verbose), users have access to everything they need to fit and analyze models. Specifically, those two commands will load the core stanflow packages: `bayesplot`, `loo`, `posterior`, `projpred` and `shinystan`, and setup `brms` to use the `cmdstanr` backend with as many cores as are available on your machine. Those package are all "`library()`d" as well, so we can proceed with our analysis immediately.
+
+```{r}
+cmdstanr_example()
+
+# from brms readme:
+fit1 <- brm(
+  count ~ zAge + zBase * Trt + (1 | patient),
+  data = epilepsy,
+  family = poisson()
+)
+summary(fit1)
+
+plot(fit1, variable = c("b_Trt1", "b_zBase"))
+
+fit2 <- brm(
+  count ~ zAge + zBase * Trt + (1 | patient) + (1 | obs),
+  data = epilepsy,
+  family = poisson()
+)
+summary(fit2)
+
+loo(fit1, fit2)
+```
