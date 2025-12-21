@@ -21,6 +21,10 @@ cache: true
 stanflow::stanflow_logo()
 ```
 
+`stanflow` offers an integrated, mildly opinionated access to a Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [tidyverse package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling.
+
+`stanflow` draws heavy inspiration from the `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R implementations.
+
 ## Installation
 
 You can install the development version of stanflow from [GitHub](https://github.com/) with:
@@ -29,9 +33,9 @@ You can install the development version of stanflow from [GitHub](https://github
 # install.packages("pak")
 pak::pak("VisruthSK/stanflow")
 ```
-## Example
+## Usage
 
-The package allows for quick access to the full Stan modelling pipeline, with flexibility with regards to your fitting procedure. Here, we load stanflow and decide to use cmdstanr as the backend for brms. 
+Here, we load `stanflow` and decide to use `cmdstanr` as the backend for `brms`.
 
 ```{r}
 library(stanflow)
@@ -43,18 +47,20 @@ setup_interface(
   force = FALSE,
   skip_setup = FALSE
 )
+set.seed(1234)
 ```
 
-With these two commands (with the `setup_interface()` call being unnecessarily verbose), users have access to everything they need to fit and analyze models. Specifically, those two commands will load the core stanflow packages: `bayesplot`, `loo`, `posterior`, `projpred` and `shinystan`, and setup `brms` to use the `cmdstanr` backend with as many cores as are available on your machine. Those package are all "`library()`d" as well, so we can proceed with our analysis immediately.
+With these two commands (with the `setup_interface()` call being unnecessarily verbose), users have access to everything they need to fit and interrogate Bayesian models. Specifically, those two commands will load the core stanflow packages: `bayesplot`, `loo`, `posterior`, `projpred` and `shinystan`, as well as setup `brms` to use the `cmdstanr` backend with as many cores as are available on your machine. These package (inlcuding `brms` and `cmdstanr`) are all "`library()`d" as well, so we can proceed with our analysis immediately.
 
 ```{r}
 cmdstanr_example()
 
-# from brms readme:
 fit1 <- brm(
   count ~ zAge + zBase * Trt + (1 | patient),
   data = epilepsy,
-  family = poisson()
+  family = poisson(),
+  silent = TRUE,
+  refresh = 0
 )
 summary(fit1)
 
@@ -63,9 +69,13 @@ plot(fit1, variable = c("b_Trt1", "b_zBase"))
 fit2 <- brm(
   count ~ zAge + zBase * Trt + (1 | patient) + (1 | obs),
   data = epilepsy,
-  family = poisson()
+  family = poisson(),
+  silent = TRUE,
+  refresh = 0
 )
 summary(fit2)
 
 loo(fit1, fit2)
 ```
+
+Code snippets above are taken from the [`brms` README](https://paulbuerkner.com/brms/) but aren't directly comparable.

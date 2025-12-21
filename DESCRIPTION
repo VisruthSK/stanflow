@@ -1,16 +1,22 @@
 Package: stanflow
-Title: What the Package Does (One Line, Title Case)
+Title: An integrated Stan-based Bayesian Workflow
 Version: 0.0.0.9000
 Authors@R: c(
     person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0005-9097-0688")),
-    person("tidyverse", "authors", role = "cph",
-           comment = "Code adapted from tidyverse package (MIT)")
+    person("tidyverse authors", role = "cph",
+           comment = "Some code adapted from tidyverse package (MIT)")
   )
-Description: What the package does (one paragraph).
+Description: Streamlines access to the Stan ecosystem by attaching core
+    workflow packages, surfacing conflicts, and providing helpers to set
+    up Stan interfaces with sensible defaults. Facilitates the Bayesian
+    Workflow as described in Gelman et al. (2020)
+    <https://arxiv.org/abs/2011.01808>.
 License: BSD_3_clause + file LICENSE
 URL: https://visruthsk.github.io/stanflow/
 BugReports: https://github.com/VisruthSK/stanflow/issues/
+Depends:
+    R (>= 4.2.0)
 Imports:
     bayesplot (>= 1.15.0),
     cli (>= 3.6.5),
