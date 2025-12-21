@@ -3,19 +3,38 @@
 # See LICENSE.note for details.
 find_unloaded <- function(pkgs) pkgs[!paste0("package:", pkgs) %in% search()]
 
-core_attach_message <- function() {
+#' Print stanflow status and conflicts
+#'
+#' Print a consolidated status report showing attached packages, available
+#' interfaces, and any conflicts.
+#'
+#' @return Invisibly returns the character vector that was printed.
+#' @export
+flow_check <- function() {
+  messages <- list(
+    core_attach_message(show_all = TRUE),
+    backends_attach_message(),
+    stanflow_conflict_message(stanflow_conflicts())
+  ) |>
+    Filter(Negate(is.null), x = _)
+  cli::cat_line(messages)
+  invisible(unlist(messages))
+}
+
+core_attach_message <- function(show_all = FALSE) {
   core_unloaded <- find_unloaded(core)
   suppressPackageStartupMessages(lapply(core_unloaded, same_library))
-  if (length(core_unloaded) == 0) {
+  to_show <- if (show_all) core else core_unloaded
+  if (length(to_show) == 0) {
     return(NULL)
   }
 
-  versions <- vapply(core_unloaded, package_version_h, character(1))
+  versions <- vapply(to_show, package_version_h, character(1))
 
   packages <- paste0(
     cli::col_green(cli::symbol$tick),
     " ",
-    cli::col_blue(format(core_unloaded)),
+    cli::col_blue(format(to_show)),
     " ",
     cli::ansi_align(versions, max(cli::ansi_nchar(versions)))
   )

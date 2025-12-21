@@ -72,7 +72,13 @@ setup_interface <- function(
 # nocov start
 install_backend_package <- function(pkg, dev, quiet, force) {
   if (!quiet) {
-    cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
+    if (force) {
+      cli::cli_alert_warning(
+        "Reinstalling {.pkg {pkg}} because {.code force = TRUE}."
+      )
+    } else {
+      cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
+    }
   }
 
   if (!interactive() && !force) {
