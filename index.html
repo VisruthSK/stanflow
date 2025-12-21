@@ -91,6 +91,379 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="stanflow">stanflow<a class="anchor" aria-label="anchor" href="#stanflow"></a>
 </h1></div>
+<!-- badges: start -->
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>          █████                            ██████  ████                          </span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>         ░░███                            ███░░███░░███                          </span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  █████  ███████    ██████   ████████    ░███ ░░░  ░███   ██████  █████ ███ █████</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a> ███░░  ░░░███░    ░░░░░███ ░░███░░███  ███████    ░███  ███░░███░░███ ░███░░███ </span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>░░█████   ░███      ███████  ░███ ░███ ░░░███░     ░███ ░███ ░███ ░███ ░███ ░███ </span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a> ░░░░███  ░███ ███ ███░░███  ░███ ░███   ░███      ░███ ░███ ░███ ░░███████████  </span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a> ██████   ░░█████ ░░████████ ████ █████  █████     █████░░██████   ░░████░████   </span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>░░░░░░     ░░░░░   ░░░░░░░░ ░░░░ ░░░░░  ░░░░░     ░░░░░  ░░░░░░     ░░░░ ░░░░    </span></code></pre></div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>You can install the development version of stanflow from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"VisruthSK/stanflow"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+</h2>
+<p>The package allows for quick access to the full Stan modelling pipeline, with flexibility with regards to your fitting procedure. Here, we load stanflow and decide to use cmdstanr as the backend for brms.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://visruthsk.github.io/stanflow/">stanflow</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
+<span>  interface <span class="op">=</span> <span class="st">"brms"</span>,</span>
+<span>  dev <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  prefer_cmdstanr <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  force <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  skip_setup <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; ℹ Adding cmdstanr to setup because `prefer_cmdstanr = TRUE`</span></span>
+<span><span class="co">#&gt; ℹ Attaching brms...</span></span>
+<span><span class="co">#&gt; ℹ Configured brms: set `options(mc.cores = parallel::detectCores())` and `options(brms.backend = 'cmdstanr')`</span></span>
+<span><span class="co">#&gt; ℹ Attaching cmdstanr...</span></span>
+<span><span class="co">#&gt; The C++ toolchain required for CmdStan is setup properly!</span></span>
+<span><span class="co">#&gt; ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'</span></span>
+<span><span class="co">#&gt; ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.</span></span></code></pre></div>
+<p>With these two commands (with the <code><a href="reference/setup_interface.html">setup_interface()</a></code> call being unnecessarily verbose), users have access to everything they need to fit and analyze models. Specifically, those two commands will load the core stanflow packages: <code>bayesplot</code>, <code>loo</code>, <code>posterior</code>, <code>projpred</code> and <code>shinystan</code>, and setup <code>brms</code> to use the <code>cmdstanr</code> backend with as many cores as are available on your machine. Those package are all “<code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code>d” as well, so we can proceed with our analysis immediately.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">cmdstanr_example</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    variable   mean median   sd  mad     q5    q95 rhat ess_bulk ess_tail</span></span>
+<span><span class="co">#&gt;  lp__       -65.95 -65.61 1.45 1.27 -68.78 -64.26 1.00     2018     2465</span></span>
+<span><span class="co">#&gt;  alpha        0.38   0.37 0.22 0.22   0.03   0.75 1.00     4205     2866</span></span>
+<span><span class="co">#&gt;  beta[1]     -0.67  -0.67 0.25 0.24  -1.09  -0.29 1.00     4245     3202</span></span>
+<span><span class="co">#&gt;  beta[2]     -0.27  -0.28 0.23 0.21  -0.65   0.11 1.00     3573     3267</span></span>
+<span><span class="co">#&gt;  beta[3]      0.68   0.68 0.27 0.26   0.25   1.12 1.00     3895     3115</span></span>
+<span><span class="co">#&gt;  log_lik[1]  -0.51  -0.51 0.10 0.10  -0.68  -0.36 1.00     4094     3085</span></span>
+<span><span class="co">#&gt;  log_lik[2]  -0.40  -0.38 0.15 0.14  -0.68  -0.20 1.00     4901     3537</span></span>
+<span><span class="co">#&gt;  log_lik[3]  -0.50  -0.47 0.22 0.21  -0.89  -0.20 1.00     4227     2544</span></span>
+<span><span class="co">#&gt;  log_lik[4]  -0.45  -0.43 0.15 0.14  -0.73  -0.24 1.00     4067     3150</span></span>
+<span><span class="co">#&gt;  log_lik[5]  -1.18  -1.16 0.28 0.28  -1.69  -0.75 1.00     4355     2783</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  # showing 10 of 105 rows (change via 'max_rows' argument or 'cmdstanr_max_rows' option)</span></span>
+<span></span>
+<span><span class="co"># from brms readme:</span></span>
+<span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu">brm</span><span class="op">(</span></span>
+<span>  <span class="va">count</span> <span class="op">~</span> <span class="va">zAge</span> <span class="op">+</span> <span class="va">zBase</span> <span class="op">*</span> <span class="va">Trt</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">patient</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">epilepsy</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Start sampling</span></span>
+<span><span class="co">#&gt; Running MCMC with 4 chains, at most 20 in parallel...</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 finished in 15.8 seconds.</span></span>
+<span><span class="co">#&gt; Chain 3 finished in 15.8 seconds.</span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 finished in 15.9 seconds.</span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 finished in 17.2 seconds.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span><span class="co">#&gt; Mean chain execution time: 16.2 seconds.</span></span>
+<span><span class="co">#&gt; Total execution time: 17.3 seconds.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  Family: poisson </span></span>
+<span><span class="co">#&gt;   Links: mu = log </span></span>
+<span><span class="co">#&gt; Formula: count ~ zAge + zBase * Trt + (1 | patient) </span></span>
+<span><span class="co">#&gt;    Data: epilepsy (Number of observations: 236) </span></span>
+<span><span class="co">#&gt;   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;</span></span>
+<span><span class="co">#&gt;          total post-warmup draws = 4000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Multilevel Hyperparameters:</span></span>
+<span><span class="co">#&gt; ~patient (Number of levels: 59) </span></span>
+<span><span class="co">#&gt;               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
+<span><span class="co">#&gt; sd(Intercept)     0.58      0.07     0.46     0.73 1.00      955     1691</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Regression Coefficients:</span></span>
+<span><span class="co">#&gt;            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
+<span><span class="co">#&gt; Intercept      1.77      0.11     1.54     2.00 1.01      810     1641</span></span>
+<span><span class="co">#&gt; zAge           0.10      0.09    -0.08     0.27 1.01      699     1599</span></span>
+<span><span class="co">#&gt; zBase          0.70      0.12     0.47     0.93 1.00      799     1635</span></span>
+<span><span class="co">#&gt; Trt1          -0.26      0.16    -0.58     0.06 1.00      767     1505</span></span>
+<span><span class="co">#&gt; zBase:Trt1     0.06      0.17    -0.26     0.40 1.01      801     1358</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Draws were sampled using sample(hmc). For each parameter, Bulk_ESS</span></span>
+<span><span class="co">#&gt; and Tail_ESS are effective sample size measures, and Rhat is the potential</span></span>
+<span><span class="co">#&gt; scale reduction factor on split chains (at convergence, Rhat = 1).</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b_Trt1"</span>, <span class="st">"b_zBase"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-3-1.png" style="width:100.0%"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">brm</span><span class="op">(</span></span>
+<span>  <span class="va">count</span> <span class="op">~</span> <span class="va">zAge</span> <span class="op">+</span> <span class="va">zBase</span> <span class="op">*</span> <span class="va">Trt</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">patient</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">obs</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">epilepsy</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Start sampling</span></span>
+<span><span class="co">#&gt; Running MCMC with 4 chains, at most 20 in parallel...</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:    1 / 2000 [  0%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  100 / 2000 [  5%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  200 / 2000 [ 10%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  300 / 2000 [ 15%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  400 / 2000 [ 20%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  500 / 2000 [ 25%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  600 / 2000 [ 30%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  700 / 2000 [ 35%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  800 / 2000 [ 40%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration:  900 / 2000 [ 45%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1100 / 2000 [ 55%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1200 / 2000 [ 60%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1300 / 2000 [ 65%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1400 / 2000 [ 70%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1500 / 2000 [ 75%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 3 finished in 19.8 seconds.</span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 finished in 20.2 seconds.</span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1600 / 2000 [ 80%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 4 finished in 20.4 seconds.</span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1700 / 2000 [ 85%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 finished in 24.9 seconds.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span><span class="co">#&gt; Mean chain execution time: 21.3 seconds.</span></span>
+<span><span class="co">#&gt; Total execution time: 25.0 seconds.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  Family: poisson </span></span>
+<span><span class="co">#&gt;   Links: mu = log </span></span>
+<span><span class="co">#&gt; Formula: count ~ zAge + zBase * Trt + (1 | patient) + (1 | obs) </span></span>
+<span><span class="co">#&gt;    Data: epilepsy (Number of observations: 236) </span></span>
+<span><span class="co">#&gt;   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;</span></span>
+<span><span class="co">#&gt;          total post-warmup draws = 4000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Multilevel Hyperparameters:</span></span>
+<span><span class="co">#&gt; ~obs (Number of levels: 236) </span></span>
+<span><span class="co">#&gt;               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
+<span><span class="co">#&gt; sd(Intercept)     0.37      0.04     0.29     0.46 1.00     1464     2305</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ~patient (Number of levels: 59) </span></span>
+<span><span class="co">#&gt;               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
+<span><span class="co">#&gt; sd(Intercept)     0.54      0.08     0.41     0.71 1.00     1148     1699</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Regression Coefficients:</span></span>
+<span><span class="co">#&gt;            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
+<span><span class="co">#&gt; Intercept      1.72      0.12     1.48     1.95 1.00     1268     1715</span></span>
+<span><span class="co">#&gt; zAge           0.10      0.09    -0.07     0.27 1.00     1269     2018</span></span>
+<span><span class="co">#&gt; zBase          0.70      0.12     0.45     0.93 1.01     1341     1663</span></span>
+<span><span class="co">#&gt; Trt1          -0.26      0.16    -0.58     0.06 1.00     1422     1700</span></span>
+<span><span class="co">#&gt; zBase:Trt1     0.06      0.17    -0.27     0.40 1.00     1303     1611</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Draws were sampled using sample(hmc). For each parameter, Bulk_ESS</span></span>
+<span><span class="co">#&gt; and Tail_ESS are effective sample size measures, and Rhat is the potential</span></span>
+<span><span class="co">#&gt; scale reduction factor on split chains (at convergence, Rhat = 1).</span></span>
+<span></span>
+<span><span class="fu">loo</span><span class="op">(</span><span class="va">fit1</span>, <span class="va">fit2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Found 7 observations with a pareto_k &gt; 0.7 in model 'fit1'. We</span></span>
+<span><span class="co">#&gt; recommend to set 'moment_match = TRUE' in order to perform moment matching for</span></span>
+<span><span class="co">#&gt; problematic observations.</span></span>
+<span><span class="co">#&gt; Warning: Found 59 observations with a pareto_k &gt; 0.7 in model 'fit2'. We</span></span>
+<span><span class="co">#&gt; recommend to set 'moment_match = TRUE' in order to perform moment matching for</span></span>
+<span><span class="co">#&gt; problematic observations.</span></span>
+<span><span class="co">#&gt; Output of model 'fit1':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Computed from 4000 by 236 log-likelihood matrix.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;          Estimate   SE</span></span>
+<span><span class="co">#&gt; elpd_loo   -670.0 36.0</span></span>
+<span><span class="co">#&gt; p_loo        92.9 13.9</span></span>
+<span><span class="co">#&gt; looic      1340.0 72.0</span></span>
+<span><span class="co">#&gt; ------</span></span>
+<span><span class="co">#&gt; MCSE of elpd_loo is NA.</span></span>
+<span><span class="co">#&gt; MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 2.3]).</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Pareto k diagnostic values:</span></span>
+<span><span class="co">#&gt;                          Count Pct.    Min. ESS</span></span>
+<span><span class="co">#&gt; (-Inf, 0.7]   (good)     229   97.0%   100     </span></span>
+<span><span class="co">#&gt;    (0.7, 1]   (bad)        6    2.5%   &lt;NA&gt;    </span></span>
+<span><span class="co">#&gt;    (1, Inf)   (very bad)   1    0.4%   &lt;NA&gt;    </span></span>
+<span><span class="co">#&gt; See help('pareto-k-diagnostic') for details.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Output of model 'fit2':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Computed from 4000 by 236 log-likelihood matrix.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;          Estimate   SE</span></span>
+<span><span class="co">#&gt; elpd_loo   -595.8 14.0</span></span>
+<span><span class="co">#&gt; p_loo       108.6  7.2</span></span>
+<span><span class="co">#&gt; looic      1191.6 28.0</span></span>
+<span><span class="co">#&gt; ------</span></span>
+<span><span class="co">#&gt; MCSE of elpd_loo is NA.</span></span>
+<span><span class="co">#&gt; MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 1.7]).</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Pareto k diagnostic values:</span></span>
+<span><span class="co">#&gt;                          Count Pct.    Min. ESS</span></span>
+<span><span class="co">#&gt; (-Inf, 0.7]   (good)     177   75.0%   165     </span></span>
+<span><span class="co">#&gt;    (0.7, 1]   (bad)       50   21.2%   &lt;NA&gt;    </span></span>
+<span><span class="co">#&gt;    (1, Inf)   (very bad)   9    3.8%   &lt;NA&gt;    </span></span>
+<span><span class="co">#&gt; See help('pareto-k-diagnostic') for details.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model comparisons:</span></span>
+<span><span class="co">#&gt;      elpd_diff se_diff</span></span>
+<span><span class="co">#&gt; fit2   0.0       0.0  </span></span>
+<span><span class="co">#&gt; fit1 -74.2      26.5</span></span></code></pre></div>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
@@ -125,7 +498,13 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>
