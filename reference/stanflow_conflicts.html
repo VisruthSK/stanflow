@@ -87,17 +87,15 @@ with these packages.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>There are several conflicts that are deliberately ignored: <code>diag</code>,
-<code>drop</code>, <code>match</code>, and <code>%in%</code> from posterior.</p>
+<code>drop</code>, <code>match</code>, <code>%in%</code>, <code>mad</code>, <code>sd</code>, and
+<code>var</code> from posterior.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">stanflow_conflicts</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ── <span style="font-weight: bold;">Conflicts</span> ─────────────────────────────────────────── stanflow_conflicts() ──</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">posterior</span>::<span style="color: #00BB00;">mad()</span>  masks <span style="color: #0000BB;">stats</span>::mad()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">posterior</span>::<span style="color: #00BB00;">rhat()</span> masks <span style="color: #0000BB;">bayesplot</span>::rhat()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">posterior</span>::<span style="color: #00BB00;">sd()</span>   masks <span style="color: #0000BB;">stats</span>::sd()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">posterior</span>::<span style="color: #00BB00;">var()</span>  masks <span style="color: #0000BB;">stats</span>::var()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Use the conflicted package (<span style="color: #0000BB; font-style: italic;">&lt;http://conflicted.r-lib.org/&gt;</span>) to force all conflicts to become errors</span>
 </code></pre></div>
     </div>

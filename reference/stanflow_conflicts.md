@@ -19,16 +19,13 @@ stanflow_conflicts(only = NULL)
 ## Details
 
 There are several conflicts that are deliberately ignored: `diag`,
-`drop`, `match`, and `%in%` from posterior.
+`drop`, `match`, `%in%`, `mad`, `sd`, and `var` from posterior.
 
 ## Examples
 
 ``` r
 stanflow_conflicts()
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::mad()  masks stats::mad()
 #> ✖ posterior::rhat() masks bayesplot::rhat()
-#> ✖ posterior::sd()   masks stats::sd()
-#> ✖ posterior::var()  masks stats::var()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
