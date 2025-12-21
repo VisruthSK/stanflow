@@ -21,8 +21,7 @@ Suggests:
     cmdstanr,
     rstan,
     rstanarm,
-    testthat (>= 3.0.0),
-    withr
+    testthat (>= 3.0.0)
 Additional_repositories:
     https://community.r-multiverse.org,
     https://mc-stan-org.r-universe.dev

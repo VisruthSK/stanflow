@@ -44,11 +44,15 @@ test_that("is_attached checks the current search path", {
 test_that("wrapped_startup handles NULL and quiet option", {
   expect_null(wrapped_startup(NULL))
 
-  withr::local_options(stanflow.quiet = TRUE)
+  old_quiet <- options("stanflow.quiet")
+  on.exit(options(old_quiet), add = TRUE)
+  options(stanflow.quiet = TRUE)
   expect_null(wrapped_startup("ignored"))
 })
 
 test_that("wrapped_startup emits startup messages when enabled", {
-  withr::local_options(stanflow.quiet = FALSE)
+  old_quiet <- options("stanflow.quiet")
+  on.exit(options(old_quiet), add = TRUE)
+  options(stanflow.quiet = FALSE)
   expect_message(wrapped_startup("hello from stanflow"), "hello from stanflow")
 })
