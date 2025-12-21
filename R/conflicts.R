@@ -7,7 +7,8 @@
 #' and other loaded packages.
 #'
 #' There are several conflicts that are deliberately ignored: \code{diag},
-#' \code{drop}, \code{match}, and \code{\%in\%} from posterior.
+#' \code{drop}, \code{match}, \code{\%in\%}, \code{mad}, \code{sd}, and
+#' \code{var} from posterior.
 #'
 #' @export
 #' @param only Set this to a character vector to restrict to conflicts only
@@ -112,7 +113,7 @@ ls_env <- function(env) {
   x <- ls(pos = env)
 
   if (env == "package:posterior") {
-    x <- setdiff(x, c("diag", "drop", "match", "%in%"))
+    x <- setdiff(x, c("diag", "drop", "match", "%in%", "mad", "sd", "var"))
   }
   # if (env == "package:bayesplot") {
   #   x <- setdiff(x, "rhat")

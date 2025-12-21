@@ -39,12 +39,13 @@ setup_interface(
   force = FALSE,
   skip_setup = FALSE
 )
+set.seed(0)
+flow_check()
 ```
 
-With these two commands (with the `setup_interface()` call being unnecessarily verbose), users have access to everything they need to fit and interrogate Bayesian models. Specifically, those two commands will load the core stanflow packages: `bayesplot`, `loo`, `posterior`, `projpred` and `shinystan`, as well as setup `brms` to use the `cmdstanr` backend with as many cores as are available on your machine. These package (inlcuding `brms` and `cmdstanr`) are all "`library()`d" as well, so we can proceed with our analysis immediately.
+With the first two commands (note that the `setup_interface()` call is unnecessarily verbose), users have access to everything they need to fit and interrogate Bayesian models. Specifically, those two commands will load the core stanflow packages: `bayesplot`, `loo`, `posterior`, `projpred` and `shinystan`, as well as setup `brms` to use the `cmdstanr` backend with as many cores as are available on your machine. These package (inlcuding `brms` and `cmdstanr`) are all "`library()`d" as well, so we can proceed with our analysis immediately.
 
 ```{r}
-set.seed(1234)
 cmdstanr_example()
 
 fit1 <- brm(

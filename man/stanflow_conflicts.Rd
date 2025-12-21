@@ -16,7 +16,8 @@ and other loaded packages.
 }
 \details{
 There are several conflicts that are deliberately ignored: \code{diag},
-\code{drop}, \code{match}, and \code{\%in\%} from posterior.
+\code{drop}, \code{match}, \code{\%in\%}, \code{mad}, \code{sd}, and
+\code{var} from posterior.
 }
 \examples{
 stanflow_conflicts()
