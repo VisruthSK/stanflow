@@ -93,21 +93,12 @@
 </h1></div>
 <!-- badges: start -->
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>          █████                            ██████  ████                          </span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>         ░░███                            ███░░███░░███                          </span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  █████  ███████    ██████   ████████    ░███ ░░░  ░███   ██████  █████ ███ █████</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a> ███░░  ░░░███░    ░░░░░███ ░░███░░███  ███████    ░███  ███░░███░░███ ░███░░███ </span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>░░█████   ░███      ███████  ░███ ░███ ░░░███░     ░███ ░███ ░███ ░███ ░███ ░███ </span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a> ░░░░███  ░███ ███ ███░░███  ░███ ░███   ░███      ░███ ░███ ░███ ░░███████████  </span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a> ██████   ░░█████ ░░████████ ████ █████  █████     █████░░██████   ░░████░████   </span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>░░░░░░     ░░░░░   ░░░░░░░░ ░░░░ ░░░░░  ░░░░░     ░░░░░  ░░░░░░     ░░░░ ░░░░    </span></code></pre></div>
-<p><code>stanflow</code> offers an integrated, mildly opinionated access to a Stan-based <a href="https://arxiv.org/abs/2011.01808" class="external-link">Bayesian Workflow</a> (Gelman et al. 2020). Much like the famous <a href="https://github.com/tidyverse/tidyverse" class="external-link">tidyverse package</a>, <code>stanflow</code> is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling.</p>
-<p><code>stanflow</code> draws heavy inspiration from the <code>tidyverse</code>, and reuses portions of its codebase–however, <code>stanflow</code> eschews <code>tidyverse</code> packages (i.e., <code>purrr</code>, <code>dplyr</code>, etc.) for base R implementations.</p>
+<p><code>stanflow</code> offers an integrated, mildly opinionated access to a Stan-based <a href="https://arxiv.org/abs/2011.01808" class="external-link">Bayesian Workflow</a> (Gelman et al. 2020). Much like the famous <a href="https://github.com/tidyverse/tidyverse" class="external-link">tidyverse package</a>, <code>stanflow</code> is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling. <code>stanflow</code> draws heavy inspiration from <code>tidyverse</code>, and reuses portions of its codebase–however, <code>stanflow</code> eschews <code>tidyverse</code> packages (i.e., <code>purrr</code>, <code>dplyr</code>, etc.) for base R whenever necessary.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the development version of stanflow from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"VisruthSK/stanflow"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -115,7 +106,7 @@
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>Here, we load <code>stanflow</code> and decide to use <code>cmdstanr</code> as the backend for <code>brms</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://visruthsk.github.io/stanflow/">stanflow</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="st">"brms"</span>,</span>
@@ -131,11 +122,11 @@
 <span><span class="co">#&gt; ℹ Attaching cmdstanr...</span></span>
 <span><span class="co">#&gt; The C++ toolchain required for CmdStan is setup properly!</span></span>
 <span><span class="co">#&gt; ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'</span></span>
-<span><span class="co">#&gt; ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.</span></span></code></pre></div>
 <p>With these two commands (with the <code><a href="reference/setup_interface.html">setup_interface()</a></code> call being unnecessarily verbose), users have access to everything they need to fit and interrogate Bayesian models. Specifically, those two commands will load the core stanflow packages: <code>bayesplot</code>, <code>loo</code>, <code>posterior</code>, <code>projpred</code> and <code>shinystan</code>, as well as setup <code>brms</code> to use the <code>cmdstanr</code> backend with as many cores as are available on your machine. These package (inlcuding <code>brms</code> and <code>cmdstanr</code>) are all “<code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code>d” as well, so we can proceed with our analysis immediately.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">cmdstanr_example</span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
+<span><span class="fu">cmdstanr_example</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    variable   mean median   sd  mad     q5    q95 rhat ess_bulk ess_tail</span></span>
 <span><span class="co">#&gt;  lp__       -66.02 -65.68 1.50 1.27 -68.96 -64.31 1.00     1723     2491</span></span>
 <span><span class="co">#&gt;  alpha        0.38   0.38 0.22 0.22   0.02   0.74 1.00     4248     2403</span></span>
@@ -157,8 +148,17 @@
 <span>  silent <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  refresh <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Compiling Stan program...</span></span>
 <span><span class="co">#&gt; Start sampling</span></span>
+<span><span class="co">#&gt; Running MCMC with 4 chains, at most 20 in parallel...</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chain 1 finished in 18.5 seconds.</span></span>
+<span><span class="co">#&gt; Chain 4 finished in 19.0 seconds.</span></span>
+<span><span class="co">#&gt; Chain 3 finished in 19.1 seconds.</span></span>
+<span><span class="co">#&gt; Chain 2 finished in 19.2 seconds.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span><span class="co">#&gt; Mean chain execution time: 18.9 seconds.</span></span>
+<span><span class="co">#&gt; Total execution time: 19.3 seconds.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Family: poisson </span></span>
 <span><span class="co">#&gt;   Links: mu = log </span></span>
@@ -170,23 +170,23 @@
 <span><span class="co">#&gt; Multilevel Hyperparameters:</span></span>
 <span><span class="co">#&gt; ~patient (Number of levels: 59) </span></span>
 <span><span class="co">#&gt;               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
-<span><span class="co">#&gt; sd(Intercept)     0.58      0.07     0.47     0.73 1.00      763     1532</span></span>
+<span><span class="co">#&gt; sd(Intercept)     0.59      0.07     0.47     0.75 1.00      807     1782</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Regression Coefficients:</span></span>
 <span><span class="co">#&gt;            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
-<span><span class="co">#&gt; Intercept      1.77      0.12     1.52     2.00 1.00      522     1071</span></span>
-<span><span class="co">#&gt; zAge           0.09      0.09    -0.07     0.27 1.00      767     1503</span></span>
-<span><span class="co">#&gt; zBase          0.71      0.12     0.47     0.93 1.00      703     1272</span></span>
-<span><span class="co">#&gt; Trt1          -0.27      0.16    -0.59     0.06 1.00      639     1253</span></span>
-<span><span class="co">#&gt; zBase:Trt1     0.05      0.16    -0.26     0.37 1.00      811     1721</span></span>
+<span><span class="co">#&gt; Intercept      1.77      0.12     1.52     2.00 1.01      653     1224</span></span>
+<span><span class="co">#&gt; zAge           0.09      0.09    -0.08     0.27 1.01      746     1180</span></span>
+<span><span class="co">#&gt; zBase          0.70      0.12     0.47     0.94 1.00      828     1465</span></span>
+<span><span class="co">#&gt; Trt1          -0.26      0.17    -0.59     0.06 1.00      674     1165</span></span>
+<span><span class="co">#&gt; zBase:Trt1     0.06      0.16    -0.26     0.38 1.00      935     1570</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS</span></span>
+<span><span class="co">#&gt; Draws were sampled using sample(hmc). For each parameter, Bulk_ESS</span></span>
 <span><span class="co">#&gt; and Tail_ESS are effective sample size measures, and Rhat is the potential</span></span>
 <span><span class="co">#&gt; scale reduction factor on split chains (at convergence, Rhat = 1).</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b_Trt1"</span>, <span class="st">"b_zBase"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-3-1.png" style="width:100.0%"></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-2-1.png" style="width:100.0%"></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">brm</span><span class="op">(</span></span>
 <span>  <span class="va">count</span> <span class="op">~</span> <span class="va">zAge</span> <span class="op">+</span> <span class="va">zBase</span> <span class="op">*</span> <span class="va">Trt</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">patient</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">obs</span><span class="op">)</span>,</span>
@@ -195,8 +195,17 @@
 <span>  silent <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  refresh <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Compiling Stan program...</span></span>
 <span><span class="co">#&gt; Start sampling</span></span>
+<span><span class="co">#&gt; Running MCMC with 4 chains, at most 20 in parallel...</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chain 1 finished in 18.3 seconds.</span></span>
+<span><span class="co">#&gt; Chain 4 finished in 18.3 seconds.</span></span>
+<span><span class="co">#&gt; Chain 3 finished in 19.0 seconds.</span></span>
+<span><span class="co">#&gt; Chain 2 finished in 20.7 seconds.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span><span class="co">#&gt; Mean chain execution time: 19.1 seconds.</span></span>
+<span><span class="co">#&gt; Total execution time: 20.8 seconds.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Family: poisson </span></span>
 <span><span class="co">#&gt;   Links: mu = log </span></span>
@@ -208,29 +217,29 @@
 <span><span class="co">#&gt; Multilevel Hyperparameters:</span></span>
 <span><span class="co">#&gt; ~obs (Number of levels: 236) </span></span>
 <span><span class="co">#&gt;               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
-<span><span class="co">#&gt; sd(Intercept)     0.37      0.04     0.29     0.46 1.00     1244     1988</span></span>
+<span><span class="co">#&gt; sd(Intercept)     0.37      0.04     0.29     0.46 1.01     1155     1688</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ~patient (Number of levels: 59) </span></span>
 <span><span class="co">#&gt;               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
-<span><span class="co">#&gt; sd(Intercept)     0.54      0.08     0.41     0.71 1.00     1034     1887</span></span>
+<span><span class="co">#&gt; sd(Intercept)     0.54      0.07     0.42     0.71 1.00     1180     2138</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Regression Coefficients:</span></span>
 <span><span class="co">#&gt;            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
-<span><span class="co">#&gt; Intercept      1.72      0.12     1.48     1.96 1.00      977     1542</span></span>
-<span><span class="co">#&gt; zAge           0.09      0.09    -0.08     0.26 1.00      972     1738</span></span>
-<span><span class="co">#&gt; zBase          0.70      0.12     0.47     0.93 1.01      991     1542</span></span>
-<span><span class="co">#&gt; Trt1          -0.26      0.17    -0.60     0.06 1.00     1098     1550</span></span>
-<span><span class="co">#&gt; zBase:Trt1     0.06      0.16    -0.26     0.39 1.01     1032     1705</span></span>
+<span><span class="co">#&gt; Intercept      1.72      0.12     1.49     1.97 1.00      961     1666</span></span>
+<span><span class="co">#&gt; zAge           0.09      0.09    -0.08     0.26 1.00     1137     1859</span></span>
+<span><span class="co">#&gt; zBase          0.71      0.12     0.46     0.94 1.00     1011     1473</span></span>
+<span><span class="co">#&gt; Trt1          -0.26      0.17    -0.59     0.06 1.01      951     1400</span></span>
+<span><span class="co">#&gt; zBase:Trt1     0.05      0.17    -0.27     0.39 1.00     1127     1621</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS</span></span>
+<span><span class="co">#&gt; Draws were sampled using sample(hmc). For each parameter, Bulk_ESS</span></span>
 <span><span class="co">#&gt; and Tail_ESS are effective sample size measures, and Rhat is the potential</span></span>
 <span><span class="co">#&gt; scale reduction factor on split chains (at convergence, Rhat = 1).</span></span>
 <span></span>
 <span><span class="fu">loo</span><span class="op">(</span><span class="va">fit1</span>, <span class="va">fit2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Found 9 observations with a pareto_k &gt; 0.7 in model 'fit1'. We</span></span>
+<span><span class="co">#&gt; Warning: Found 7 observations with a pareto_k &gt; 0.7 in model 'fit1'. We</span></span>
 <span><span class="co">#&gt; recommend to set 'moment_match = TRUE' in order to perform moment matching for</span></span>
 <span><span class="co">#&gt; problematic observations.</span></span>
-<span><span class="co">#&gt; Warning: Found 61 observations with a pareto_k &gt; 0.7 in model 'fit2'. We</span></span>
+<span><span class="co">#&gt; Warning: Found 57 observations with a pareto_k &gt; 0.7 in model 'fit2'. We</span></span>
 <span><span class="co">#&gt; recommend to set 'moment_match = TRUE' in order to perform moment matching for</span></span>
 <span><span class="co">#&gt; problematic observations.</span></span>
 <span><span class="co">#&gt; Output of model 'fit1':</span></span>
@@ -238,17 +247,17 @@
 <span><span class="co">#&gt; Computed from 4000 by 236 log-likelihood matrix.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;          Estimate   SE</span></span>
-<span><span class="co">#&gt; elpd_loo   -672.5 37.2</span></span>
-<span><span class="co">#&gt; p_loo        94.9 14.8</span></span>
-<span><span class="co">#&gt; looic      1345.0 74.3</span></span>
+<span><span class="co">#&gt; elpd_loo   -672.0 37.4</span></span>
+<span><span class="co">#&gt; p_loo        94.6 15.0</span></span>
+<span><span class="co">#&gt; looic      1344.1 74.7</span></span>
 <span><span class="co">#&gt; ------</span></span>
 <span><span class="co">#&gt; MCSE of elpd_loo is NA.</span></span>
-<span><span class="co">#&gt; MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 2.4]).</span></span>
+<span><span class="co">#&gt; MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 2.1]).</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Pareto k diagnostic values:</span></span>
 <span><span class="co">#&gt;                          Count Pct.    Min. ESS</span></span>
-<span><span class="co">#&gt; (-Inf, 0.7]   (good)     227   96.2%   196     </span></span>
-<span><span class="co">#&gt;    (0.7, 1]   (bad)        8    3.4%   &lt;NA&gt;    </span></span>
+<span><span class="co">#&gt; (-Inf, 0.7]   (good)     229   97.0%   135     </span></span>
+<span><span class="co">#&gt;    (0.7, 1]   (bad)        6    2.5%   &lt;NA&gt;    </span></span>
 <span><span class="co">#&gt;    (1, Inf)   (very bad)   1    0.4%   &lt;NA&gt;    </span></span>
 <span><span class="co">#&gt; See help('pareto-k-diagnostic') for details.</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -257,24 +266,24 @@
 <span><span class="co">#&gt; Computed from 4000 by 236 log-likelihood matrix.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;          Estimate   SE</span></span>
-<span><span class="co">#&gt; elpd_loo   -595.4 14.1</span></span>
-<span><span class="co">#&gt; p_loo       108.2  7.4</span></span>
-<span><span class="co">#&gt; looic      1190.9 28.2</span></span>
+<span><span class="co">#&gt; elpd_loo   -595.1 14.0</span></span>
+<span><span class="co">#&gt; p_loo       107.9  7.2</span></span>
+<span><span class="co">#&gt; looic      1190.2 28.0</span></span>
 <span><span class="co">#&gt; ------</span></span>
 <span><span class="co">#&gt; MCSE of elpd_loo is NA.</span></span>
 <span><span class="co">#&gt; MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 1.6]).</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Pareto k diagnostic values:</span></span>
 <span><span class="co">#&gt;                          Count Pct.    Min. ESS</span></span>
-<span><span class="co">#&gt; (-Inf, 0.7]   (good)     175   74.2%   168     </span></span>
-<span><span class="co">#&gt;    (0.7, 1]   (bad)       53   22.5%   &lt;NA&gt;    </span></span>
-<span><span class="co">#&gt;    (1, Inf)   (very bad)   8    3.4%   &lt;NA&gt;    </span></span>
+<span><span class="co">#&gt; (-Inf, 0.7]   (good)     179   75.8%   151     </span></span>
+<span><span class="co">#&gt;    (0.7, 1]   (bad)       52   22.0%   &lt;NA&gt;    </span></span>
+<span><span class="co">#&gt;    (1, Inf)   (very bad)   5    2.1%   &lt;NA&gt;    </span></span>
 <span><span class="co">#&gt; See help('pareto-k-diagnostic') for details.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model comparisons:</span></span>
 <span><span class="co">#&gt;      elpd_diff se_diff</span></span>
 <span><span class="co">#&gt; fit2   0.0       0.0  </span></span>
-<span><span class="co">#&gt; fit1 -77.1      27.9</span></span></code></pre></div>
+<span><span class="co">#&gt; fit1 -77.0      28.1</span></span></code></pre></div>
 <p>Code snippets above are taken from the <a href="https://paulbuerkner.com/brms/" class="external-link"><code>brms</code> README</a> but aren’t directly comparable.</p>
 </div>
 </div>
