@@ -11,6 +11,11 @@ knitr:
 cache: true
 ---
 
+```{r}
+#| include: false
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+```
+
 `stanflow` is a lightweight metapackage that sets up a Stan-based Bayesian workflow. It attaches a core toolkit for model analysis (`posterior`, `loo`, `projpred`, `bayesplot`, `shinystan`) and helps you install/configure Stan interfaces (`cmdstanr`, `rstan`, `brms`, `rstanarm`).
 
 ## Attach `stanflow`
