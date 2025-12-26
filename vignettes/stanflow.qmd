@@ -40,7 +40,8 @@ Use `setup_interface()` to install (if needed), attach, and configure interfaces
 setup_interface(
   interface = "brms",
   prefer_cmdstanr = TRUE,
-  quiet = TRUE
+  quiet = TRUE,
+  force = TRUE # only required for non-interactive usage
 )
 flow_check()
 ```
