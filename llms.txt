@@ -265,3 +265,9 @@ README](https://paulbuerkner.com/brms/) but aren’t directly comparable.
 - [`stanflow_update()`](https://visruthsk.github.io/stanflow/reference/stanflow_update.md)
   : Update stanflow packages
 
+# Articles
+
+### All vignettes
+
+- [stanflow: quick
+  tour](https://visruthsk.github.io/stanflow/articles/stanflow.md):

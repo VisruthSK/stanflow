@@ -18,4 +18,5 @@ stanflow_update(recursive = FALSE, dev = FALSE)
 
   If `FALSE` (default), checks for updates in the R-multiverse or CRAN
   (stable releases). If `TRUE`, checks the Stan R-universe (dev
-  versions).
+  versions). This is only cogent for Stan packages, and cannot compare
+  two dev versions.
