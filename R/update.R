@@ -5,7 +5,8 @@
 #'
 #' @param recursive If `TRUE`, will also list all dependencies.
 #' @param dev If `FALSE` (default), checks for updates in the R-multiverse or CRAN
-#'   (stable releases). If `TRUE`, checks the Stan R-universe (dev versions).
+#'   (stable releases). If `TRUE`, checks the Stan R-universe (dev versions). This is
+#'   only cogent for Stan packages, and cannot compare two dev versions.
 #' @export
 stanflow_deps <- function(recursive = FALSE, dev = FALSE) {
   pkgs <- utils::available.packages(repos = stan_repos(dev))
@@ -13,9 +14,29 @@ stanflow_deps <- function(recursive = FALSE, dev = FALSE) {
     "stanflow",
     pkgs,
     recursive = recursive
-  ) |>
+  )
+
+  if (
+    length(pkg_deps) == 0 ||
+      all(lengths(pkg_deps) == 0) ||
+      all(is.na(pkg_deps))
+  ) {
+    # TODO: Remove once stanflow is published to a repo used by available.packages()
+    pkg_deps <- utils::packageDescription("stanflow") |>
+      with(paste(Depends, Imports, Suggests, sep = ",")) |>
+      strsplit(",") |>
+      unlist(use.names = FALSE) |>
+      gsub("\\s*\\(.*?\\)", "", x = _) |>
+      trimws() |>
+      Filter(function(x) x != "" && x != "R", x = _) |>
+      tools::package_dependencies(
+        pkgs,
+        recursive = recursive
+      )
+  }
+
+  pkg_deps <- pkg_deps |>
     unlist() |>
-    sort() |>
     unique()
 
   ignored <- c(
