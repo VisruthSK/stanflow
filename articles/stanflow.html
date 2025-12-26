@@ -135,18 +135,22 @@
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flow_check.html">flow_check</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0         ✔ projpred  2.10.0    </span></span>
-<span><span class="co">#&gt; ✔ loo       2.8.0.9000     ✔ shinystan 2.7.0     </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1          </span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
+<span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
-<span><span class="co">#&gt; • brms     2.22.0          • rstan    2.36.0.9000</span></span>
-<span><span class="co">#&gt; • cmdstanr 0.9.0.9000      ✖ rstanarm            </span></span>
+<span><span class="co">#&gt; ✔ brms     2.23.0     • rstan    2.32.7</span></span>
+<span><span class="co">#&gt; ✔ cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ brms::ar()      masks stats::ar()</span></span>
+<span><span class="co">#&gt; ✖ brms::do_call() masks projpred::do_call()</span></span>
+<span><span class="co">#&gt; ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
 <span><span class="fu"><a href="../reference/stanflow_conflicts.html">stanflow_conflicts</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ brms::ar()      masks stats::ar()</span></span>
+<span><span class="co">#&gt; ✖ brms::do_call() masks projpred::do_call()</span></span>
+<span><span class="co">#&gt; ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="choose-interface-backends">Choose interface backends<a class="anchor" aria-label="anchor" href="#choose-interface-backends"></a>
@@ -157,16 +161,62 @@
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="st">"brms"</span>,</span>
 <span>  prefer_cmdstanr <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  force <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># only required for non-interactive usage</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; * Latest CmdStan release is v2.37.0</span></span>
+<span><span class="co">#&gt; * Installing CmdStan v2.37.0 in /home/runner/.cmdstan/cmdstan-2.37.0</span></span>
+<span><span class="co">#&gt; * Downloading cmdstan-2.37.0.tar.gz from GitHub...</span></span>
+<span><span class="co">#&gt; * Download complete</span></span>
+<span><span class="co">#&gt; * Unpacking archive...</span></span>
+<span><span class="co">#&gt; * Building CmdStan binaries...</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a</span></span>
+<span><span class="co">#&gt; /home/runner/.cmdstan/cmdstan-2.37.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.11.0</span></span>
+<span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;   347 |         : public std::iterator&lt;std::forward_iterator_tag,Value&gt;</span></span>
+<span><span class="co">#&gt;       |                       ^~~~~~~~</span></span>
+<span><span class="co">#&gt; In file included from /usr/include/c++/13/bits/stl_construct.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/bits/stl_tempbuf.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/memory:66,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/tbb_stddef.h:452,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/concurrent_hash_map.h:23:</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
+<span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:22:</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:749:21: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;   749 |         public std::iterator&lt;std::forward_iterator_tag,Value&gt; {</span></span>
+<span><span class="co">#&gt;       |                     ^~~~~~~~</span></span>
+<span><span class="co">#&gt; In file included from /usr/include/c++/13/bits/stl_construct.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/bits/stl_tempbuf.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/memory:66,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/tbb_stddef.h:452,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:17:</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:1013:21: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;  1013 |         public std::iterator&lt;std::forward_iterator_tag,Value&gt; {</span></span>
+<span><span class="co">#&gt;       |                     ^~~~~~~~</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
+<span><span class="co">#&gt; * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.37.0</span></span>
+<span><span class="co">#&gt; CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.37.0</span></span>
 <span><span class="fu"><a href="../reference/flow_check.html">flow_check</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0         ✔ projpred  2.10.0    </span></span>
-<span><span class="co">#&gt; ✔ loo       2.8.0.9000     ✔ shinystan 2.7.0     </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1          </span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
+<span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
-<span><span class="co">#&gt; ✔ brms     2.22.0          • rstan    2.36.0.9000</span></span>
-<span><span class="co">#&gt; ✔ cmdstanr 0.9.0.9000      ✖ rstanarm            </span></span>
+<span><span class="co">#&gt; ✔ brms     2.23.0     • rstan    2.32.7</span></span>
+<span><span class="co">#&gt; ✔ cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
 <span><span class="co">#&gt; ✖ brms::ar()      masks stats::ar()</span></span>
 <span><span class="co">#&gt; ✖ brms::do_call() masks projpred::do_call()</span></span>
@@ -199,7 +249,7 @@
 <span><span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</span></span></code></pre></div>
 <div class="cell-output-display">
 <div>
-<figure><p><img src="stanflow_files/figure-html/unnamed-chunk-5-1.png" width="672"></p>
+<figure><p><img src="stanflow_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
 </figure>
 </div>
 </div>
@@ -227,24 +277,13 @@
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/stanflow_update.html">stanflow_update</a></span><span class="op">(</span>recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: unable to access index for repository https://community.r-multiverse.org,/src/contrib:</span></span>
-<span><span class="co">#&gt;   cannot open URL 'https://community.r-multiverse.org,/src/contrib/PACKAGES'</span></span>
 <span><span class="co">#&gt; The following packages are out of date:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; • posterior   (1.6.1 -&gt; 1.6.1.9000)</span></span>
-<span><span class="co">#&gt; • cpp11       (0 -&gt; 0.5.2)</span></span>
-<span><span class="co">#&gt; • rstantools  (2.5.0 -&gt; 2.5.0.9000)</span></span>
-<span><span class="co">#&gt; • loo         (2.9.0 -&gt; 2.9.0.9000)</span></span>
-<span><span class="co">#&gt; • mgcv        (1.9.3 -&gt; 1.9-4)</span></span>
-<span><span class="co">#&gt; • bayesplot   (1.15.0 -&gt; 1.15.0.9000)</span></span>
-<span><span class="co">#&gt; • rstan       (2.32.7 -&gt; 2.36.0.9000)</span></span>
-<span><span class="co">#&gt; • StanHeaders (2.32.10 -&gt; 2.36.0.9000)</span></span>
-<span><span class="co">#&gt; • shinystan   (2.7.0 -&gt; 2.7.0.9000)</span></span>
-<span><span class="co">#&gt; • splines2    (0 -&gt; 0.5.4)</span></span>
+<span><span class="co">#&gt; • cpp11 (0 -&gt; 0.5.2)</span></span>
+<span><span class="co">#&gt; • mgcv  (1.9.3 -&gt; 1.9-4)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Start a clean R session then run:</span></span>
-<span><span class="co">#&gt; install.packages(c("posterior", "cpp11", "rstantools", "loo", "mgcv", "bayesplot", </span></span>
-<span><span class="co">#&gt; "rstan", "StanHeaders", "shinystan", "splines2"), repos = c("https://community.r-multiverse.org", getOption("repos")))</span></span></code></pre></div>
+<span><span class="co">#&gt; install.packages(c("cpp11", "mgcv"), repos = c("https://community.r-multiverse.org", getOption("repos")))</span></span></code></pre></div>
 </div>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
