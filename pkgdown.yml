@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   stanflow: stanflow.html
-last_built: 2025-12-26T04:35Z
+last_built: 2025-12-26T05:14Z
 urls:
   reference: https://visruthsk.github.io/stanflow/reference
   article: https://visruthsk.github.io/stanflow/articles
