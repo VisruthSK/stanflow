@@ -10,3 +10,5 @@
 ^codecov\.yml$
 ^README\.qmd$
 ^README_cache$
+^vignettes/\.quarto$
+^vignettes/*_files$

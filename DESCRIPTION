@@ -27,9 +27,12 @@ Imports:
 Suggests:
     brms,
     cmdstanr,
+    knitr,
+    quarto,
     rstan,
     rstanarm,
     testthat (>= 3.0.0)
+VignetteBuilder: quarto
 Additional_repositories:
     https://community.r-multiverse.org,
     https://mc-stan-org.r-universe.dev

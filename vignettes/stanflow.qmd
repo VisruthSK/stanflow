@@ -1,0 +1,75 @@
+---
+title: "stanflow: quick tour"
+vignette: >
+  %\VignetteIndexEntry{test}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+cache: true
+---
+
+`stanflow` is a lightweight metapackage that sets up a Stan-based Bayesian workflow. It attaches a core toolkit for model analysis (`posterior`, `loo`, `projpred`, `bayesplot`, `shinystan`) and helps you install/configure Stan interfaces (`cmdstanr`, `rstan`, `brms`, `rstanarm`).
+
+## Attach `stanflow`
+
+```{r}
+library(stanflow)
+stan_logo()
+```
+
+Startup messages list attached packages and any namespace clashes. You can re-print that status later with `flow_check()`, or just the namespace conflicts with `stanflow_conflicts()`.
+
+```{r}
+flow_check()
+stanflow_conflicts()
+```
+
+## Choose interface backends
+
+Use `setup_interface()` to install (if needed), attach, and configure interfaces. This example prefers the `cmdstanr` backend for `brms`. Running this command will attach both packages and ensure that `brms` calls rely on `cmdstanr` by default.
+
+```{r}
+setup_interface(
+  interface = "brms",
+  prefer_cmdstanr = TRUE,
+  quiet = TRUE
+)
+flow_check()
+```
+
+If you prefer `RStan`, you could just load it alongside `brms`.
+
+```{r}
+#| eval: false
+setup_interface(
+  interface = c("rstan", "brms"),
+  quiet = TRUE
+)
+```
+
+## A tiny workflow
+
+With the core packages attached, you can generate, summarise, and visualise draws immediately. Here we create fake draws, compute a simple `loo` object, and plot a quick histogram with `bayesplot`.
+
+```{r}
+set.seed(0)
+draws <- as_draws_df(
+  matrix(rnorm(4000), ncol = 1, dimnames = list(NULL, "theta"))
+)
+summarise_draws(draws, mean, sd, rhat, ess_bulk)
+mcmc_hist(draws, pars = "theta")
+
+log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
+loo(log_lik)
+```
+
+## Keep the toolkit fresh
+
+Check whether your Stan workflow packages are up to date (stable releases by default, or dev builds with `dev = TRUE`). Set `recursive` to check the full dependency closure.
+
+```{r}
+stanflow_update(recursive = TRUE)
+```
