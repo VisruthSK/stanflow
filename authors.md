@@ -13,14 +13,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/VisruthSK/stanflow/blob/main/DESCRIPTION)
 
-Srimath Kandali V (2025). *stanflow: An integrated Stan-based Bayesian
+Srimath Kandali V (2026). *stanflow: An integrated Stan-based Bayesian
 Workflow*. R package version 0.0.0.9000,
 <https://visruthsk.github.io/stanflow/>.
 
     @Manual{,
       title = {stanflow: An integrated Stan-based Bayesian Workflow},
       author = {Visruth {Srimath Kandali}},
-      year = {2025},
+      year = {2026},
       note = {R package version 0.0.0.9000},
       url = {https://visruthsk.github.io/stanflow/},
     }
