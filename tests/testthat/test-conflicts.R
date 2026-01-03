@@ -26,6 +26,18 @@ test_that("confirm_conflict ignores identical implementations", {
   expect_null(confirm_conflict(c(env_a, env_b), "conflicted_fun"))
 })
 
+test_that("confirm_conflict ignores non-function definitions", {
+  env_a <- "package:stanflow_conflict_nonfun_a"
+  env_b <- "package:stanflow_conflict_nonfun_b"
+
+  attach(list(conflicted_fun = function() "ok"), name = env_a)
+  attach(list(conflicted_fun = 1), name = env_b)
+  on.exit(detach(env_b, character.only = TRUE), add = TRUE)
+  on.exit(detach(env_a, character.only = TRUE), add = TRUE)
+
+  expect_null(confirm_conflict(c(env_a, env_b), "conflicted_fun"))
+})
+
 test_that("stanflow_conflict_message renders deterministic output", {
   testthat::local_reproducible_output(width = 60)
   conflicts <- structure(

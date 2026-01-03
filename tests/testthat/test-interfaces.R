@@ -652,6 +652,74 @@ test_that("planned_setup_call returns setup command per interface", {
   )
 })
 
+test_that("planned_install_steps reports abort for reinstall in non-interactive", {
+  plan <- planned_install_steps(
+    pkg = "cmdstanr",
+    dev = FALSE,
+    force = FALSE,
+    reinstall = TRUE,
+    pkg_installed = TRUE
+  )
+
+  expect_equal(plan$action, "would_abort")
+  expect_true(any(grepl_fixed("Reinstall of", plan$planned)))
+})
+
+test_that("setup_interface dry_run logs install message when force = TRUE", {
+  testthat::local_reproducible_output(width = 80)
+  local_mocked_bindings(
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+
+  expect_snapshot_output(
+    setup_interface(
+      interface = "cmdstanr",
+      configure = FALSE,
+      dry_run = TRUE,
+      force = TRUE,
+      quiet = FALSE
+    )
+  )
+})
+
+test_that("setup_interface dry_run logs install and attach steps when verbose", {
+  testthat::local_reproducible_output(width = 80)
+  local_mocked_bindings(
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+
+  expect_snapshot_output(
+    setup_interface(
+      interface = "cmdstanr",
+      configure = FALSE,
+      dry_run = TRUE,
+      force = FALSE,
+      quiet = FALSE
+    )
+  )
+})
+
+test_that("setup_rstan reports message when quiet = FALSE", {
+  testthat::local_reproducible_output(width = 80)
+  expect_snapshot_output(setup_rstan(quiet = FALSE, dry_run = TRUE))
+})
+
+test_that("setup_brms reports message when quiet = FALSE", {
+  testthat::local_reproducible_output(width = 80)
+  expect_snapshot_output(
+    setup_brms(quiet = FALSE, prefer_cmdstanr = TRUE, dry_run = TRUE)
+  )
+})
+
+test_that("setup_rstanarm reports message when quiet = FALSE", {
+  testthat::local_reproducible_output(width = 80)
+  expect_snapshot_output(
+    setup_rstanarm(quiet = FALSE, prefer_cmdstanr = TRUE, dry_run = TRUE)
+  )
+})
+
 test_that("setup_cmdstanr dry_run reports toolchain failure", {
   skip_if_not_installed("cmdstanr")
   local_mocked_bindings(

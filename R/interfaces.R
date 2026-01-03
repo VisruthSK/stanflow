@@ -13,8 +13,8 @@ planned_install_steps <- function(pkg, dev, force, reinstall, pkg_installed) {
   }
   action <- if (!interactive() && !force) {
     "would_abort"
-  } else if (interactive() && !force) {
-    "would_prompt"
+  } else if (interactive() && !force) { # nocov
+    "would_prompt" # nocov
   } else if (pkg_installed) {
     "would_reinstall"
   } else {
@@ -32,7 +32,7 @@ planned_install_steps <- function(pkg, dev, force, reinstall, pkg_installed) {
       sprintf("cli::cli_abort(%s)", deparse(abort_main))
     )
   } else {
-    if (action == "would_prompt") {
+    if (action == "would_prompt") { # nocov start
       planned <- add_planned(
         planned,
         sprintf(
@@ -40,7 +40,7 @@ planned_install_steps <- function(pkg, dev, force, reinstall, pkg_installed) {
           install_title
         )
       )
-    }
+    } # nocov end
     planned <- add_planned(
       planned,
       sprintf(
@@ -179,10 +179,10 @@ setup_interface <- function(
       planned_commands <- add_planned(planned_commands, plan$planned)
 
       if (!quiet) {
-        if (action == "would_prompt") {
-          cli::cli_alert_info(
-            "Dry run: would prompt to install {.pkg {pkg}}."
-          )
+        if (action == "would_prompt") { # nocov
+          cli::cli_alert_info( # nocov
+            "Dry run: would prompt to install {.pkg {pkg}}." # nocov
+          ) # nocov
         } else if (action == "would_abort") {
           cli::cli_alert_warning(
             "Dry run: would abort installing {.pkg {pkg}} (non-interactive and {.code force = FALSE})."

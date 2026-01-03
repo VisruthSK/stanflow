@@ -3,6 +3,21 @@
 # See LICENSE.note for details.
 find_unloaded <- function(pkgs) pkgs[!paste0("package:", pkgs) %in% search()]
 
+# Attach the package from the same package library it was loaded from before.
+# https://github.com/tidyverse/tidyverse/issues/171
+# nocov start
+same_library <- function(pkg) {
+  library(
+    pkg,
+    lib.loc = if (pkg %in% loadedNamespaces()) {
+      dirname(getNamespaceInfo(pkg, "path"))
+    },
+    character.only = TRUE,
+    warn.conflicts = FALSE
+  )
+}
+# nocov end
+
 #' Print stanflow status and conflicts
 #'
 #' Print a consolidated status report showing attached packages, available
