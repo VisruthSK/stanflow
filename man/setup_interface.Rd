@@ -8,13 +8,15 @@ setup_interface(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   dev = FALSE,
   prefer_cmdstanr = FALSE,
-  quiet = FALSE,
+  quiet = TRUE,
   force = FALSE,
-  skip_setup = FALSE
+  reinstall = FALSE,
+  configure = TRUE,
+  dry_run = FALSE
 )
 }
 \arguments{
-\item{interface}{A character vector. Select at least one of: "brms", "cmdstanr", "rstan", "rstanarm".}
+\item{interface}{A character vector. Must include at least one of: "brms", "cmdstanr", "rstan", "rstanarm".}
 
 \item{dev}{Logical. If \code{FALSE} (default), installs stable releases from
 R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-universe.}
@@ -24,14 +26,26 @@ to use the \code{cmdstanr} backend instead of the default \code{rstan}.}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
-\item{force}{Logical. If \code{TRUE}, forces re-installation/setup. Required
-for installation in non-interactive sessions.}
+\item{force}{Logical. If \code{TRUE}, runs non-interactively with no prompts.
+Required to allow installation in non-interactive sessions.}
 
-\item{skip_setup}{Logical. If \code{TRUE}, packages are only attached and no
-backend-specific configuration is run.}
+\item{reinstall}{Logical. If \code{TRUE}, reinstalls interface packages and CmdStan
+when already present.}
+
+\item{configure}{Logical. If \code{TRUE} (default), run backend-specific
+configuration; if \code{FALSE}, packages are only attached.}
+
+\item{dry_run}{Logical. If \code{TRUE}, report planned actions (including the
+commands that would run) without installing, attaching, or configuring anything.}
 }
 \value{
-Returns \code{NULL} invisibly.
+A list (returned invisibly) with elements:
+\describe{
+\item{installed_packages}{Data frame of package versions before/after and action taken.}
+\item{configuration_actions}{Named list with \code{mode} ("applied" or "planned") and action strings.}
+\item{cmdstan}{CmdStan path/version status and any action taken.}
+\item{skipped}{Data frame of skipped items and reasons.}
+}
 }
 \description{
 This function ensures specific Stan interfaces are installed, configured,

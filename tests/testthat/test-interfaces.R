@@ -12,14 +12,56 @@ test_that("setup_interface adds cmdstanr when prefer_cmdstanr = TRUE", {
   setup_interface(
     interface = "brms",
     prefer_cmdstanr = TRUE,
-    skip_setup = TRUE,
+    configure = FALSE,
     quiet = FALSE
   )
 
   expect_equal(libraries, c("brms", "cmdstanr"))
 })
 
-test_that("setup_interface installs backends when force = TRUE", {
+test_that("setup_interface aborts when interface is missing", {
+  expect_error(
+    setup_interface(),
+    "interface"
+  )
+})
+
+test_that("setup_interface dry_run reports planned actions", {
+  local_mocked_bindings(
+    is_installed = function(pkg) pkg == "brms",
+    install_backend_package = function(...) stop("should not install"),
+    same_library = function(...) stop("should not attach"),
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    packageVersion = function(pkg) package_version("1.2.3"),
+    .package = "utils"
+  )
+
+  output <- utils::capture.output(
+    result <- setup_interface(
+      interface = c("brms", "cmdstanr"),
+      configure = TRUE,
+      dry_run = TRUE,
+      force = TRUE,
+      quiet = TRUE
+    )
+  )
+
+  expect_equal(
+    result$installed_packages$action,
+    c("unchanged", "would_install")
+  )
+  expect_equal(result$configuration_actions$brms$mode, "planned")
+  expect_true(any(grepl("mc.cores", result$configuration_actions$brms$actions)))
+  expect_equal(result$cmdstan$status, "pending")
+  expect_true(any(grepl("Planned commands:", output)))
+  expect_true(any(grepl("install_backend_package\\(\"cmdstanr\"", output)))
+  expect_true(any(grepl("same_library\\(\"brms\"\\)", output)))
+  expect_true(any(grepl("setup_brms\\(", output)))
+})
+
+test_that("setup_interface reinstalls backends when reinstall = TRUE", {
   installed <- character()
 
   local_mocked_bindings(
@@ -34,8 +76,8 @@ test_that("setup_interface installs backends when force = TRUE", {
   invisible(
     setup_interface(
       interface = c("cmdstanr", "rstan"),
-      force = TRUE,
-      skip_setup = TRUE,
+      reinstall = TRUE,
+      configure = FALSE,
       quiet = TRUE
     )
   )
@@ -49,7 +91,9 @@ test_that("setup_interface installs missing packages when not installed", {
 
   local_mocked_bindings(
     is_installed = function(pkg) FALSE,
-    install_backend_package = function(pkg, ...) installed <<- c(installed, pkg),
+    install_backend_package = function(pkg, ...) {
+      installed <<- c(installed, pkg)
+    },
     same_library = function(pkg) NULL,
     .package = "stanflow"
   )
@@ -58,7 +102,7 @@ test_that("setup_interface installs missing packages when not installed", {
     setup_interface(
       interface = c("brms"),
       force = FALSE,
-      skip_setup = TRUE,
+      configure = FALSE,
       quiet = TRUE
     )
   )
@@ -66,7 +110,7 @@ test_that("setup_interface installs missing packages when not installed", {
   expect_equal(installed, "brms")
 })
 
-test_that("setup_interface runs backend setup helpers when skip_setup = FALSE", {
+test_that("setup_interface runs backend setup helpers when configure = TRUE", {
   calls <- character()
 
   local_mocked_bindings(
@@ -99,7 +143,7 @@ test_that("setup_interface runs backend setup helpers when skip_setup = FALSE", 
       interface = c("cmdstanr", "rstan", "brms", "rstanarm"),
       prefer_cmdstanr = TRUE,
       quiet = TRUE,
-      skip_setup = FALSE
+      configure = TRUE
     )
   )
 
@@ -166,7 +210,12 @@ test_that("install_backend_package aborts when user declines interactive install
     .package = "utils"
   )
   expect_error(
-    install_backend_package("cmdstanr", dev = FALSE, quiet = TRUE, force = FALSE),
+    install_backend_package(
+      "cmdstanr",
+      dev = FALSE,
+      quiet = TRUE,
+      force = FALSE
+    ),
     "Installation of"
   )
 })
@@ -183,7 +232,12 @@ test_that("install_backend_package installs when user accepts interactive prompt
     .package = "utils"
   )
   invisible(
-    install_backend_package("cmdstanr", dev = FALSE, quiet = TRUE, force = FALSE)
+    install_backend_package(
+      "cmdstanr",
+      dev = FALSE,
+      quiet = TRUE,
+      force = FALSE
+    )
   )
   expect_equal(called$pkg, "cmdstanr")
 })
@@ -271,6 +325,25 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
   expect_true(installed)
 })
 
+test_that("setup_cmdstanr quiet suppresses output", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() stop("missing"),
+    cmdstan_version = function() stop("missing"),
+    install_cmdstan = function(...) {
+      cat("noisy\n")
+      message("noisy")
+      invisible(NULL)
+    },
+    .package = "cmdstanr"
+  )
+
+  expect_silent(setup_cmdstanr(quiet = TRUE, force = TRUE))
+})
+
 test_that("setup_cmdstanr returns invisibly when up to date", {
   skip_on_cran()
   skip_if_not_installed("cmdstanr")
@@ -287,7 +360,9 @@ test_that("setup_cmdstanr returns invisibly when up to date", {
   )
   result <- setup_cmdstanr(quiet = TRUE, force = FALSE)
 
-  expect_identical(result, TRUE)
+  expect_equal(result$status, "up_to_date")
+  expect_equal(result$path, "/tmp")
+  expect_equal(result$version, "2.31.0")
 })
 
 test_that("setup_interface aborts when install_backend_package fails", {
@@ -299,7 +374,7 @@ test_that("setup_interface aborts when install_backend_package fails", {
     .package = "stanflow"
   )
   expect_error(
-    setup_interface(interface = "cmdstanr", quiet = TRUE, skip_setup = TRUE),
+    setup_interface(interface = "cmdstanr", quiet = TRUE, configure = FALSE),
     "Boom"
   )
 })
@@ -311,7 +386,7 @@ test_that("setup_interface handles same_library errors gracefully", {
     .package = "stanflow"
   )
   expect_error(
-    setup_interface(interface = "cmdstanr", quiet = TRUE, skip_setup = TRUE),
+    setup_interface(interface = "cmdstanr", quiet = TRUE, configure = FALSE),
     "library error"
   )
 })
@@ -327,7 +402,7 @@ test_that("setup_interface warns when prefer_cmdstanr adds cmdstanr", {
     setup_interface(
       interface = c("brms"),
       prefer_cmdstanr = TRUE,
-      skip_setup = TRUE,
+      configure = FALSE,
       quiet = FALSE
     )
   )
