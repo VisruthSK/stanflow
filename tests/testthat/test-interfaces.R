@@ -653,6 +653,11 @@ test_that("planned_setup_call returns setup command per interface", {
 })
 
 test_that("planned_install_steps reports abort for reinstall in non-interactive", {
+  local_mocked_bindings(
+    interactive = function() FALSE,
+    .package = "base"
+  )
+
   plan <- planned_install_steps(
     pkg = "cmdstanr",
     dev = FALSE,
@@ -685,6 +690,10 @@ test_that("setup_interface dry_run logs install message when force = TRUE", {
 
 test_that("setup_interface dry_run logs install and attach steps when verbose", {
   testthat::local_reproducible_output(width = 80)
+  local_mocked_bindings(
+    interactive = function() FALSE,
+    .package = "base"
+  )
   local_mocked_bindings(
     is_installed = function(pkg) FALSE,
     .package = "stanflow"
@@ -743,9 +752,15 @@ test_that("setup_cmdstanr dry_run reports abort in non-interactive mode", {
 
   result <- setup_cmdstanr(quiet = TRUE, force = FALSE, dry_run = TRUE)
 
-  expect_equal(result$status, "would_abort")
-  expect_equal(result$action, "would_abort")
-  expect_equal(result$skipped_reason, "non-interactive and force = FALSE")
+  if (interactive()) {
+    expect_equal(result$status, "would_prompt")
+    expect_equal(result$action, "would_prompt")
+    expect_equal(result$skipped_reason, "confirmation required")
+  } else {
+    expect_equal(result$status, "would_abort")
+    expect_equal(result$action, "would_abort")
+    expect_equal(result$skipped_reason, "non-interactive and force = FALSE")
+  }
 })
 
 test_that("setup_cmdstanr dry_run reports update when newer version available", {
@@ -782,9 +797,15 @@ test_that("setup_cmdstanr dry_run skips update in non-interactive mode", {
 
   result <- setup_cmdstanr(quiet = TRUE, force = FALSE, dry_run = TRUE)
 
-  expect_equal(result$status, "would_skip_update")
-  expect_equal(result$action, "would_skip_update")
-  expect_equal(result$skipped_reason, "non-interactive and force = FALSE")
+  if (interactive()) {
+    expect_equal(result$status, "would_prompt")
+    expect_equal(result$action, "would_prompt")
+    expect_equal(result$skipped_reason, "confirmation required")
+  } else {
+    expect_equal(result$status, "would_skip_update")
+    expect_equal(result$action, "would_skip_update")
+    expect_equal(result$skipped_reason, "non-interactive and force = FALSE")
+  }
 })
 
 test_that("setup_cmdstanr dry_run reports reinstall when requested", {
