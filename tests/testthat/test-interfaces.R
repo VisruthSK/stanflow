@@ -590,3 +590,151 @@ test_that("setup_interface warns when prefer_cmdstanr adds cmdstanr", {
     )
   )
 })
+
+test_that("planned_install_steps reports actions and commands", {
+  plan <- planned_install_steps(
+    pkg = "cmdstanr",
+    dev = FALSE,
+    force = FALSE,
+    reinstall = FALSE,
+    pkg_installed = FALSE
+  )
+
+  expect_true(plan$action %in% c("would_abort", "would_prompt"))
+  expect_true(any(grepl_fixed("cli::cli_abort|utils::menu", plan$planned)))
+
+  plan <- planned_install_steps(
+    pkg = "cmdstanr",
+    dev = FALSE,
+    force = TRUE,
+    reinstall = FALSE,
+    pkg_installed = FALSE
+  )
+  expect_equal(plan$action, "would_install")
+
+  plan <- planned_install_steps(
+    pkg = "cmdstanr",
+    dev = FALSE,
+    force = TRUE,
+    reinstall = TRUE,
+    pkg_installed = TRUE
+  )
+  expect_equal(plan$action, "would_reinstall")
+})
+
+test_that("planned_attach_call matches library string", {
+  expect_equal(
+    planned_attach_call("brms"),
+    paste0(
+      "library(\"brms\", lib.loc = if (\"brms\" %in% loadedNamespaces()) ",
+      "dirname(getNamespaceInfo(\"brms\", \"path\")) else NULL, ",
+      "character.only = TRUE, warn.conflicts = FALSE)"
+    )
+  )
+})
+
+test_that("planned_setup_call returns setup command per interface", {
+  expect_equal(
+    planned_setup_call("cmdstanr", TRUE, FALSE, TRUE, FALSE),
+    "setup_cmdstanr(quiet = TRUE, force = TRUE, reinstall = FALSE)"
+  )
+  expect_equal(
+    planned_setup_call("rstan", TRUE, FALSE, FALSE, FALSE),
+    "setup_rstan(quiet = TRUE)"
+  )
+  expect_equal(
+    planned_setup_call("brms", TRUE, TRUE, FALSE, FALSE),
+    "setup_brms(quiet = TRUE, prefer_cmdstanr = TRUE)"
+  )
+  expect_equal(
+    planned_setup_call("rstanarm", FALSE, TRUE, FALSE, FALSE),
+    "setup_rstanarm(quiet = FALSE, prefer_cmdstanr = TRUE)"
+  )
+})
+
+test_that("setup_cmdstanr dry_run reports toolchain failure", {
+  skip_if_not_installed("cmdstanr")
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) stop("broken"),
+    .package = "cmdstanr"
+  )
+
+  result <- setup_cmdstanr(quiet = TRUE, force = FALSE, dry_run = TRUE)
+
+  expect_equal(result$status, "toolchain_failed")
+  expect_equal(result$action, "would_abort")
+})
+
+test_that("setup_cmdstanr dry_run reports abort in non-interactive mode", {
+  skip_if_not_installed("cmdstanr")
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() stop("missing"),
+    .package = "cmdstanr"
+  )
+
+  result <- setup_cmdstanr(quiet = TRUE, force = FALSE, dry_run = TRUE)
+
+  expect_equal(result$status, "would_abort")
+  expect_equal(result$action, "would_abort")
+  expect_equal(result$skipped_reason, "non-interactive and force = FALSE")
+})
+
+test_that("setup_cmdstanr dry_run reports update when newer version available", {
+  skip_if_not_installed("cmdstanr")
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() "/tmp/cmdstan",
+    cmdstan_version = function() "2.31.0",
+    .package = "cmdstanr"
+  )
+  local_mocked_bindings(
+    readLines = function(...) c('{"tag_name":"v2.32.0"}'),
+    .package = "base"
+  )
+
+  result <- setup_cmdstanr(quiet = TRUE, force = TRUE, dry_run = TRUE)
+
+  expect_equal(result$status, "would_update")
+  expect_equal(result$action, "would_update")
+})
+
+test_that("setup_cmdstanr dry_run skips update in non-interactive mode", {
+  skip_if_not_installed("cmdstanr")
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() "/tmp/cmdstan",
+    cmdstan_version = function() "2.31.0",
+    .package = "cmdstanr"
+  )
+  local_mocked_bindings(
+    readLines = function(...) c('{"tag_name":"v2.32.0"}'),
+    .package = "base"
+  )
+
+  result <- setup_cmdstanr(quiet = TRUE, force = FALSE, dry_run = TRUE)
+
+  expect_equal(result$status, "would_skip_update")
+  expect_equal(result$action, "would_skip_update")
+  expect_equal(result$skipped_reason, "non-interactive and force = FALSE")
+})
+
+test_that("setup_cmdstanr dry_run reports reinstall when requested", {
+  skip_if_not_installed("cmdstanr")
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() "/tmp/cmdstan",
+    cmdstan_version = function() "2.31.0",
+    .package = "cmdstanr"
+  )
+
+  result <- setup_cmdstanr(
+    quiet = TRUE,
+    force = TRUE,
+    reinstall = TRUE,
+    dry_run = TRUE
+  )
+
+  expect_equal(result$status, "would_reinstall")
+  expect_equal(result$action, "would_reinstall")
+})

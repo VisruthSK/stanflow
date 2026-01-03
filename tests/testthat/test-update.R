@@ -121,6 +121,41 @@ test_that("stanflow_deps handles missing repo versions", {
   expect_true(is.na(deps$remote[1]))
 })
 
+test_that("stanflow_deps falls back to DESCRIPTION when deps are missing", {
+  fake_available <- matrix(
+    c("1.0.0", "2.0.0"),
+    nrow = 2,
+    dimnames = list(c("cmdstanr", "posterior"), "Version")
+  )
+
+  local_mocked_bindings(
+    stan_repos = function(dev) "https://fake.repo",
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    available.packages = function(repos) fake_available,
+    packageDescription = function(pkg) {
+      list(Depends = "R (>= 4.1)", Imports = "cmdstanr", Suggests = "posterior")
+    },
+    .package = "utils"
+  )
+  local_mocked_bindings(
+    package_dependencies = function(pkgs, db, recursive) {
+      if (identical(pkgs, "stanflow")) {
+        return(list(stanflow = NA_character_))
+      }
+      list(stanflow = pkgs)
+    },
+    .package = "tools"
+  )
+
+  deps <- stanflow_deps(recursive = FALSE, dev = FALSE)
+
+  expect_setequal(deps$package, c("cmdstanr", "posterior"))
+  expect_true(all(deps$behind))
+})
+
 test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)", {
   testthat::local_reproducible_output(width = 60)
   old_repos <- options("repos")

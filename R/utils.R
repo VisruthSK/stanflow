@@ -13,17 +13,6 @@ compliance_imports <- function() {
   projpred::augdat_ilink_binom
   shinystan::as.shinystan
 }
-# nocov end
-
-wrapped_startup <- function(msg, ...) {
-  if (is.null(msg)) {
-    return()
-  }
-  if (isTRUE(getOption("stanflow.quiet"))) {
-    return()
-  }
-  packageStartupMessage(msg, ...)
-}
 
 # Attach the package from the same package library it was loaded from before.
 # https://github.com/tidyverse/tidyverse/issues/171
@@ -36,6 +25,17 @@ same_library <- function(pkg) {
     character.only = TRUE,
     warn.conflicts = FALSE
   )
+}
+# nocov end
+
+wrapped_startup <- function(msg, ...) {
+  if (is.null(msg)) {
+    return()
+  }
+  if (isTRUE(getOption("stanflow.quiet"))) {
+    return()
+  }
+  packageStartupMessage(msg, ...)
 }
 
 grepl_fixed <- function(pattern, x) {

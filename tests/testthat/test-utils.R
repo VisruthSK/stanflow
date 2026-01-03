@@ -56,3 +56,52 @@ test_that("wrapped_startup emits startup messages when enabled", {
   options(stanflow.quiet = FALSE)
   expect_message(wrapped_startup("hello from stanflow"), "hello from stanflow")
 })
+
+test_that("grepl_fixed uses regex for special patterns", {
+  expect_true(grepl_fixed("a.b", "acb"))
+  expect_false(grepl_fixed("a+b", "a+b"))
+})
+
+test_that("grepl_fixed uses fixed matching for plain patterns", {
+  expect_true(grepl_fixed("plain", "some plain text"))
+  expect_false(grepl_fixed("plain", "nothing here"))
+})
+
+test_that("is_installed reports presence via find.package", {
+  local_mocked_bindings(
+    find.package = function(...) "path",
+    .package = "base"
+  )
+  expect_true(is_installed("foo"))
+
+  local_mocked_bindings(
+    find.package = function(...) character(),
+    .package = "base"
+  )
+  expect_false(is_installed("foo"))
+})
+
+test_that("pkg_version returns version only when installed", {
+  local_mocked_bindings(
+    is_installed = function(...) TRUE,
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    packageVersion = function(...) package_version("1.2.3"),
+    .package = "utils"
+  )
+  expect_equal(pkg_version("foo"), "1.2.3")
+
+  local_mocked_bindings(
+    is_installed = function(...) FALSE,
+    .package = "stanflow"
+  )
+  expect_equal(pkg_version("foo"), NA_character_)
+})
+
+test_that("add_planned appends command strings", {
+  expect_equal(
+    add_planned(c("a"), "b", "c"),
+    c("a", "b", "c")
+  )
+})
