@@ -80,3 +80,13 @@ invert <- function(x) {
 
 is_attached <- function(x) paste0("package:", x) %in% search()
 is_installed <- function(x) length(find.package(x, quiet = TRUE)) > 0
+
+pkg_version <- function(pkg) {
+  if (is_installed(pkg)) {
+    as.character(utils::packageVersion(pkg))
+  } else {
+    NA_character_
+  }
+}
+
+add_planned <- function(planned, ...) c(planned, ...)

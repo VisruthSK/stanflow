@@ -1,3 +1,95 @@
+planned_install_steps <- function(pkg, dev, force, reinstall, pkg_installed) {
+  pkg_label <- deparse(pkg)
+  install_verb <- if (reinstall && pkg_installed) "Reinstall" else "Install"
+  install_title <- if (dev) {
+    sprintf("%s from Stan Universe (Dev)?", install_verb)
+  } else {
+    sprintf("%s from R-multiverse (Stable)?", install_verb)
+  }
+  repos_expr <- if (dev) {
+    "c(\"https://stan-dev.r-universe.dev\", getOption(\"repos\"))"
+  } else {
+    "c(\"https://community.r-multiverse.org\", getOption(\"repos\"))"
+  }
+  action <- if (!interactive() && !force) {
+    "would_abort"
+  } else if (interactive() && !force) {
+    "would_prompt"
+  } else if (pkg_installed) {
+    "would_reinstall"
+  } else {
+    "would_install"
+  }
+  planned <- character()
+  if (action == "would_abort") {
+    abort_main <- if (pkg_installed) {
+      sprintf("Reinstall of %s requested.", pkg_label)
+    } else {
+      sprintf("Package %s is missing.", pkg_label)
+    }
+    planned <- add_planned(
+      planned,
+      sprintf("cli::cli_abort(%s)", deparse(abort_main))
+    )
+  } else {
+    if (action == "would_prompt") {
+      planned <- add_planned(
+        planned,
+        sprintf(
+          "utils::menu(c(\"Yes\", \"No\"), title = \"%s\")",
+          install_title
+        )
+      )
+    }
+    planned <- add_planned(
+      planned,
+      sprintf(
+        "utils::install.packages(%s, repos = %s, quiet = TRUE)",
+        pkg_label,
+        repos_expr
+      )
+    )
+  }
+  list(action = action, planned = planned)
+}
+
+planned_attach_call <- function(pkg) {
+  pkg_label <- deparse(pkg)
+  sprintf(
+    paste0(
+      "library(%s, lib.loc = if (%s %%in%% loadedNamespaces()) ",
+      "dirname(getNamespaceInfo(%s, \"path\")) else NULL, ",
+      "character.only = TRUE, warn.conflicts = FALSE)"
+    ),
+    pkg_label,
+    pkg_label,
+    pkg_label
+  )
+}
+
+planned_setup_call <- function(pkg, quiet, prefer_cmdstanr, force, reinstall) {
+  switch(
+    pkg,
+    "cmdstanr" = sprintf(
+      "setup_cmdstanr(quiet = %s, force = %s, reinstall = %s)",
+      deparse(quiet),
+      deparse(force),
+      deparse(reinstall)
+    ),
+    "rstan" = sprintf("setup_rstan(quiet = %s)", deparse(quiet)),
+    "brms" = sprintf(
+      "setup_brms(quiet = %s, prefer_cmdstanr = %s)",
+      deparse(quiet),
+      deparse(prefer_cmdstanr)
+    ),
+    "rstanarm" = sprintf(
+      "setup_rstanarm(quiet = %s, prefer_cmdstanr = %s)",
+      deparse(quiet),
+      deparse(prefer_cmdstanr)
+    )
+  )
+}
+
 #' Setup and Load Stan Interfaces
 #'
 #' This function ensures specific Stan interfaces are installed, configured,
@@ -75,67 +167,16 @@ setup_interface <- function(
   }
 
   for (pkg in interface) {
-    before_version <- if (is_installed(pkg)) {
-      as.character(utils::packageVersion(pkg))
-    } else {
-      NA_character_
-    }
+    before_version <- pkg_version(pkg)
     pkg_installed <- !is.na(before_version)
     pkg_label <- deparse(pkg)
     action <- "unchanged"
     needs_install <- !pkg_installed || reinstall
 
     if (needs_install && dry_run) {
-      install_verb <- if (reinstall && pkg_installed) "Reinstall" else "Install"
-      install_title <- if (dev) {
-        sprintf("%s from Stan Universe (Dev)?", install_verb)
-      } else {
-        sprintf("%s from R-multiverse (Stable)?", install_verb)
-      }
-      repos_expr <- if (dev) {
-        "c(\"https://stan-dev.r-universe.dev\", getOption(\"repos\"))"
-      } else {
-        "c(\"https://community.r-multiverse.org\", getOption(\"repos\"))"
-      }
-      action <- if (!interactive() && !force) {
-        "would_abort"
-      } else if (interactive() && !force) {
-        "would_prompt"
-      } else if (pkg_installed) {
-        "would_reinstall"
-      } else {
-        "would_install"
-      }
-
-      if (action == "would_abort") {
-        abort_main <- if (pkg_installed) {
-          sprintf("Reinstall of %s requested.", pkg_label)
-        } else {
-          sprintf("Package %s is missing.", pkg_label)
-        }
-        planned_commands <- c(
-          planned_commands,
-          sprintf("cli::cli_abort(%s)", deparse(abort_main))
-        )
-      } else {
-        if (action == "would_prompt") {
-          planned_commands <- c(
-            planned_commands,
-            sprintf(
-              "utils::menu(c(\"Yes\", \"No\"), title = \"%s\")",
-              install_title
-            )
-          )
-        }
-        planned_commands <- c(
-          planned_commands,
-          sprintf(
-            "utils::install.packages(%s, repos = %s, quiet = TRUE)",
-            pkg_label,
-            repos_expr
-          )
-        )
-      }
+      plan <- planned_install_steps(pkg, dev, force, reinstall, pkg_installed)
+      action <- plan$action
+      planned_commands <- add_planned(planned_commands, plan$planned)
 
       if (!quiet) {
         if (action == "would_prompt") {
@@ -158,11 +199,7 @@ setup_interface <- function(
       action <- if (pkg_installed) "reinstalled" else "installed"
     }
 
-    after_version <- if (is_installed(pkg)) {
-      as.character(utils::packageVersion(pkg))
-    } else {
-      NA_character_
-    }
+    after_version <- pkg_version(pkg)
 
     installed_packages <- rbind(
       installed_packages,
@@ -184,18 +221,9 @@ setup_interface <- function(
     }
 
     if (dry_run) {
-      planned_commands <- c(
+      planned_commands <- add_planned(
         planned_commands,
-        sprintf(
-          paste0(
-            "library(%s, lib.loc = if (%s %%in%% loadedNamespaces()) ",
-            "dirname(getNamespaceInfo(%s, \"path\")) else NULL, ",
-            "character.only = TRUE, warn.conflicts = FALSE)"
-          ),
-          pkg_label,
-          pkg_label,
-          pkg_label
-        )
+        planned_attach_call(pkg)
       )
     }
 
@@ -228,14 +256,9 @@ setup_interface <- function(
       pkg,
       "cmdstanr" = {
         if (dry_run) {
-          planned_commands <- c(
+          planned_commands <- add_planned(
             planned_commands,
-            sprintf(
-              "setup_cmdstanr(quiet = %s, force = %s, reinstall = %s)",
-              deparse(quiet),
-              deparse(force),
-              deparse(reinstall)
-            )
+            planned_setup_call(pkg, quiet, prefer_cmdstanr, force, reinstall)
           )
         }
         if (dry_run && !is_installed("cmdstanr")) {
@@ -267,35 +290,27 @@ setup_interface <- function(
       },
       "rstan" = {
         if (dry_run) {
-          planned_commands <- c(
+          planned_commands <- add_planned(
             planned_commands,
-            sprintf("setup_rstan(quiet = %s)", deparse(quiet))
+            planned_setup_call(pkg, quiet, prefer_cmdstanr, force, reinstall)
           )
         }
         setup_rstan(quiet, dry_run = dry_run)
       },
       "brms" = {
         if (dry_run) {
-          planned_commands <- c(
+          planned_commands <- add_planned(
             planned_commands,
-            sprintf(
-              "setup_brms(quiet = %s, prefer_cmdstanr = %s)",
-              deparse(quiet),
-              deparse(prefer_cmdstanr)
-            )
+            planned_setup_call(pkg, quiet, prefer_cmdstanr, force, reinstall)
           )
         }
         setup_brms(quiet, prefer_cmdstanr, dry_run = dry_run)
       },
       "rstanarm" = {
         if (dry_run) {
-          planned_commands <- c(
+          planned_commands <- add_planned(
             planned_commands,
-            sprintf(
-              "setup_rstanarm(quiet = %s, prefer_cmdstanr = %s)",
-              deparse(quiet),
-              deparse(prefer_cmdstanr)
-            )
+            planned_setup_call(pkg, quiet, prefer_cmdstanr, force, reinstall)
           )
         }
         setup_rstanarm(quiet, prefer_cmdstanr, dry_run = dry_run)
