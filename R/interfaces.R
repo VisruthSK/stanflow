@@ -81,21 +81,22 @@ setup_interface <- function(
       NA_character_
     }
     pkg_installed <- !is.na(before_version)
+    pkg_label <- deparse(pkg)
     action <- "unchanged"
     needs_install <- !pkg_installed || reinstall
 
     if (needs_install && dry_run) {
-      planned_commands <- c(
-        planned_commands,
-        sprintf(
-          "install_backend_package(%s, dev = %s, quiet = %s, force = %s, reinstall = %s)",
-          deparse(pkg),
-          deparse(dev),
-          deparse(quiet),
-          deparse(force),
-          deparse(reinstall)
-        )
-      )
+      install_verb <- if (reinstall && pkg_installed) "Reinstall" else "Install"
+      install_title <- if (dev) {
+        sprintf("%s from Stan Universe (Dev)?", install_verb)
+      } else {
+        sprintf("%s from R-multiverse (Stable)?", install_verb)
+      }
+      repos_expr <- if (dev) {
+        "c(\"https://stan-dev.r-universe.dev\", getOption(\"repos\"))"
+      } else {
+        "c(\"https://community.r-multiverse.org\", getOption(\"repos\"))"
+      }
       action <- if (!interactive() && !force) {
         "would_abort"
       } else if (interactive() && !force) {
@@ -104,6 +105,36 @@ setup_interface <- function(
         "would_reinstall"
       } else {
         "would_install"
+      }
+
+      if (action == "would_abort") {
+        abort_main <- if (pkg_installed) {
+          sprintf("Reinstall of %s requested.", pkg_label)
+        } else {
+          sprintf("Package %s is missing.", pkg_label)
+        }
+        planned_commands <- c(
+          planned_commands,
+          sprintf("cli::cli_abort(%s)", deparse(abort_main))
+        )
+      } else {
+        if (action == "would_prompt") {
+          planned_commands <- c(
+            planned_commands,
+            sprintf(
+              "utils::menu(c(\"Yes\", \"No\"), title = \"%s\")",
+              install_title
+            )
+          )
+        }
+        planned_commands <- c(
+          planned_commands,
+          sprintf(
+            "utils::install.packages(%s, repos = %s, quiet = TRUE)",
+            pkg_label,
+            repos_expr
+          )
+        )
       }
 
       if (!quiet) {
@@ -155,7 +186,16 @@ setup_interface <- function(
     if (dry_run) {
       planned_commands <- c(
         planned_commands,
-        sprintf("same_library(%s)", deparse(pkg))
+        sprintf(
+          paste0(
+            "library(%s, lib.loc = if (%s %%in%% loadedNamespaces()) ",
+            "dirname(getNamespaceInfo(%s, \"path\")) else NULL, ",
+            "character.only = TRUE, warn.conflicts = FALSE)"
+          ),
+          pkg_label,
+          pkg_label,
+          pkg_label
+        )
       )
     }
 
@@ -341,6 +381,16 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall = FALSE) {
   if (!quiet) cli::cli_progress_done()
 }
 
+#' Configure CmdStan via cmdstanr
+#'
+#' Checks the toolchain and installs or updates CmdStan as needed.
+#'
+#' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @param force Logical. If `TRUE`, runs non-interactively with no prompts.
+#' @param reinstall Logical. If `TRUE`, reinstalls CmdStan when already present.
+#' @param dry_run Logical. If `TRUE`, report planned actions without installing.
+#' @return A list describing CmdStan status and any action taken.
+#' @export
 setup_cmdstanr <- function(quiet, force, reinstall = FALSE, dry_run = FALSE) {
   result <- list(
     path = NA_character_,
@@ -580,6 +630,12 @@ setup_cmdstanr <- function(quiet, force, reinstall = FALSE, dry_run = FALSE) {
 }
 # nocov end
 
+#' Configure rstan defaults
+#'
+#' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @param dry_run Logical. If `TRUE`, report planned actions without side effects.
+#' @return Character vector of configuration actions.
+#' @export
 setup_rstan <- function(quiet, dry_run = FALSE) {
   if (!dry_run) {
     options(mc.cores = parallel::detectCores())
@@ -601,6 +657,13 @@ setup_rstan <- function(quiet, dry_run = FALSE) {
   invisible(actions)
 }
 
+#' Configure brms defaults
+#'
+#' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @param prefer_cmdstanr Logical. If `TRUE`, configure the cmdstanr backend.
+#' @param dry_run Logical. If `TRUE`, report planned actions without side effects.
+#' @return Character vector of configuration actions.
+#' @export
 setup_brms <- function(quiet, prefer_cmdstanr, dry_run = FALSE) {
   if (!dry_run) {
     options(mc.cores = parallel::detectCores())
@@ -627,6 +690,13 @@ setup_brms <- function(quiet, prefer_cmdstanr, dry_run = FALSE) {
   invisible(actions)
 }
 
+#' Configure rstanarm defaults
+#'
+#' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @param prefer_cmdstanr Logical. Ignored for rstanarm.
+#' @param dry_run Logical. If `TRUE`, report planned actions without side effects.
+#' @return Character vector of configuration actions.
+#' @export
 setup_rstanarm <- function(quiet, prefer_cmdstanr, dry_run = FALSE) {
   if (!dry_run) {
     options(mc.cores = parallel::detectCores())

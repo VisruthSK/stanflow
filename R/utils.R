@@ -28,8 +28,38 @@ wrapped_startup <- function(msg, ...) {
 # Attach the package from the same package library it was loaded from before.
 # https://github.com/tidyverse/tidyverse/issues/171
 same_library <- function(pkg) {
-  loc <- if (pkg %in% loadedNamespaces()) dirname(getNamespaceInfo(pkg, "path"))
-  library(pkg, lib.loc = loc, character.only = TRUE, warn.conflicts = FALSE)
+  library(
+    pkg,
+    lib.loc = if (pkg %in% loadedNamespaces()) {
+      dirname(getNamespaceInfo(pkg, "path"))
+    },
+    character.only = TRUE,
+    warn.conflicts = FALSE
+  )
+}
+
+grepl_fixed <- function(pattern, x) {
+  specials <- c(
+    ".",
+    "^",
+    "$",
+    "*",
+    "+",
+    "?",
+    "(",
+    ")",
+    "[",
+    "]",
+    "{",
+    "}",
+    "|",
+    "\\"
+  )
+  if (any(strsplit(pattern, "", fixed = TRUE)[[1]] %in% specials)) {
+    grepl(pattern, x)
+  } else {
+    grepl(pattern, x, fixed = TRUE)
+  }
 }
 
 stan_repos <- function(dev = FALSE) {

@@ -1,3 +1,30 @@
+interfaces <- c("brms", "cmdstanr", "rstan", "rstanarm")
+
+grepl_fixed <- function(pattern, x) {
+  specials <- c(
+    ".",
+    "^",
+    "$",
+    "*",
+    "+",
+    "?",
+    "(",
+    ")",
+    "[",
+    "]",
+    "{",
+    "}",
+    "|",
+    "\\"
+  )
+  has_regex <- any(strsplit(pattern, "", fixed = TRUE)[[1]] %in% specials)
+  if (has_regex) grepl(pattern, x) else grepl(pattern, x, fixed = TRUE)
+}
+
+capture_dry_run <- function(...) {
+  utils::capture.output(setup_interface(...))
+}
+
 test_that("setup_interface adds cmdstanr when prefer_cmdstanr = TRUE", {
   libraries <- character()
   local_mocked_bindings(
@@ -55,10 +82,166 @@ test_that("setup_interface dry_run reports planned actions", {
   expect_equal(result$configuration_actions$brms$mode, "planned")
   expect_true(any(grepl("mc.cores", result$configuration_actions$brms$actions)))
   expect_equal(result$cmdstan$status, "pending")
-  expect_true(any(grepl("Planned commands:", output)))
-  expect_true(any(grepl("install_backend_package\\(\"cmdstanr\"", output)))
-  expect_true(any(grepl("same_library\\(\"brms\"\\)", output)))
+  expect_true(any(grepl_fixed("Planned commands:", output)))
+  expect_true(any(grepl("utils::install.packages\\(\"cmdstanr\"", output)))
+  expect_true(any(grepl("library\\(\"brms\"", output)))
   expect_true(any(grepl("setup_brms\\(", output)))
+  expect_true(any(grepl("setup_cmdstanr\\(", output)))
+})
+
+test_that("setup_interface dry_run prints planned commands for prefer_cmdstanr", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    packageVersion = function(pkg) package_version("1.2.3"),
+    .package = "utils"
+  )
+
+  output <- capture_dry_run(
+    interface = "brms",
+    prefer_cmdstanr = TRUE,
+    configure = TRUE,
+    dry_run = TRUE,
+    quiet = TRUE
+  )
+
+  expect_equal(
+    output,
+    c(
+      "Planned commands:",
+      paste0(
+        "library(\"brms\", lib.loc = if (\"brms\" %in% loadedNamespaces()) ",
+        "dirname(getNamespaceInfo(\"brms\", \"path\")) else NULL, character.only = TRUE, ",
+        "warn.conflicts = FALSE)"
+      ),
+      "setup_brms(quiet = TRUE, prefer_cmdstanr = TRUE)",
+      paste0(
+        "library(\"cmdstanr\", lib.loc = if (\"cmdstanr\" %in% loadedNamespaces()) ",
+        "dirname(getNamespaceInfo(\"cmdstanr\", \"path\")) else NULL, character.only = TRUE, ",
+        "warn.conflicts = FALSE)"
+      ),
+      "setup_cmdstanr(quiet = TRUE, force = FALSE, reinstall = FALSE)"
+    )
+  )
+})
+
+test_that("setup_interface dry_run prints planned commands for each interface", {
+  setup_calls <- list(
+    brms = "setup_brms",
+    cmdstanr = "setup_cmdstanr",
+    rstan = "setup_rstan",
+    rstanarm = "setup_rstanarm"
+  )
+
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    packageVersion = function(pkg) package_version("1.2.3"),
+    .package = "utils"
+  )
+
+  for (pkg in backends) {
+    output <- capture_dry_run(
+      interface = pkg,
+      configure = TRUE,
+      dry_run = TRUE,
+      quiet = TRUE
+    )
+
+    expect_true(any(grepl_fixed(sprintf("library\\(\"%s\"", pkg), output)))
+    expect_true(any(grepl_fixed(setup_calls[[pkg]], output)))
+  }
+})
+
+test_that("setup_interface dry_run prints only attach commands when configure = FALSE", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    packageVersion = function(pkg) package_version("1.2.3"),
+    .package = "utils"
+  )
+
+  for (pkg in backends) {
+    output <- capture_dry_run(
+      interface = pkg,
+      configure = FALSE,
+      dry_run = TRUE,
+      force = TRUE,
+      quiet = TRUE
+    )
+
+    expect_true(any(grepl_fixed(sprintf("library\\(\"%s\"", pkg), output)))
+    expect_false(any(grepl("setup_(brms|cmdstanr|rstan|rstanarm)", output)))
+  }
+})
+
+test_that("setup_interface dry_run prints install commands for missing packages", {
+  local_mocked_bindings(
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+
+  for (pkg in backends) {
+    output <- capture_dry_run(
+      interface = pkg,
+      configure = FALSE,
+      dry_run = TRUE,
+      force = TRUE,
+      quiet = TRUE
+    )
+
+    expect_true(
+      any(grepl_fixed(sprintf("utils::install.packages\\(\"%s\"", pkg), output))
+    )
+  }
+})
+
+test_that("setup_interface dry_run uses dev repos when dev = TRUE", {
+  local_mocked_bindings(
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+
+  for (pkg in backends) {
+    output <- capture_dry_run(
+      interface = pkg,
+      dev = TRUE,
+      configure = FALSE,
+      dry_run = TRUE,
+      force = TRUE,
+      quiet = TRUE
+    )
+
+    expect_true(any(grepl_fixed("https://stan-dev.r-universe.dev", output)))
+  }
+})
+
+test_that("setup_interface dry_run prints install commands for reinstall", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .package = "stanflow"
+  )
+
+  for (pkg in backends) {
+    output <- capture_dry_run(
+      interface = pkg,
+      reinstall = TRUE,
+      configure = FALSE,
+      dry_run = TRUE,
+      force = TRUE,
+      quiet = TRUE
+    )
+
+    expect_true(
+      any(grepl_fixed(sprintf("utils::install.packages\\(\"%s\"", pkg), output))
+    )
+  }
 })
 
 test_that("setup_interface reinstalls backends when reinstall = TRUE", {

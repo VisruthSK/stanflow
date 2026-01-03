@@ -2,7 +2,11 @@
 
 S3method(print,stanflow_conflicts)
 export(flow_check)
+export(setup_brms)
+export(setup_cmdstanr)
 export(setup_interface)
+export(setup_rstan)
+export(setup_rstanarm)
 export(stan_logo)
 export(stanflow_conflicts)
 export(stanflow_deps)
