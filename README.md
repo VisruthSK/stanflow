@@ -34,25 +34,15 @@ Here, we load `stanflow` and decide to use `cmdstanr` as the backend for
 
 ``` r
 library(stanflow)
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
-#> ✔ bayesplot 1.15.0         ✔ projpred  2.10.0    
-#> ✔ loo       2.8.0.9000     ✔ shinystan 2.7.0     
-#> ✔ posterior 1.6.1
-#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
-#> • brms     2.22.0          • rstan    2.36.0.9000
-#> • cmdstanr 0.9.0.9000      ✖ rstanarm
-#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
-#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 setup_interface(
   interface = "brms",
   dev = FALSE,
-  prefer_cmdstanr = TRUE,
+  brms_backend = "cmdstanr",
   quiet = FALSE,
   force = FALSE,
   skip_setup = FALSE
 )
-#> ℹ Adding cmdstanr to setup because `prefer_cmdstanr = TRUE`
+#> ℹ Adding cmdstanr to setup because `brms_backend = 'cmdstanr'`
 #> ℹ Attaching brms...
 #> ℹ Configured brms: set `options(mc.cores = parallel::detectCores())` and `options(brms.backend = 'cmdstanr')`
 #> ℹ Attaching cmdstanr...
@@ -67,7 +57,7 @@ flow_check()
 #> ✔ posterior 1.6.1          
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.22.0          • rstan    2.36.0.9000
-#> ✔ cmdstanr 0.9.0.9000      ✖ rstanarm            
+#> ✔ cmdstanr 0.9.0.9000      • rstanarm 2.32.2     
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
 #> ✖ brms::ar()      masks stats::ar()
 #> ✖ brms::do_call() masks projpred::do_call()

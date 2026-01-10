@@ -39,7 +39,7 @@ Use `setup_interface()` to install (if needed), attach, and configure interfaces
 ```{r}
 setup_interface(
   interface = "brms",
-  prefer_cmdstanr = TRUE,
+  brms_backend = "cmdstanr",
   quiet = TRUE,
   force = TRUE # only required for non-interactive usage
 )

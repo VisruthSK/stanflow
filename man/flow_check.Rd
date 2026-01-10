@@ -4,7 +4,11 @@
 \alias{flow_check}
 \title{Print stanflow status and conflicts}
 \usage{
-flow_check()
+flow_check(only = NULL)
+}
+\arguments{
+\item{only}{Set this to a character vector to restrict to conflicts only
+between the provided packages and loaded stanflow packages.}
 }
 \value{
 Invisibly returns the character vector that was printed.

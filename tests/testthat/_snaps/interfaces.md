@@ -1,4 +1,4 @@
-# setup_interface warns when prefer_cmdstanr adds cmdstanr
+# setup_interface warns when brms_backend adds cmdstanr
 
     
 

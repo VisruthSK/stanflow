@@ -34,7 +34,7 @@ library(stanflow)
 setup_interface(
   interface = "brms",
   dev = FALSE,
-  prefer_cmdstanr = TRUE,
+  brms_backend = "cmdstanr",
   quiet = FALSE,
   force = FALSE,
   skip_setup = FALSE

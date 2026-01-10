@@ -8,13 +8,15 @@ find_unloaded <- function(pkgs) pkgs[!paste0("package:", pkgs) %in% search()]
 #' Print a consolidated status report showing attached packages, available
 #' interfaces, and any conflicts.
 #'
+#' @param only Set this to a character vector to restrict to conflicts only
+#'   between the provided packages and loaded stanflow packages.
 #' @return Invisibly returns the character vector that was printed.
 #' @export
-flow_check <- function() {
+flow_check <- function(only = NULL) {
   messages <- list(
     core_attach_message(show_all = TRUE),
     backends_attach_message(),
-    stanflow_conflict_message(stanflow_conflicts())
+    stanflow_conflict_message(stanflow_conflicts(only))
   ) |>
     Filter(Negate(is.null), x = _)
   cli::cat_line(messages)

@@ -12,7 +12,7 @@
 #'
 #' @export
 #' @param only Set this to a character vector to restrict to conflicts only
-#'   with these packages.
+#'   between the provided packages and loaded stanflow packages.
 #' @examples
 #' stanflow_conflicts()
 stanflow_conflicts <- function(only = NULL) {
@@ -40,11 +40,18 @@ stanflow_conflicts <- function(only = NULL) {
 
 #' @export
 print.stanflow_conflicts <- function(x, ..., startup = FALSE) {
-  cli::cat_line(stanflow_conflict_message(x))
+  message <- stanflow_conflict_message(x)
+  if (!is.null(message)) {
+    cli::cat_line(message)
+  }
   invisible(x)
 }
 
 stanflow_conflict_message <- function(x) {
+  if (length(x) == 0) {
+    return(NULL)
+  }
+
   header <- cli::rule(
     left = cli::style_bold("Conflicts"),
     right = "stanflow_conflicts()"

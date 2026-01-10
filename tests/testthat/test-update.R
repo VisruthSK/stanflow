@@ -1,5 +1,6 @@
 run_update_with <- function(deps_df, update_fun, check = NULL) {
   stopifnot(is.function(update_fun))
+  withr::local_options(list(stanflow.testing = TRUE))
   with_mocked_bindings(
     stanflow_deps = function(recursive, dev) {
       if (!is.null(check)) {
@@ -7,16 +8,20 @@ run_update_with <- function(deps_df, update_fun, check = NULL) {
       }
       deps_df
     },
-    update_fun(),
+    with_mocked_bindings(
+      install.packages = function(...) invisible(NULL),
+      update_fun(),
+      .package = "utils"
+    ),
     .package = "stanflow"
   )
 }
 
 test_that("stanflow_update reports when nothing is behind", {
   testthat::local_reproducible_output(width = 60)
-  old_repos <- options("repos")
-  on.exit(options(old_repos), add = TRUE)
-  options(repos = c(CRAN = "https://cloud.r-project.org"))
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org")
+  ))
 
   empty <- data.frame(
     package = character(),
@@ -32,9 +37,9 @@ test_that("stanflow_update reports when nothing is behind", {
 
 test_that("stanflow_update lists behind packages", {
   testthat::local_reproducible_output(width = 60)
-  old_repos <- options("repos")
-  on.exit(options(old_repos), add = TRUE)
-  options(repos = c(CRAN = "https://cloud.r-project.org"))
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org")
+  ))
 
   behind <- data.frame(
     package = c("cmdstanr", "posterior"),
@@ -123,9 +128,9 @@ test_that("stanflow_deps handles missing repo versions", {
 
 test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)", {
   testthat::local_reproducible_output(width = 60)
-  old_repos <- options("repos")
-  on.exit(options(old_repos), add = TRUE)
-  options(repos = c(CRAN = "https://cloud.r-project.org"))
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org")
+  ))
 
   recursive <- data.frame(
     package = c("cmdstanr", "posterior", "loo", "matrixStats"),
@@ -163,9 +168,9 @@ test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)
 
 test_that("stanflow_update uses Stan universe when dev = TRUE", {
   testthat::local_reproducible_output(width = 60)
-  old_repos <- options("repos")
-  on.exit(options(old_repos), add = TRUE)
-  options(repos = c(CRAN = "https://cloud.r-project.org"))
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org")
+  ))
 
   behind <- data.frame(
     package = c("cmdstanr", "posterior"),

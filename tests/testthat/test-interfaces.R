@@ -1,4 +1,4 @@
-test_that("setup_interface adds cmdstanr when prefer_cmdstanr = TRUE", {
+test_that("setup_interface adds cmdstanr when brms_backend = cmdstanr", {
   libraries <- character()
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
@@ -11,7 +11,7 @@ test_that("setup_interface adds cmdstanr when prefer_cmdstanr = TRUE", {
 
   setup_interface(
     interface = "brms",
-    prefer_cmdstanr = TRUE,
+    brms_backend = "cmdstanr",
     skip_setup = TRUE,
     quiet = FALSE
   )
@@ -49,7 +49,9 @@ test_that("setup_interface installs missing packages when not installed", {
 
   local_mocked_bindings(
     is_installed = function(pkg) FALSE,
-    install_backend_package = function(pkg, ...) installed <<- c(installed, pkg),
+    install_backend_package = function(pkg, ...) {
+      installed <<- c(installed, pkg)
+    },
     same_library = function(pkg) NULL,
     .package = "stanflow"
   )
@@ -57,6 +59,7 @@ test_that("setup_interface installs missing packages when not installed", {
   invisible(
     setup_interface(
       interface = c("brms"),
+      brms_backend = "rstan",
       force = FALSE,
       skip_setup = TRUE,
       quiet = TRUE
@@ -97,7 +100,7 @@ test_that("setup_interface runs backend setup helpers when skip_setup = FALSE", 
   invisible(
     setup_interface(
       interface = c("cmdstanr", "rstan", "brms", "rstanarm"),
-      prefer_cmdstanr = TRUE,
+      brms_backend = "cmdstanr",
       quiet = TRUE,
       skip_setup = FALSE
     )
@@ -119,9 +122,9 @@ test_that("setup_interface runs backend setup helpers when skip_setup = FALSE", 
 })
 
 test_that("install_backend_package installs from Stan universe when dev = TRUE", {
-  old_repos <- options("repos")
-  on.exit(options(old_repos), add = TRUE)
-  options(repos = c(CRAN = "https://cloud.r-project.org"))
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org")
+  ))
   called <- list()
 
   local_mocked_bindings(
@@ -138,9 +141,9 @@ test_that("install_backend_package installs from Stan universe when dev = TRUE",
 })
 
 test_that("install_backend_package installs from multiverse when dev = FALSE", {
-  old_repos <- options("repos")
-  on.exit(options(old_repos), add = TRUE)
-  options(repos = c(CRAN = "https://cloud.r-project.org"))
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org")
+  ))
   called <- list()
 
   local_mocked_bindings(
@@ -166,7 +169,12 @@ test_that("install_backend_package aborts when user declines interactive install
     .package = "utils"
   )
   expect_error(
-    install_backend_package("cmdstanr", dev = FALSE, quiet = TRUE, force = FALSE),
+    install_backend_package(
+      "cmdstanr",
+      dev = FALSE,
+      quiet = TRUE,
+      force = FALSE
+    ),
     "Installation of"
   )
 })
@@ -183,29 +191,32 @@ test_that("install_backend_package installs when user accepts interactive prompt
     .package = "utils"
   )
   invisible(
-    install_backend_package("cmdstanr", dev = FALSE, quiet = TRUE, force = FALSE)
+    install_backend_package(
+      "cmdstanr",
+      dev = FALSE,
+      quiet = TRUE,
+      force = FALSE
+    )
   )
   expect_equal(called$pkg, "cmdstanr")
 })
 
-test_that("setup_brms configures cmdstanr backend when preferred", {
-  old_opts <- options(mc.cores = NULL, brms.backend = NULL)
-  on.exit(options(old_opts), add = TRUE)
+test_that("setup_brms configures brms backend", {
+  withr::local_options(list(mc.cores = NULL, brms.backend = NULL))
 
   local_mocked_bindings(
     detectCores = function() 8,
     .package = "parallel"
   )
 
-  setup_brms(quiet = TRUE, prefer_cmdstanr = TRUE)
+  setup_brms(quiet = TRUE, brms_backend = "cmdstanr")
 
   expect_equal(getOption("mc.cores"), 8)
   expect_equal(getOption("brms.backend"), "cmdstanr")
 })
 
 test_that("setup_rstan configures parallel cores and rstan options", {
-  old_opts <- options(mc.cores = NULL)
-  on.exit(options(old_opts), add = TRUE)
+  withr::local_options(list(mc.cores = NULL))
   rstan_args <- NULL
   skip_if_not_installed("rstan")
 
@@ -224,19 +235,6 @@ test_that("setup_rstan configures parallel cores and rstan options", {
   expect_true(rstan_args$auto_write)
 })
 
-test_that("setup_rstanarm sets mc.cores regardless of prefer flag", {
-  old_opts <- options(mc.cores = NULL)
-  on.exit(options(old_opts), add = TRUE)
-
-  local_mocked_bindings(
-    detectCores = function() 4,
-    .package = "parallel"
-  )
-
-  setup_rstanarm(quiet = TRUE, prefer_cmdstanr = TRUE)
-
-  expect_equal(getOption("mc.cores"), 4)
-})
 
 test_that("setup_cmdstanr aborts when toolchain check fails", {
   skip_on_cran()
@@ -316,7 +314,7 @@ test_that("setup_interface handles same_library errors gracefully", {
   )
 })
 
-test_that("setup_interface warns when prefer_cmdstanr adds cmdstanr", {
+test_that("setup_interface warns when brms_backend adds cmdstanr", {
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
     same_library = function(pkg) NULL,
@@ -326,7 +324,7 @@ test_that("setup_interface warns when prefer_cmdstanr adds cmdstanr", {
   expect_snapshot_output(
     setup_interface(
       interface = c("brms"),
-      prefer_cmdstanr = TRUE,
+      brms_backend = "cmdstanr",
       skip_setup = TRUE,
       quiet = FALSE
     )

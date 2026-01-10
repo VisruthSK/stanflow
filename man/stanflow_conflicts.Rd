@@ -8,7 +8,7 @@ stanflow_conflicts(only = NULL)
 }
 \arguments{
 \item{only}{Set this to a character vector to restrict to conflicts only
-with these packages.}
+between the provided packages and loaded stanflow packages.}
 }
 \description{
 This function lists all the conflicts between packages in stanflow

@@ -9,7 +9,16 @@
 #'   only cogent for Stan packages, and cannot compare two dev versions.
 #' @export
 stanflow_deps <- function(recursive = FALSE, dev = FALSE) {
-  pkgs <- utils::available.packages(repos = stan_repos(dev))
+  pkgs <- tryCatch(
+    utils::available.packages(repos = stan_repos(dev)),
+    error = function(e) {
+      cli::cli_abort(c(
+        "Unable to reach repositories to check for updates.",
+        "x" = "Package metadata could not be downloaded.",
+        "i" = "Check your internet connection and try again."
+      ))
+    }
+  )
   pkg_deps <- tools::package_dependencies(
     "stanflow",
     pkgs,
@@ -96,9 +105,21 @@ stanflow_deps <- function(recursive = FALSE, dev = FALSE) {
 
 #' Update stanflow packages
 #'
+#' This function requires an interactive R session.
+#'
 #' @inheritParams stanflow_deps
 #' @export
 stanflow_update <- function(recursive = FALSE, dev = FALSE) {
+  is_testing <- getOption("stanflow.testing", FALSE)
+
+  if (!interactive() && !is_testing) {
+    cli::cli_abort(c(
+      "{.fn stanflow_update} must be run interactively.",
+      "x" = "Refusing to update packages in a non-interactive session.",
+      "i" = "Start an interactive R session and rerun."
+    ))
+  }
+
   deps <- stanflow_deps(recursive, dev = dev)
   behind <- deps[deps$behind, ]
 
@@ -123,13 +144,19 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
 
   cli::cat_line()
 
-  cli::cat_line("Start a clean R session then run:")
-  cli::cat_line(
-    "install.packages(",
-    paste0(deparse(behind$package), collapse = "\n"),
-    ", ",
-    sprintf('repos = c("%s", getOption("repos"))', stan_repos(dev)[1]),
-    ")"
-  )
+  repos <- stan_repos(dev)
+
+  if (!is_testing) {
+    cli::cli_alert_info("Updating via {.fn utils::install.packages}...")
+    utils::install.packages(behind$package, repos = repos)
+  } else {
+    pkg_call <- paste0('c("', paste(behind$package, collapse = '", "'), '")')
+    repos_call <- paste0('c("', repos[1], '", getOption("repos"))')
+    cli::cat_line("Start a clean R session then run:")
+    cli::cat_line(
+      paste0("install.packages(", pkg_call, ", repos = ", repos_call, ")")
+    )
+  }
+
   invisible(behind)
 }

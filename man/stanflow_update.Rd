@@ -14,5 +14,5 @@ stanflow_update(recursive = FALSE, dev = FALSE)
 only cogent for Stan packages, and cannot compare two dev versions.}
 }
 \description{
-Update stanflow packages
+This function requires an interactive R session.
 }

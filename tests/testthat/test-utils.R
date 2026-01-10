@@ -1,9 +1,6 @@
 test_that("stan_repos respects dev flag", {
-  old_repos <- options("repos")
-  on.exit(options(old_repos), add = TRUE)
-
   custom_repos <- c(CRAN = "https://cran.r-project.org")
-  options(repos = custom_repos)
+  withr::local_options(list(repos = custom_repos))
 
   expect_equal(
     stan_repos(dev = FALSE),
@@ -44,15 +41,11 @@ test_that("is_attached checks the current search path", {
 test_that("wrapped_startup handles NULL and quiet option", {
   expect_null(wrapped_startup(NULL))
 
-  old_quiet <- options("stanflow.quiet")
-  on.exit(options(old_quiet), add = TRUE)
-  options(stanflow.quiet = TRUE)
+  withr::local_options(list(stanflow.quiet = TRUE))
   expect_null(wrapped_startup("ignored"))
 })
 
 test_that("wrapped_startup emits startup messages when enabled", {
-  old_quiet <- options("stanflow.quiet")
-  on.exit(options(old_quiet), add = TRUE)
-  options(stanflow.quiet = FALSE)
+  withr::local_options(list(stanflow.quiet = FALSE))
   expect_message(wrapped_startup("hello from stanflow"), "hello from stanflow")
 })

@@ -7,10 +7,11 @@
 setup_interface(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   dev = FALSE,
-  prefer_cmdstanr = FALSE,
+  brms_backend = c("cmdstanr", "rstan"),
   quiet = FALSE,
   force = FALSE,
-  skip_setup = FALSE
+  skip_setup = FALSE,
+  check_updates = TRUE
 )
 }
 \arguments{
@@ -19,8 +20,9 @@ setup_interface(
 \item{dev}{Logical. If \code{FALSE} (default), installs stable releases from
 R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-universe.}
 
-\item{prefer_cmdstanr}{Logical. If \code{TRUE}, configures \code{brms}
-to use the \code{cmdstanr} backend instead of the default \code{rstan}.}
+\item{brms_backend}{Character. The \code{brms} backend to use Defaults to
+\code{getOption("brms.backend", "cmdstanr")} and must be one of
+\code{c("cmdstanr", "rstan")}.}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
@@ -29,6 +31,8 @@ for installation in non-interactive sessions.}
 
 \item{skip_setup}{Logical. If \code{TRUE}, packages are only attached and no
 backend-specific configuration is run.}
+
+\item{check_updates}{Logical. If \code{FALSE}, skips checking for CmdStan updates.}
 }
 \value{
 Returns \code{NULL} invisibly.
