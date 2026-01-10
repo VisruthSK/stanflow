@@ -16,18 +16,18 @@
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @param force Logical. If `TRUE`, allows installation in non-interactive sessions.
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
-#' @param check_updates Logical. If `FALSE`, skips checking for CmdStan updates.
+#' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_interface <- function(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
-  dev = FALSE,
-  brms_backend = c("cmdstanr", "rstan"),
   cores = getOption("mc.cores"),
-  quiet = FALSE,
+  quiet = TRUE,
   force = FALSE,
   reinstall = FALSE,
-  check_updates = TRUE
+  check_updates = FALSE,
+  dev = FALSE,
+  brms_backend = c("cmdstanr", "rstan")
 ) {
   interface <- match.arg(interface, several.ok = TRUE)
 
