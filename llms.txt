@@ -1,4 +1,4 @@
-# stanflow
+# stanflow (Stan Bayesian Workflow)
 
 `stanflow` offers an integrated, mildly opinionated access to a
 Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman

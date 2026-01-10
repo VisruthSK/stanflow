@@ -75,6 +75,12 @@ setup_interface(
   quiet = TRUE,
   force = TRUE # only required for non-interactive usage
 )
+#> ℹ Adding cmdstanr to setup because `brms_backend = 'cmdstanr'`
+#> ℹ Attaching brms...
+#> ℹ Configured brms: set `options(mc.cores = 2)` and `options(brms.backend = 'cmdstanr')`
+#> ℹ Attaching cmdstanr...
+#> ! CmdStan binaries are missing or force-reinstall requested.
+#> ℹ Installing CmdStan (this takes time)...
 #> * Latest CmdStan release is v2.37.0
 #> * Installing CmdStan v2.37.0 in /home/runner/.cmdstan/cmdstan-2.37.0
 #> * Downloading cmdstan-2.37.0.tar.gz from GitHub...
@@ -120,6 +126,9 @@ setup_interface(
 #> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
 #> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.37.0
 #> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.37.0
+#> ✔ Installing CmdStan (this takes time)... ... done
+#> 
+#> ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
