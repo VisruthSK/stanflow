@@ -2,7 +2,7 @@ name: Check Interfaces
 
 on: 
   push:
-    branches:  [main]
+    branches:  [main, more-tests]
   workflow_dispatch:
 
 permissions: read-all
