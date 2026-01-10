@@ -15,6 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        interface: [cmdstanr, rstan, brms, rstanarm]
         include:
           - interface: cmdstanr
             test_file: tests/testthat/test-interfaces-cmdstanr-ci.R
@@ -45,6 +46,7 @@ jobs:
         with:
           dependencies: '"hard"'
           extra-packages: local::., any::testthat
+          cache-version: 2
 
       - name: Test setup_interface (testthat)
         env:
@@ -89,6 +91,7 @@ jobs:
         with:
           dependencies: '"hard"'
           extra-packages: local::., any::testthat
+          cache-version: 2
 
       - name: Test setup_cmdstanr (testthat)
         env:
