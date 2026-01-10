@@ -32,7 +32,8 @@ Suggests:
     quarto,
     rstan,
     rstanarm,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 VignetteBuilder: 
     quarto
 Additional_repositories:

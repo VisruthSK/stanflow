@@ -4,13 +4,15 @@
 \alias{setup_cmdstanr}
 \title{Setup cmdstanr and CmdStan}
 \usage{
-setup_cmdstanr(quiet, force, check_updates = TRUE, cores)
+setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
 \item{force}{Logical. If \code{TRUE}, forces installation or upgrade in
 non-interactive sessions.}
+
+\item{reinstall}{Logical. If \code{TRUE}, forces re-installation.}
 
 \item{check_updates}{Logical. If \code{FALSE}, skips checking for CmdStan updates.}
 

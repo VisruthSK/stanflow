@@ -6,23 +6,17 @@
 \usage{
 setup_interface(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
-  dev = FALSE,
-  brms_backend = c("cmdstanr", "rstan"),
   cores = getOption("mc.cores"),
-  quiet = FALSE,
+  quiet = TRUE,
   force = FALSE,
-  check_updates = TRUE
+  reinstall = FALSE,
+  check_updates = FALSE,
+  dev = FALSE,
+  brms_backend = c("cmdstanr", "rstan")
 )
 }
 \arguments{
 \item{interface}{A character vector. Select at least one of: "brms", "cmdstanr", "rstan", "rstanarm".}
-
-\item{dev}{Logical. If \code{FALSE} (default), installs stable releases from
-R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-universe.}
-
-\item{brms_backend}{Character. The \code{brms} backend to use Defaults to
-\code{getOption("brms.backend", "cmdstanr")} and must be one of
-\code{c("cmdstanr", "rstan")}.}
 
 \item{cores}{Integer. Number of cores to use. Defaults to
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
@@ -30,10 +24,18 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
-\item{force}{Logical. If \code{TRUE}, forces re-installation/setup. Required
-for installation in non-interactive sessions.}
+\item{force}{Logical. If \code{TRUE}, allows installation in non-interactive sessions.}
 
-\item{check_updates}{Logical. If \code{FALSE}, skips checking for CmdStan updates.}
+\item{reinstall}{Logical. If \code{TRUE}, forces re-installation.}
+
+\item{check_updates}{Logical. If \code{TRUE}, checks for CmdStan updates.}
+
+\item{dev}{Logical. If \code{FALSE} (default), installs stable releases from
+R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-universe.}
+
+\item{brms_backend}{Character. The \code{brms} backend to use Defaults to
+\code{getOption("brms.backend", "cmdstanr")} and must be one of
+\code{c("cmdstanr", "rstan")}.}
 }
 \value{
 Returns \code{NULL} invisibly.

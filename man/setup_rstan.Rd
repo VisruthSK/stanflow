@@ -8,6 +8,8 @@ setup_rstan(quiet, cores)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
+
+\item{cores}{Integer. Number of cores to use.}
 }
 \value{
 Returns \code{NULL} invisibly.

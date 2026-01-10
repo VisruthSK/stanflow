@@ -205,7 +205,7 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
             fixed = TRUE
           )
         ) {
-          m <- regexpr("[‘'](.+?)[’']", w$message)
+          m <- regexpr("[\u2018'](.+?)[\u2019']", w$message)
           if (m != -1) {
             pkg <- substring(w$message, m + 1, m + attr(m, "match.length") - 2)
             pkgs_to_report <<- c(pkgs_to_report, pkg)

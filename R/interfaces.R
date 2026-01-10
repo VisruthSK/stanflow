@@ -293,6 +293,7 @@ setup_cmdstanr <- function(
 #' validation and defaults; `setup_rstan()` assumes inputs are already checked.
 #'
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @param cores Integer. Number of cores to use.
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_rstan <- function(quiet, cores) {
