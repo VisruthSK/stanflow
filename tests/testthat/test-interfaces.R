@@ -21,7 +21,7 @@ test_that("setup_interface adds cmdstanr when brms_backend = cmdstanr", {
   expect_equal(libraries, c("brms", "cmdstanr"))
 })
 
-test_that("setup_interface installs backends when force = TRUE", {
+test_that("setup_interface installs backends when reinstall = TRUE", {
   installed <- character()
 
   local_mocked_bindings(
@@ -39,6 +39,7 @@ test_that("setup_interface installs backends when force = TRUE", {
     setup_interface(
       interface = c("cmdstanr", "rstan"),
       force = TRUE,
+      reinstall = TRUE,
       cores = 2,
       quiet = TRUE
     )
@@ -140,7 +141,13 @@ test_that("install_backend_package installs from Stan universe when dev = TRUE",
     .package = "utils"
   )
 
-  install_backend_package("cmdstanr", dev = TRUE, quiet = TRUE, force = TRUE)
+  install_backend_package(
+    "cmdstanr",
+    dev = TRUE,
+    quiet = TRUE,
+    force = TRUE,
+    reinstall = FALSE
+  )
 
   expect_equal(called$pkg, "cmdstanr")
   expect_equal(unname(called$repos[1]), "https://stan-dev.r-universe.dev")
@@ -159,7 +166,13 @@ test_that("install_backend_package installs from multiverse when dev = FALSE", {
     .package = "utils"
   )
 
-  install_backend_package("cmdstanr", dev = FALSE, quiet = TRUE, force = TRUE)
+  install_backend_package(
+    "cmdstanr",
+    dev = FALSE,
+    quiet = TRUE,
+    force = TRUE,
+    reinstall = FALSE
+  )
 
   expect_equal(called$pkg, "cmdstanr")
   expect_equal(unname(called$repos[1]), "https://community.r-multiverse.org")
@@ -179,7 +192,8 @@ test_that("install_backend_package aborts when user declines interactive install
       "cmdstanr",
       dev = FALSE,
       quiet = TRUE,
-      force = FALSE
+      force = FALSE,
+      reinstall = FALSE
     ),
     "Installation of"
   )
@@ -201,7 +215,8 @@ test_that("install_backend_package installs when user accepts interactive prompt
       "cmdstanr",
       dev = FALSE,
       quiet = TRUE,
-      force = FALSE
+      force = FALSE,
+      reinstall = FALSE
     )
   )
   expect_equal(called$pkg, "cmdstanr")

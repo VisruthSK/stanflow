@@ -14,8 +14,8 @@
 #'   `getOption("mc.cores")`. You must set `options(mc.cores = ...)` or pass
 #'   `cores` explicitly.
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
-#' @param force Logical. If `TRUE`, forces re-installation/setup. Required
-#'   for installation in non-interactive sessions.
+#' @param force Logical. If `TRUE`, allows installation in non-interactive sessions.
+#' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `FALSE`, skips checking for CmdStan updates.
 #' @return Returns `NULL` invisibly.
 #' @export
@@ -26,6 +26,7 @@ setup_interface <- function(
   cores = getOption("mc.cores"),
   quiet = FALSE,
   force = FALSE,
+  reinstall = FALSE,
   check_updates = TRUE
 ) {
   interface <- match.arg(interface, several.ok = TRUE)
@@ -55,8 +56,8 @@ setup_interface <- function(
   }
 
   for (pkg in interface) {
-    if (!is_installed(pkg) || force) {
-      install_backend_package(pkg, dev, quiet, force)
+    if (!is_installed(pkg) || reinstall) {
+      install_backend_package(pkg, dev, quiet, force, reinstall)
     }
 
     if (!quiet) {
@@ -67,7 +68,13 @@ setup_interface <- function(
 
     switch(
       pkg,
-      "cmdstanr" = setup_cmdstanr(quiet, force, check_updates, cores),
+      "cmdstanr" = setup_cmdstanr(
+        quiet,
+        force,
+        reinstall,
+        check_updates,
+        cores
+      ),
       "rstan" = setup_rstan(quiet, cores),
       "brms" = setup_brms(quiet, brms_backend, cores),
       "rstanarm" = setup_rstanarm(quiet, cores)
@@ -87,11 +94,11 @@ setup_interface <- function(
 }
 
 # nocov start
-install_backend_package <- function(pkg, dev, quiet, force) {
+install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
   if (!quiet) {
-    if (force) {
+    if (reinstall) {
       cli::cli_alert_warning(
-        "Reinstalling {.pkg {pkg}} because {.code force = TRUE}."
+        "Reinstalling {.pkg {pkg}} because {.code reinstall = TRUE}."
       )
     } else {
       cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
@@ -137,12 +144,19 @@ install_backend_package <- function(pkg, dev, quiet, force) {
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @param force Logical. If `TRUE`, forces installation or upgrade in
 #'   non-interactive sessions.
+#' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `FALSE`, skips checking for CmdStan updates.
 #' @param cores Integer. Number of cores to use when building CmdStan.
 #' @return Returns `TRUE` invisibly when no install/upgrade is needed.
 #'   Otherwise, returns `NULL` invisibly after installation.
 #' @export
-setup_cmdstanr <- function(quiet, force, check_updates = TRUE, cores) {
+setup_cmdstanr <- function(
+  quiet,
+  force,
+  reinstall = FALSE,
+  check_updates = TRUE,
+  cores
+) {
   toolchain_ok <- tryCatch(
     {
       cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
@@ -183,10 +197,12 @@ setup_cmdstanr <- function(quiet, force, check_updates = TRUE, cores) {
   if (cmdstan_ready && check_updates) {
     tryCatch(
       {
-        raw_json <- suppressWarnings(readLines(
-          "https://api.github.com/repos/stan-dev/cmdstan/releases/latest",
-          warn = FALSE
-        ))
+        raw_json <- suppressWarnings(
+          readLines(
+            "https://api.github.com/repos/stan-dev/cmdstan/releases/latest",
+            warn = FALSE
+          )
+        )
         tag_line <- grep('"tag_name":', raw_json, value = TRUE)[1]
         if (!is.na(tag_line)) {
           latest_ver <- numeric_version(
@@ -210,7 +226,7 @@ setup_cmdstanr <- function(quiet, force, check_updates = TRUE, cores) {
     )
   }
 
-  needs_install <- !cmdstan_ready || force
+  needs_install <- !cmdstan_ready || reinstall
   needs_update <- !is.null(latest_ver) &&
     !is.null(local_ver) &&
     (latest_ver > local_ver)
