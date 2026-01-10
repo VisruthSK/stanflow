@@ -61,7 +61,7 @@ jobs:
                     }
                     
                     cat("\n✓ SUCCESS:", interface, "setup complete\n")
-                    cat("✓ Package loaded:", packageVersion(interface), "\n")
+            cat("✓ Package loaded:", as.character(packageVersion(interface)), "\n")
                     cat("✓ mc.cores set to:", getOption("mc.cores"), "\n")
                     
                     if (interface == "cmdstanr") {
