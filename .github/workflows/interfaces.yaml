@@ -1,452 +1,99 @@
 name: Check Interfaces
 
 on:
-    push:
-        branches: [main, more-tests]
-    workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
 permissions: read-all
 
 jobs:
-    test-interface:
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [ubuntu-latest, macos-latest, windows-latest]
-                interface: [cmdstanr, rstan, brms, rstanarm]
+  test-interface:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - interface: cmdstanr
+            test_file: tests/testthat/test-interfaces-cmdstanr-ci.R
+          - interface: rstan
+            test_file: tests/testthat/test-interfaces-rstan-ci.R
+          - interface: brms
+            test_file: tests/testthat/test-interfaces-brms-ci.R
+          - interface: rstanarm
+            test_file: tests/testthat/test-interfaces-rstanarm-ci.R
 
-        name: Test ${{ matrix.interface }} (${{ matrix.os }})
+    name: Test ${{ matrix.interface }} (${{ matrix.os }})
 
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+          extra-repositories: |
+            https://community.r-multiverse.org
+            https://stan-dev.r-universe.dev
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: local::., any::testthat
+
+      - name: Test setup_interface (testthat)
         env:
-            GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+          STANFLOW_INTERFACES_CI: "true"
+        run: |
+          Rscript -e 'testthat::test_file("${{ matrix.test_file }}")'
 
-        steps:
-            - uses: actions/checkout@v4
+  # Test cmdstanr-specific scenarios
+  test-cmdstanr-scenarios:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - name: reinstall
+            check_updates: true
+            reinstall: true
+          - name: check-update-no-reinstall
+            check_updates: true
+            reinstall: false
+          - name: no-update-check
+            check_updates: false
+            reinstall: false
 
-            - uses: r-lib/actions/setup-r@v2
-              with:
-                  use-public-rspm: true
-                  extra-repositories: |
-                      https://community.r-multiverse.org
-                      https://stan-dev.r-universe.dev
+    name: cmdstanr - ${{ matrix.scenario.name }}
 
-            - uses: r-lib/actions/setup-r-dependencies@v2
-              with:
-                  dependencies: '"hard"'
-                  extra-packages: local::.
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Test ${{ matrix.interface }} setup
-              run: |
-                  Rscript -e '
-                  options(mc.cores = 2, stanflow.force_interactive = TRUE)
-                  library(stanflow)
+    steps:
+      - uses: actions/checkout@v6
 
-                  interface <- "${{ matrix.interface }}"
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing:", interface, "\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+          extra-repositories: |
+            https://community.r-multiverse.org
+            https://stan-dev.r-universe.dev
 
-                  result <- tryCatch({
-                    setup_interface(interface, cores = 2, force = TRUE, quiet = FALSE)
-                    
-                    # Verify installation
-                    if (! requireNamespace(interface, quietly = TRUE)) {
-                      stop(interface, " package not loaded after setup")
-                    }
-                    
-                    # Verify configuration
-                    if (is.null(getOption("mc.cores"))) {
-                      stop("mc.cores option not set")
-                    }
-                    
-                    cat("\n✓ SUCCESS:", interface, "setup complete\n")
-                    cat("✓ Package loaded:", as.character(packageVersion(interface)), "\n")
-                    cat("✓ mc.cores set to:", getOption("mc.cores"), "\n")
-                    
-                    if (interface == "cmdstanr") {
-                      path <- cmdstanr::cmdstan_path()
-                      version <- cmdstanr::cmdstan_version()
-                      cat("✓ CmdStan:", version, "at", path, "\n")
-                    }
-                    
-                    if (interface == "brms") {
-                      backend <- getOption("brms.backend", "not set")
-                      cat("✓ brms.backend:", backend, "\n")
-                    }
-                    
-                    TRUE
-                  }, error = function(e) {
-                    cat("\n✗ FAILED:", interface, "setup\n")
-                    cat("✗ Error:", conditionMessage(e), "\n")
-                    cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                    FALSE
-                  })
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: local::., any::testthat
 
-                  if (!result) quit(status = 1)
-                  '
-
-    # Test cmdstanr-specific scenarios
-    test-cmdstanr-scenarios:
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                scenario:
-                    - name: reinstall
-                      check_updates: true
-                      reinstall: true
-                    - name: no-update-check
-                      check_updates: false
-                      reinstall: false
-
-        name: cmdstanr - ${{ matrix.scenario.name }}
-
+      - name: Test setup_cmdstanr (testthat)
         env:
-            GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
-        steps:
-            - uses: actions/checkout@v4
-
-            - uses: r-lib/actions/setup-r@v2
-              with:
-                  use-public-rspm: true
-                  extra-repositories: |
-                      https://community.r-multiverse.org
-                      https://stan-dev.r-universe.dev
-
-            - uses: r-lib/actions/setup-r-dependencies@v2
-              with:
-                  dependencies: '"hard"'
-                  extra-packages: local::.
-
-            # Initial setup
-            - name: Initial cmdstanr setup
-              if: matrix.scenario.reinstall == true
-              run: |
-                  Rscript -e '
-                  options(mc.cores = 2, stanflow.force_interactive = TRUE)
-                  library(stanflow)
-                  setup_interface("cmdstanr", cores = 2, force = TRUE, quiet = TRUE)
-                  '
-
-            - name: Test ${{ matrix.scenario.name }}
-              run: |
-                  Rscript -e '
-                  options(mc.cores = 2, stanflow.force_interactive = TRUE)
-                  library(stanflow)
-
-                  scenario <- "${{ matrix.scenario.name }}"
-                  check_updates <- as.logical("${{ matrix.scenario.check_updates }}")
-                  reinstall <- as.logical("${{ matrix.scenario.reinstall }}")
-
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing cmdstanr:", scenario, "\n")
-                  cat("check_updates:", check_updates, "| reinstall:", reinstall, "\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  result <- tryCatch({
-                    setup_cmdstanr(
-                      quiet = FALSE, 
-                      force = TRUE, 
-                      reinstall = reinstall,
-                      check_updates = check_updates,
-                      cores = 2
-                    )
-                    
-                    cat("\n✓ SUCCESS:", scenario, "completed\n")
-                    TRUE
-                  }, error = function(e) {
-                    cat("\n✗ FAILED:", scenario, "\n")
-                    cat("✗ Error:", conditionMessage(e), "\n")
-                    FALSE
-                  })
-
-                  if (!result) quit(status = 1)
-                  '
-
-    # Test brms backends
-    test-brms-backends:
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                backend: [cmdstanr, rstan]
-
-        name: brms - ${{ matrix.backend }} backend
-
-        env:
-            GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
-        steps:
-            - uses: actions/checkout@v4
-
-            - uses: r-lib/actions/setup-r@v2
-              with:
-                  r-version: release
-                  use-public-rspm: true
-                  extra-repositories: |
-                      https://community.r-multiverse.org
-                      https://stan-dev.r-universe.dev
-
-            - uses: r-lib/actions/setup-r-dependencies@v2
-              with:
-                  dependencies: '"hard"'
-                  extra-packages: local::.
-
-            - name: Test brms with ${{ matrix.backend }}
-              run: |
-                  Rscript -e '
-                  options(mc.cores = 2, stanflow.force_interactive = TRUE)
-                  library(stanflow)
-
-                  backend <- "${{ matrix.backend }}"
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing brms with", backend, "backend\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  result <- tryCatch({
-                    setup_interface("brms", cores = 2, force = TRUE, 
-                                  brms_backend = backend, quiet = FALSE)
-                    
-                    actual_backend <- getOption("brms.backend")
-                    if (actual_backend != backend) {
-                      stop("Backend mismatch:  expected ", backend, 
-                           ", got ", actual_backend)
-                    }
-                    
-                    cat("\n✓ SUCCESS:  brms configured with", backend, "\n")
-                    cat("✓ brms.backend:", actual_backend, "\n")
-                    TRUE
-                  }, error = function(e) {
-                    cat("\n✗ FAILED: brms with", backend, "\n")
-                    cat("✗ Error:", conditionMessage(e), "\n")
-                    FALSE
-                  })
-
-                  if (!result) quit(status = 1)
-                  '
-
-    # Test network scenarios and error handling
-    test-error-handling:
-        runs-on: ubuntu-latest
-
-        name: Error Handling & Network Tests
-
-        env:
-            GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
-        steps:
-            - uses: actions/checkout@v4
-
-            - uses: r-lib/actions/setup-r@v2
-              with:
-                  use-public-rspm: true
-                  extra-repositories: |
-                      https://community.r-multiverse.org
-                      https://stan-dev.r-universe.dev
-
-            - uses: r-lib/actions/setup-r-dependencies@v2
-              with:
-                  dependencies: '"hard"'
-                  extra-packages: local::.
-
-            - name: Test network failure handling
-              run: |
-                  Rscript -e '
-                  library(stanflow)
-
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing network failure handling\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  # Block network
-                  Sys.setenv(http_proxy = "http://127.0.0.1:1", 
-                             https_proxy = "http://127.0.0.1:1")
-
-                  # Test 1: stanflow_deps with check_updates should fail clearly
-                  cat("Test 1: stanflow_deps with check_updates should fail\n")
-                  result1 <- tryCatch({
-                    stanflow_deps(check_updates = TRUE)
-                    cat("✗ Should have failed with network error\n")
-                    FALSE
-                  }, error = function(e) {
-                    msg <- conditionMessage(e)
-                    clear <- grepl("Unable to reach|could not be downloaded", msg)
-                    if (clear) {
-                      cat("✓ Clear error message:", msg, "\n")
-                    } else {
-                      cat("✗ Unclear error:", msg, "\n")
-                    }
-                    clear
-                  })
-
-                  # Test 2: stanflow_deps without check_updates should work
-                  cat("\nTest 2: stanflow_deps offline (check_updates=FALSE)\n")
-                  result2 <- tryCatch({
-                    deps <- stanflow_deps(check_updates = FALSE)
-                    cat("✓ Works offline:", nrow(deps), "dependencies found\n")
-                    TRUE
-                  }, error = function(e) {
-                    cat("✗ Should work offline:", conditionMessage(e), "\n")
-                    FALSE
-                  })
-
-                  if (!all(result1, result2)) quit(status = 1)
-                  '
-
-            - name: Test non-interactive session handling
-              run: |
-                  Rscript -e '
-                  library(stanflow)
-
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing non-interactive session handling\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  result <- tryCatch({
-                    stanflow_update()
-                    cat("✗ Should have failed in non-interactive mode\n")
-                    FALSE
-                  }, error = function(e) {
-                    msg <- conditionMessage(e)
-                    clear <- grepl("must be run interactively|non-interactive", msg)
-                    if (clear) {
-                      cat("✓ Clear error message:", msg, "\n")
-                    } else {
-                      cat("✗ Unclear error:", msg, "\n")
-                    }
-                    clear
-                  })
-
-                  if (! result) quit(status = 1)
-                  '
-
-            - name: Test missing cores parameter
-              run: |
-                  Rscript -e '
-                  options(mc.cores = NULL)
-                  library(stanflow)
-
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing missing cores parameter\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  result <- tryCatch({
-                    setup_interface("rstan")
-                    cat("✗ Should have failed with missing cores\n")
-                    FALSE
-                  }, error = function(e) {
-                    msg <- conditionMessage(e)
-                    clear <- grepl("cores", msg, ignore.case = TRUE) && 
-                             grepl("mc.cores", msg)
-                    if (clear) {
-                      cat("✓ Clear error message:", msg, "\n")
-                    } else {
-                      cat("✗ Unclear error:", msg, "\n")
-                    }
-                    clear
-                  })
-
-                  if (!result) quit(status = 1)
-                  '
-
-    # Test multiple interfaces and flow_check
-    test-integration:
-        runs-on: ubuntu-latest
-
-        name: Integration Tests
-
-        env:
-            GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
-        steps:
-            - uses: actions/checkout@v4
-
-            - uses: r-lib/actions/setup-r@v2
-              with:
-                  use-public-rspm: true
-                  extra-repositories: |
-                      https://community.r-multiverse.org
-                      https://stan-dev.r-universe.dev
-
-            - uses: r-lib/actions/setup-r-dependencies@v2
-              with:
-                  dependencies: '"hard"'
-                  extra-packages: local::.
-
-            - name: Test multiple interfaces
-              run: |
-                  Rscript -e '
-                  options(mc.cores = 2, stanflow.force_interactive = TRUE)
-                  library(stanflow)
-
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing multiple interfaces simultaneously\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  result <- tryCatch({
-                    setup_interface(c("cmdstanr", "rstan"), cores = 2, 
-                                  force = TRUE, quiet = FALSE)
-                    
-                    if (! all(c("cmdstanr", "rstan") %in% loadedNamespaces())) {
-                      stop("Not all packages loaded")
-                    }
-                    
-                    cat("\n✓ SUCCESS: Multiple interfaces loaded\n")
-                    TRUE
-                  }, error = function(e) {
-                    cat("\n✗ FAILED:", conditionMessage(e), "\n")
-                    FALSE
-                  })
-
-                  if (!result) quit(status = 1)
-                  '
-
-            - name: Test flow_check
-              run: |
-                  Rscript -e '
-                  options(mc.cores = 2)
-                  library(stanflow)
-
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Testing flow_check()\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  result <- tryCatch({
-                    output <- flow_check()
-                    cat("✓ SUCCESS: flow_check() executed\n")
-                    TRUE
-                  }, error = function(e) {
-                    cat("✗ FAILED:", conditionMessage(e), "\n")
-                    FALSE
-                  })
-
-                  if (!result) quit(status = 1)
-                  '
-
-            - name: Verify exports
-              run: |
-                  Rscript -e '
-                  library(stanflow)
-
-                  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                  cat("Verifying function exports\n")
-                  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n")
-
-                  required <- c(
-                    "setup_interface", "setup_cmdstanr", "setup_rstan",
-                    "setup_brms", "setup_rstanarm", "stanflow_deps",
-                    "stanflow_update", "stanflow_conflicts", "flow_check"
-                  )
-
-                  exported <- ls("package:stanflow")
-                  missing <- setdiff(required, exported)
-
-                  if (length(missing) > 0) {
-                    cat("✗ Missing exports:", paste(missing, collapse = ", "), "\n")
-                    quit(status = 1)
-                  }
-
-                  cat("✓ All required functions exported\n")
-                  '
+          STANFLOW_CMDSTANR_CI: "true"
+          STANFLOW_CMDSTANR_CHECK_UPDATES: ${{ matrix.scenario.check_updates }}
+          STANFLOW_CMDSTANR_REINSTALL: ${{ matrix.scenario.reinstall }}
+        run: |
+          Rscript -e 'testthat::test_file("tests/testthat/test-cmdstanr-ci.R")'

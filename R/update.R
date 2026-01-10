@@ -20,7 +20,9 @@ stanflow_deps <- function(
     pkgs <- tryCatch(
       withCallingHandlers(
         utils::available.packages(repos = stan_repos(dev)),
-        warning = function(w) stop(w)
+        warning = function(w) {
+          stop(conditionMessage(w), call. = FALSE)
+        }
       ),
       error = function(e) {
         cli::cli_abort(

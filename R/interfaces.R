@@ -17,7 +17,7 @@
 #' @param force Logical. If `TRUE`, allows installation in non-interactive sessions.
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
-#' @return Returns `NULL` invisibly.
+#' @return Returns the attached packages invisibly.
 #' @export
 setup_interface <- function(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
@@ -31,6 +31,15 @@ setup_interface <- function(
 ) {
   local_cli_quiet(quiet)
 
+  if (missing(interface)) {
+    cli::cli_abort(
+      c(
+        "{.arg interface} must be provided.",
+        "x" = "No interface selection was provided.",
+        "i" = "Set {.arg interface} to one or more of {.val brms}, {.val cmdstanr}, {.val rstan}, {.val rstanarm}."
+      )
+    )
+  }
   interface <- match.arg(interface, several.ok = TRUE)
 
   if (missing(brms_backend)) {
@@ -41,7 +50,7 @@ setup_interface <- function(
   if (is.null(cores)) {
     cli::cli_abort(
       c(
-        "{.arg cores} must be provided when setup is enabled.",
+        "{.arg cores} must be provided.",
         "x" = "No default {._opt mc.cores} option is set.",
         "i" = "Set {.code options(mc.cores = ...)} or pass {.arg cores}."
       )
@@ -80,13 +89,15 @@ setup_interface <- function(
   }
 
   attached_pkgs <- paste0("{.pkg ", interface, "}", collapse = ", ")
+  pkg_count <- cli::qty(length(interface))
+  pkg_phrase <- cli::pluralize("{pkg_count} package{?s} {?is/are}")
   cli::cli_alert_success(
     cli::format_inline(
-      "Setup complete. {attached_pkgs} are attached; you do not need to run {.code library()}."
+      "Setup complete. {attached_pkgs} {pkg_phrase} attached; you do not need to run {.code library()}."
     )
   )
 
-  invisible(NULL)
+  invisible(attached_pkgs)
 }
 
 # nocov start
@@ -229,6 +240,10 @@ setup_cmdstanr <- function(
   } else if (needs_update) {
     action_msg <- sprintf("Update available: v%s -> v%s", local_ver, latest_ver)
   } else {
+    options(mc.cores = cores)
+    cli::cli_alert_info(
+      "Configured {.pkg cmdstanr}: set {.code options(mc.cores = {cores})}"
+    )
     return(invisible(TRUE))
   }
 
@@ -270,6 +285,11 @@ setup_cmdstanr <- function(
   cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
 
   cli::cli_process_done()
+
+  options(mc.cores = cores)
+  cli::cli_alert_info(
+    "Configured {.pkg cmdstanr}: set {.code options(mc.cores = {cores})}"
+  )
 }
 # nocov end
 
