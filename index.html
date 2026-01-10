@@ -108,27 +108,18 @@
 <p>Here, we load <code>stanflow</code> and decide to use <code>cmdstanr</code> as the backend for <code>brms</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://visruthsk.github.io/stanflow/">stanflow</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0         ✔ projpred  2.10.0    </span></span>
-<span><span class="co">#&gt; ✔ loo       2.8.0.9000     ✔ shinystan 2.7.0     </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1</span></span>
-<span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
-<span><span class="co">#&gt; • brms     2.22.0          • rstan    2.36.0.9000</span></span>
-<span><span class="co">#&gt; • cmdstanr 0.9.0.9000      ✖ rstanarm</span></span>
-<span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
-<span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
 <span><span class="fu"><a href="reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="st">"brms"</span>,</span>
 <span>  dev <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  prefer_cmdstanr <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  brms_backend <span class="op">=</span> <span class="st">"cmdstanr"</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  force <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  skip_setup <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  check_updates <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; ℹ Adding cmdstanr to setup because `prefer_cmdstanr = TRUE`</span></span>
+<span><span class="co">#&gt; ℹ Adding cmdstanr to setup because `brms_backend = 'cmdstanr'`</span></span>
 <span><span class="co">#&gt; ℹ Attaching brms...</span></span>
-<span><span class="co">#&gt; ℹ Configured brms: set `options(mc.cores = parallel::detectCores())` and `options(brms.backend = 'cmdstanr')`</span></span>
+<span><span class="co">#&gt; ℹ Configured brms: set `options(mc.cores = 2)` and `options(brms.backend = 'cmdstanr')`</span></span>
 <span><span class="co">#&gt; ℹ Attaching cmdstanr...</span></span>
 <span><span class="co">#&gt; The C++ toolchain required for CmdStan is setup properly!</span></span>
 <span><span class="co">#&gt; ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'</span></span>
@@ -141,7 +132,7 @@
 <span><span class="co">#&gt; ✔ posterior 1.6.1          </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
 <span><span class="co">#&gt; ✔ brms     2.22.0          • rstan    2.36.0.9000</span></span>
-<span><span class="co">#&gt; ✔ cmdstanr 0.9.0.9000      ✖ rstanarm            </span></span>
+<span><span class="co">#&gt; ✔ cmdstanr 0.9.0           • rstanarm 2.32.2     </span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
 <span><span class="co">#&gt; ✖ brms::ar()      masks stats::ar()</span></span>
 <span><span class="co">#&gt; ✖ brms::do_call() masks projpred::do_call()</span></span>

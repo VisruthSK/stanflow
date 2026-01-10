@@ -1,6 +1,6 @@
 # Update stanflow packages
 
-Update stanflow packages
+This function requires an interactive R session.
 
 ## Usage
 

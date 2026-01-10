@@ -10,11 +10,13 @@ necessary one-time setup (like installing CmdStan).
 ``` r
 setup_interface(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
-  dev = FALSE,
-  prefer_cmdstanr = FALSE,
-  quiet = FALSE,
+  cores = getOption("mc.cores"),
+  quiet = TRUE,
   force = FALSE,
-  skip_setup = FALSE
+  reinstall = FALSE,
+  check_updates = FALSE,
+  dev = FALSE,
+  brms_backend = c("cmdstanr", "rstan")
 )
 ```
 
@@ -25,16 +27,10 @@ setup_interface(
   A character vector. Select at least one of: "brms", "cmdstanr",
   "rstan", "rstanarm".
 
-- dev:
+- cores:
 
-  Logical. If `FALSE` (default), installs stable releases from
-  R-multiverse or CRAN. If `TRUE`, installs development versions from
-  Stan R-universe.
-
-- prefer_cmdstanr:
-
-  Logical. If `TRUE`, configures `brms` to use the `cmdstanr` backend
-  instead of the default `rstan`.
+  Integer. Number of cores to use. Defaults to `getOption("mc.cores")`.
+  You must set `options(mc.cores = ...)` or pass `cores` explicitly.
 
 - quiet:
 
@@ -42,13 +38,27 @@ setup_interface(
 
 - force:
 
-  Logical. If `TRUE`, forces re-installation/setup. Required for
-  installation in non-interactive sessions.
+  Logical. If `TRUE`, allows installation in non-interactive sessions.
 
-- skip_setup:
+- reinstall:
 
-  Logical. If `TRUE`, packages are only attached and no backend-specific
-  configuration is run.
+  Logical. If `TRUE`, forces re-installation.
+
+- check_updates:
+
+  Logical. If `TRUE`, checks for CmdStan updates.
+
+- dev:
+
+  Logical. If `FALSE` (default), installs stable releases from
+  R-multiverse or CRAN. If `TRUE`, installs development versions from
+  Stan R-universe.
+
+- brms_backend:
+
+  Character. The `brms` backend to use Defaults to
+  `getOption("brms.backend", "cmdstanr")` and must be one of
+  `c("cmdstanr", "rstan")`.
 
 ## Value
 

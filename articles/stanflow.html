@@ -160,7 +160,8 @@
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="st">"brms"</span>,</span>
-<span>  prefer_cmdstanr <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  brms_backend <span class="op">=</span> <span class="st">"cmdstanr"</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  force <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># only required for non-interactive usage</span></span>
 <span><span class="op">)</span></span>
@@ -187,6 +188,7 @@
 <span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
 <span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
 <span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
 <span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:22:</span></span>
 <span><span class="co">#&gt; ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:749:21: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
 <span><span class="co">#&gt;   749 |         public std::iterator&lt;std::forward_iterator_tag,Value&gt; {</span></span>
@@ -205,8 +207,6 @@
 <span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
 <span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
 <span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
-<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
-<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
 <span><span class="co">#&gt; * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.37.0</span></span>
 <span><span class="co">#&gt; CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.37.0</span></span>
@@ -229,6 +229,7 @@
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rstan"</span>, <span class="st">"brms"</span><span class="op">)</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -272,19 +273,12 @@
 <span><span class="co">#&gt; All Pareto k estimates are good (k &lt; 0.7).</span></span>
 <span><span class="co">#&gt; See help('pareto-k-diagnostic') for details.</span></span></code></pre></div>
 </div>
-</section><section class="level2"><h2 id="keep-the-toolkit-fresh">Keep the toolkit fresh<a class="anchor" aria-label="anchor" href="#keep-the-toolkit-fresh"></a>
+</section><section class="level2"><h2 id="keep-the-flow-fresh">Keep the flow fresh<a class="anchor" aria-label="anchor" href="#keep-the-flow-fresh"></a>
 </h2>
 <p>Check whether your Stan workflow packages are up to date (stable releases by default, or dev builds with <code>dev = TRUE</code>). Set <code>recursive</code> to check the full dependency closure.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/stanflow_update.html">stanflow_update</a></span><span class="op">(</span>recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; The following packages are out of date:</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; • cpp11 (0 -&gt; 0.5.2)</span></span>
-<span><span class="co">#&gt; • mgcv  (1.9.3 -&gt; 1.9-4)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Start a clean R session then run:</span></span>
-<span><span class="co">#&gt; install.packages(c("cpp11", "mgcv"), repos = c("https://community.r-multiverse.org", getOption("repos")))</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/stanflow_update.html">stanflow_update</a></span><span class="op">(</span>recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {

@@ -5,6 +5,8 @@
 - **Visruth Srimath Kandali**. Author, maintainer.
   [](https://orcid.org/0009-0005-9097-0688)
 
+- **Jonah Gabry**. Contributor.
+
 - **tidyverse authors**. Copyright holder.  
   Some code adapted from tidyverse package (MIT)
 

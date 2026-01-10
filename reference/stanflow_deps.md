@@ -5,7 +5,7 @@ List all stanflow dependencies
 ## Usage
 
 ``` r
-stanflow_deps(recursive = FALSE, dev = FALSE)
+stanflow_deps(recursive = FALSE, dev = FALSE, check_updates = TRUE)
 ```
 
 ## Arguments
@@ -20,3 +20,8 @@ stanflow_deps(recursive = FALSE, dev = FALSE)
   (stable releases). If `TRUE`, checks the Stan R-universe (dev
   versions). This is only cogent for Stan packages, and cannot compare
   two dev versions.
+
+- check_updates:
+
+  Logical. If `FALSE`, skips checking for remote versions and only
+  reports locally installed package versions.

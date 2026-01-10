@@ -70,7 +70,8 @@ default.
 ``` r
 setup_interface(
   interface = "brms",
-  prefer_cmdstanr = TRUE,
+  brms_backend = "cmdstanr",
+  cores = 2,
   quiet = TRUE,
   force = TRUE # only required for non-interactive usage
 )
@@ -97,6 +98,7 @@ setup_interface(
 #> /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here
 #>   127 |     struct _GLIBCXX17_DEPRECATED iterator
 #>       |                                  ^~~~~~~~
+#> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
 #> In file included from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:22:
 #> ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:749:21: warning: ‘template<class _Category, class _Tp, class _Distance, class _Pointer, class _Reference> struct std::iterator’ is deprecated [-Wdeprecated-declarations]
 #>   749 |         public std::iterator<std::forward_iterator_tag,Value> {
@@ -115,8 +117,6 @@ setup_interface(
 #> /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here
 #>   127 |     struct _GLIBCXX17_DEPRECATED iterator
 #>       |                                  ^~~~~~~~
-#> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
-#> 
 #> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
 #> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.37.0
 #> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.37.0
@@ -140,6 +140,7 @@ If you prefer `RStan`, you could just load it alongside `brms`.
 ``` r
 setup_interface(
   interface = c("rstan", "brms"),
+  cores = 2,
   quiet = TRUE
 )
 ```
@@ -185,7 +186,7 @@ loo(log_lik)
 #> See help('pareto-k-diagnostic') for details.
 ```
 
-## Keep the toolkit fresh
+## Keep the flow fresh
 
 Check whether your Stan workflow packages are up to date (stable
 releases by default, or dev builds with `dev = TRUE`). Set `recursive`
@@ -193,11 +194,4 @@ to check the full dependency closure.
 
 ``` r
 stanflow_update(recursive = TRUE)
-#> The following packages are out of date:
-#> 
-#> • cpp11 (0 -> 0.5.2)
-#> • mgcv  (1.9.3 -> 1.9-4)
-#> 
-#> Start a clean R session then run:
-#> install.packages(c("cpp11", "mgcv"), repos = c("https://community.r-multiverse.org", getOption("repos")))
 ```

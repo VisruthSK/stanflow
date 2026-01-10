@@ -13,8 +13,8 @@ stanflow_conflicts(only = NULL)
 
 - only:
 
-  Set this to a character vector to restrict to conflicts only with
-  these packages.
+  Set this to a character vector to restrict to conflicts only between
+  the provided packages and loaded stanflow packages.
 
 ## Details
 
