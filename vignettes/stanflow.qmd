@@ -74,10 +74,11 @@ log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
 loo(log_lik)
 ```
 
-## Keep the toolkit fresh
+## Keep the flow fresh
 
 Check whether your Stan workflow packages are up to date (stable releases by default, or dev builds with `dev = TRUE`). Set `recursive` to check the full dependency closure.
 
 ```{r}
+#| eval: false
 stanflow_update(recursive = TRUE)
 ```

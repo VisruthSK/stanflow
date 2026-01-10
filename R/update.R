@@ -198,7 +198,13 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
     withCallingHandlers(
       utils::install.packages(behind$package, repos = repos, quiet = TRUE),
       warning = function(w) {
-        if (grepl("cannot remove prior installation of package", w$message)) {
+        if (
+          grepl(
+            "cannot remove prior installation of package",
+            w$message,
+            fixed = TRUE
+          )
+        ) {
           m <- regexpr("[‘'](.+?)[’']", w$message)
           if (m != -1) {
             pkg <- substring(w$message, m + 1, m + attr(m, "match.length") - 2)
