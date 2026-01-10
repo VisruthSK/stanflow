@@ -4,6 +4,7 @@ Version: 0.0.0.9000
 Authors@R: c(
     person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0005-9097-0688")),
+    person("Jonah", "Gabry", role = "ctb"),
     person("tidyverse authors", role = "cph",
            comment = "Some code adapted from tidyverse package (MIT)")
   )
@@ -32,7 +33,8 @@ Suggests:
     rstan,
     rstanarm,
     testthat (>= 3.0.0)
-VignetteBuilder: quarto
+VignetteBuilder: 
+    quarto
 Additional_repositories:
     https://community.r-multiverse.org,
     https://mc-stan-org.r-universe.dev
