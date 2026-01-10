@@ -42,6 +42,14 @@ test_that("is_attached checks the current search path", {
   expect_false(is_attached("definitely.not.a.pkg"))
 })
 
+test_that("is_interactive_session honors override options", {
+  withr::local_options(list(stanflow.force_interactive = TRUE))
+  expect_true(is_interactive_session())
+
+  withr::local_options(list(stanflow.force_interactive = FALSE))
+  expect_false(is_interactive_session())
+})
+
 test_that("wrapped_startup handles NULL and quiet option", {
   expect_null(wrapped_startup(NULL))
 

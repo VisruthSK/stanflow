@@ -152,7 +152,7 @@ stanflow_deps <- function(
 stanflow_update <- function(recursive = FALSE, dev = FALSE) {
   is_testing <- getOption("stanflow.testing", FALSE)
 
-  if (!interactive() && !is_testing) {
+  if (!is_interactive_session()) {
     cli::cli_abort(
       c(
         "{.fn stanflow_update} must be run interactively.",

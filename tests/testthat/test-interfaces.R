@@ -57,7 +57,6 @@ test_that("setup_interface installs backends when reinstall = TRUE", {
 })
 
 test_that("setup_interface installs missing packages when not installed", {
-  skip_on_covr()
   installed <- character()
 
   local_mocked_bindings(
@@ -188,8 +187,7 @@ test_that("install_backend_package installs from multiverse when dev = FALSE", {
 })
 
 test_that("install_backend_package aborts when user declines interactive install", {
-  skip_on_covr()
-  skip_if_not(interactive())
+  withr::local_options(list(stanflow.force_interactive = TRUE))
   local_mocked_bindings(
     menu = function(...) 2,
     install.packages = function(...) stop("should not reach install"),
@@ -208,9 +206,8 @@ test_that("install_backend_package aborts when user declines interactive install
 })
 
 test_that("install_backend_package installs when user accepts interactive prompt", {
-  skip_on_covr()
   called <- list()
-  skip_if_not(interactive())
+  withr::local_options(list(stanflow.force_interactive = TRUE))
   local_mocked_bindings(
     menu = function(...) 1,
     install.packages = function(pkg, repos, quiet) {

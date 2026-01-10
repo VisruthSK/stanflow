@@ -1,6 +1,9 @@
 run_update_with <- function(deps_df, update_fun, check = NULL) {
   stopifnot(is.function(update_fun))
-  withr::local_options(list(stanflow.testing = TRUE))
+  withr::local_options(list(
+    stanflow.testing = TRUE,
+    stanflow.force_interactive = TRUE
+  ))
   with_mocked_bindings(
     stanflow_deps = function(recursive, dev, check_updates = TRUE) {
       if (!is.null(check)) {
@@ -216,8 +219,10 @@ test_that("stanflow_deps falls back when dependencies are empty", {
 })
 
 test_that("stanflow_update aborts in non-interactive sessions", {
-  skip_if(interactive())
-  withr::local_options(list(stanflow.testing = FALSE))
+  withr::local_options(list(
+    stanflow.testing = FALSE,
+    stanflow.force_interactive = FALSE
+  ))
   expect_error(stanflow_update(), "must be run interactively")
 })
 
@@ -265,7 +270,8 @@ test_that("stanflow_update reports packages that need reinstall after warnings",
   testthat::local_reproducible_output(width = 60)
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org"),
-    stanflow.testing = TRUE
+    stanflow.testing = FALSE,
+    stanflow.force_interactive = TRUE
   ))
 
   behind <- data.frame(

@@ -51,6 +51,14 @@ invert <- function(x) {
 is_attached <- function(x) paste0("package:", x) %in% search()
 is_installed <- function(x) length(find.package(x, quiet = TRUE)) > 0
 
+is_interactive_session <- function() {
+  override <- getOption("stanflow.force_interactive", NULL)
+  if (!is.null(override)) {
+    return(isTRUE(override))
+  }
+  interactive()
+}
+
 local_cli_quiet <- function(quiet, env = parent.frame()) {
   if (!quiet) {
     return(invisible(NULL))

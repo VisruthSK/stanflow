@@ -101,7 +101,7 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
     cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
   }
 
-  if (!interactive() && !force) {
+  if (!is_interactive_session() && !force) {
     cli::cli_abort(
       c(
         "Package {.pkg {pkg}} is missing.",
@@ -111,7 +111,7 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
     )
   }
 
-  if (interactive() && !force) {
+  if (is_interactive_session() && !force) {
     title <- if (dev) {
       "Install from Stan Universe (Dev)?"
     } else {
@@ -168,7 +168,8 @@ setup_cmdstanr <- function(
     cli::cli_abort(
       c(
         "CmdStan toolchain check failed.",
-        "i" = "You need a C++ compiler (RTools on Windows, Xcode on Mac) to run Stan."
+        "i" = "You need a C++ compiler (RTools on Windows, Xcode on Mac) to run Stan.",
+        "i" = "Re-run {.code cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)} for detailed diagnostics."
       )
     )
   }
@@ -233,7 +234,7 @@ setup_cmdstanr <- function(
 
   cli::cli_alert_warning(action_msg)
 
-  if (!interactive() && !force) {
+  if (!is_interactive_session() && !force) {
     if (needs_update && !needs_install) {
       cli::cli_alert_info(
         "Skipping update in non-interactive mode (set {.code force = TRUE} to upgrade)."
@@ -249,7 +250,7 @@ setup_cmdstanr <- function(
     )
   }
 
-  if (interactive() && !force) {
+  if (is_interactive_session() && !force) {
     title <- if (needs_install) {
       "Download and compile CmdStan now?"
     } else {
