@@ -28,6 +28,10 @@ test_that("invert swaps nested lists into lookup lists", {
   )
 })
 
+test_that("invert handles empty inputs", {
+  expect_equal(invert(list()), list())
+})
+
 test_that("find_unloaded filters attached packages", {
   pkgs <- c("stats", "definitely.not.a.pkg")
   expect_equal(find_unloaded(pkgs), "definitely.not.a.pkg")

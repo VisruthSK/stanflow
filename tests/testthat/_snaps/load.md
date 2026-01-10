@@ -11,3 +11,9 @@
     * brms     2.22.0          * rstan    2.36.0.9000
     * cmdstanr 0.9.0.9000      x rstanarm             
 
+# backends_attach_message shows attached packages
+
+    -- Available Stan interfaces ------------------------------ setup_interface() --
+    * brms     2.22.0          * rstan    2.36.0.9000
+    v cmdstanr 0.9.0.9000      v rstanarm 2.32.1 
+

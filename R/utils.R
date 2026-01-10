@@ -50,3 +50,18 @@ invert <- function(x) {
 
 is_attached <- function(x) paste0("package:", x) %in% search()
 is_installed <- function(x) length(find.package(x, quiet = TRUE)) > 0
+
+local_cli_quiet <- function(quiet, env = parent.frame()) {
+  if (!quiet) {
+    return(invisible(NULL))
+  }
+
+  old <- options(cli.default_handler = function(...) invisible(NULL))
+  restore_expr <- bquote(options(
+    cli.default_handler = .(old$cli.default_handler)
+  ))
+
+  eval(call("on.exit", restore_expr, add = TRUE), envir = env)
+
+  invisible(NULL)
+}

@@ -29,6 +29,8 @@ setup_interface <- function(
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan")
 ) {
+  local_cli_quiet(quiet)
+
   interface <- match.arg(interface, several.ok = TRUE)
 
   if (missing(brms_backend)) {
@@ -47,11 +49,9 @@ setup_interface <- function(
   }
 
   if (brms_backend == "cmdstanr" && !"cmdstanr" %in% interface) {
-    if (!quiet) {
-      cli::cli_alert_info(
-        "Adding {.pkg cmdstanr} to setup because {.arg brms_backend = 'cmdstanr'}"
-      )
-    }
+    cli::cli_alert_info(
+      "Adding {.pkg cmdstanr} to setup because {.arg brms_backend = 'cmdstanr'}"
+    )
     interface <- c(interface, "cmdstanr")
   }
 
@@ -60,9 +60,7 @@ setup_interface <- function(
       install_backend_package(pkg, dev, quiet, force, reinstall)
     }
 
-    if (!quiet) {
-      cli::cli_alert_info("Attaching {.pkg {pkg}}...")
-    }
+    cli::cli_alert_info("Attaching {.pkg {pkg}}...")
 
     suppressPackageStartupMessages(same_library(pkg))
 
@@ -81,28 +79,26 @@ setup_interface <- function(
     )
   }
 
-  if (!quiet) {
-    attached_pkgs <- paste0("{.pkg ", interface, "}", collapse = ", ")
-    cli::cli_alert_success(
-      cli::format_inline(
-        "Setup complete. {attached_pkgs} are attached; you do not need to run {.code library()}."
-      )
+  attached_pkgs <- paste0("{.pkg ", interface, "}", collapse = ", ")
+  cli::cli_alert_success(
+    cli::format_inline(
+      "Setup complete. {attached_pkgs} are attached; you do not need to run {.code library()}."
     )
-  }
+  )
 
   invisible(NULL)
 }
 
 # nocov start
 install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
-  if (!quiet) {
-    if (reinstall) {
-      cli::cli_alert_warning(
-        "Reinstalling {.pkg {pkg}} because {.code reinstall = TRUE}."
-      )
-    } else {
-      cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
-    }
+  local_cli_quiet(quiet)
+
+  if (reinstall) {
+    cli::cli_alert_warning(
+      "Reinstalling {.pkg {pkg}} because {.code reinstall = TRUE}."
+    )
+  } else {
+    cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
   }
 
   if (!interactive() && !force) {
@@ -127,11 +123,9 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
     }
   }
 
-  if (!quiet) {
-    cli::cli_progress_step("Installing {.pkg {pkg}}...")
-  }
+  cli::cli_progress_step("Installing {.pkg {pkg}}...")
   utils::install.packages(pkg, repos = stan_repos(dev), quiet = TRUE)
-  if (!quiet) cli::cli_progress_done()
+  cli::cli_progress_done()
 }
 
 #' Setup cmdstanr and CmdStan
@@ -157,15 +151,15 @@ setup_cmdstanr <- function(
   check_updates = TRUE,
   cores
 ) {
+  local_cli_quiet(quiet)
+
   toolchain_ok <- tryCatch(
     {
       cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
       TRUE
     },
     error = function(e) {
-      if (!quiet) {
-        cli::cli_alert_danger("C++ toolchain broken: {e$message}")
-      }
+      cli::cli_alert_danger("C++ toolchain broken: {e$message}")
       FALSE
     }
   )
@@ -185,9 +179,7 @@ setup_cmdstanr <- function(
     {
       path <- cmdstanr::cmdstan_path()
       local_ver <- cmdstanr::cmdstan_version() |> numeric_version()
-      if (!quiet) {
-        cli::cli_alert_info("Found CmdStan v{local_ver} at {.path {path}}")
-      }
+      cli::cli_alert_info("Found CmdStan v{local_ver} at {.path {path}}")
       cmdstan_ready <- TRUE
     },
     error = function(e) {}
@@ -239,17 +231,13 @@ setup_cmdstanr <- function(
     return(invisible(TRUE))
   }
 
-  if (!quiet) {
-    cli::cli_alert_warning(action_msg)
-  }
+  cli::cli_alert_warning(action_msg)
 
   if (!interactive() && !force) {
     if (needs_update && !needs_install) {
-      if (!quiet) {
-        cli::cli_alert_info(
-          "Skipping update in non-interactive mode (set {.code force = TRUE} to upgrade)."
-        )
-      }
+      cli::cli_alert_info(
+        "Skipping update in non-interactive mode (set {.code force = TRUE} to upgrade)."
+      )
       return(invisible(TRUE))
     }
     cli::cli_abort(
@@ -276,13 +264,11 @@ setup_cmdstanr <- function(
     }
   }
 
-  if (!quiet) {
-    cli::cli_process_start("Installing CmdStan (this takes time)...")
-  }
+  cli::cli_process_start("Installing CmdStan (this takes time)...")
 
   cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
 
-  if (!quiet) cli::cli_process_done()
+  cli::cli_process_done()
 }
 # nocov end
 
@@ -297,14 +283,13 @@ setup_cmdstanr <- function(
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_rstan <- function(quiet, cores) {
+  local_cli_quiet(quiet)
   options(mc.cores = cores)
   rstan::rstan_options(auto_write = TRUE)
 
-  if (!quiet) {
-    cli::cli_alert_info(
-      "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = TRUE)}"
-    )
-  }
+  cli::cli_alert_info(
+    "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = TRUE)}"
+  )
 }
 
 #' Setup brms
@@ -320,6 +305,7 @@ setup_rstan <- function(quiet, cores) {
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_brms <- function(quiet, brms_backend, cores) {
+  local_cli_quiet(quiet)
   options(mc.cores = cores)
 
   msg <- "Configured {.pkg brms}: set {.code options(mc.cores = {cores})}"
@@ -332,9 +318,7 @@ setup_brms <- function(quiet, brms_backend, cores) {
     "')}"
   )
 
-  if (!quiet) {
-    cli::cli_alert_info(msg)
-  }
+  cli::cli_alert_info(msg)
 }
 
 #' Setup rstanarm
@@ -348,11 +332,10 @@ setup_brms <- function(quiet, brms_backend, cores) {
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_rstanarm <- function(quiet, cores) {
+  local_cli_quiet(quiet)
   options(mc.cores = cores)
 
   msg <- "Configured {.pkg rstanarm}: set {.code options(mc.cores = {cores})}"
 
-  if (!quiet) {
-    cli::cli_alert_info(msg)
-  }
+  cli::cli_alert_info(msg)
 }

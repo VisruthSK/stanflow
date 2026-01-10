@@ -190,32 +190,28 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
 
   repos <- stan_repos(dev)
 
-  pkgs_to_report <- character()
+  pkgs_to_report <- if (is_testing) behind$package else character()
 
-  if (is_testing) {
-    pkgs_to_report <- behind$package
-  } else {
-    withCallingHandlers(
-      utils::install.packages(behind$package, repos = repos, quiet = TRUE),
-      warning = function(w) {
-        if (
-          grepl(
-            "cannot remove prior installation of package",
-            w$message,
-            fixed = TRUE
-          )
-        ) {
-          m <- regexpr("[\u2018'](.+?)[\u2019']", w$message)
-          if (m != -1) {
-            pkg <- substring(w$message, m + 1, m + attr(m, "match.length") - 2)
-            pkgs_to_report <<- c(pkgs_to_report, pkg)
-          }
-        } else {
-          invokeRestart("muffleWarning")
+  withCallingHandlers(
+    utils::install.packages(behind$package, repos = repos, quiet = TRUE),
+    warning = function(w) {
+      if (
+        grepl(
+          "cannot remove prior installation of package",
+          w$message,
+          fixed = TRUE
+        )
+      ) {
+        m <- regexpr("[\u2018'](.+?)[\u2019']", w$message)
+        if (m != -1) {
+          pkg <- substring(w$message, m + 1, m + attr(m, "match.length") - 2)
+          pkgs_to_report <<- c(pkgs_to_report, pkg)
         }
+      } else {
+        invokeRestart("muffleWarning")
       }
-    )
-  }
+    }
+  )
 
   if (length(pkgs_to_report) > 0) {
     pkgs_to_report <- unique(pkgs_to_report)

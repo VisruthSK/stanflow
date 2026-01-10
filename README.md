@@ -1,4 +1,4 @@
-# stanflow
+# stanflow (Stan Bayesian Workflow)
 
 
 <!-- badges: start -->

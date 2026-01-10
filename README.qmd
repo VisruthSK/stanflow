@@ -1,5 +1,5 @@
 ---
-title: stanflow
+title: "stanflow (Stan Bayesian Workflow)"
 knitr:
   opts_chunk:
     collapse: true

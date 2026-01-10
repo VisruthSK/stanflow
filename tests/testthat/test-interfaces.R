@@ -21,6 +21,14 @@ test_that("setup_interface adds cmdstanr when brms_backend = cmdstanr", {
   expect_equal(libraries, c("brms", "cmdstanr"))
 })
 
+test_that("setup_interface aborts when cores are missing", {
+  withr::local_options(list(mc.cores = NULL))
+  expect_error(
+    setup_interface(interface = "cmdstanr", quiet = TRUE),
+    "cores"
+  )
+})
+
 test_that("setup_interface installs backends when reinstall = TRUE", {
   installed <- character()
 
@@ -231,6 +239,21 @@ test_that("setup_brms configures brms backend", {
   expect_equal(getOption("brms.backend"), "cmdstanr")
 })
 
+test_that("setup_brms emits configuration message when quiet = FALSE", {
+  withr::local_options(list(mc.cores = NULL, brms.backend = NULL))
+  msg <- NULL
+
+  local_mocked_bindings(
+    cli_alert_info = function(...) msg <<- paste0(...),
+    .package = "cli"
+  )
+
+  setup_brms(quiet = FALSE, brms_backend = "rstan", cores = 4)
+
+  expect_match(msg, "Configured")
+  expect_match(msg, "brms")
+})
+
 test_that("setup_rstan configures parallel cores and rstan options", {
   withr::local_options(list(mc.cores = NULL))
   rstan_args <- NULL
@@ -245,6 +268,41 @@ test_that("setup_rstan configures parallel cores and rstan options", {
 
   expect_equal(getOption("mc.cores"), 6)
   expect_true(rstan_args$auto_write)
+})
+
+test_that("setup_rstan emits configuration message when quiet = FALSE", {
+  withr::local_options(list(mc.cores = NULL))
+  skip_if_not_installed("rstan")
+  msg <- NULL
+
+  local_mocked_bindings(
+    rstan_options = function(...) NULL,
+    .package = "rstan"
+  )
+  local_mocked_bindings(
+    cli_alert_info = function(...) msg <<- paste0(...),
+    .package = "cli"
+  )
+
+  setup_rstan(quiet = FALSE, cores = 3)
+
+  expect_match(msg, "Configured")
+  expect_match(msg, "rstan")
+})
+
+test_that("setup_rstanarm emits configuration message when quiet = FALSE", {
+  withr::local_options(list(mc.cores = NULL))
+  msg <- NULL
+
+  local_mocked_bindings(
+    cli_alert_info = function(...) msg <<- paste0(...),
+    .package = "cli"
+  )
+
+  setup_rstanarm(quiet = FALSE, cores = 5)
+
+  expect_match(msg, "Configured")
+  expect_match(msg, "rstanarm")
 })
 
 

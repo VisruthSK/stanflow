@@ -39,6 +39,13 @@ test_that("stanflow_conflict_message renders deterministic output", {
   expect_snapshot_output(cat(stanflow_conflict_message(conflicts)))
 })
 
+test_that("stanflow_conflict_message returns NULL for empty conflicts", {
+  expect_null(stanflow_conflict_message(structure(
+    list(),
+    class = "stanflow_conflicts"
+  )))
+})
+
 test_that("stanflow_conflicts filters by requested packages", {
   env_target <- "package:projpred"
   env_other <- "package:stanflow_conflict_only_peer"
@@ -69,4 +76,16 @@ test_that("print.stanflow_conflicts returns input invisibly", {
   output <- capture.output(res <- print(conflicts))
   expect_true(any(grepl("Conflicts", output)))
   expect_identical(res, conflicts)
+})
+
+test_that("confirm_conflict ignores non-function objects", {
+  env_a <- "package:stanflow_conflict_nonfun_a"
+  env_b <- "package:stanflow_conflict_nonfun_b"
+
+  attach(list(conflicted_fun = function() "a"), name = env_a)
+  attach(list(conflicted_fun = 1), name = env_b)
+  on.exit(detach(env_b, character.only = TRUE), add = TRUE)
+  on.exit(detach(env_a, character.only = TRUE), add = TRUE)
+
+  expect_null(confirm_conflict(c(env_a, env_b), "conflicted_fun"))
 })
