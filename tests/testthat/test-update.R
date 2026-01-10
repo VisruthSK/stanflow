@@ -114,6 +114,24 @@ test_that("stanflow_deps aborts when package metadata cannot be downloaded", {
   )
 })
 
+test_that("stanflow_deps aborts on repository access warnings", {
+  local_mocked_bindings(
+    stan_repos = function(dev) "https://fake.repo",
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    available.packages = function(...) {
+      warning("unable to access index for repository")
+    },
+    .package = "utils"
+  )
+
+  expect_error(
+    stanflow_deps(check_updates = TRUE),
+    "Unable to reach repositories"
+  )
+})
+
 test_that("stanflow_deps handles missing repo versions", {
   fake_available <- matrix(
     c(NA, "1.6.0"),

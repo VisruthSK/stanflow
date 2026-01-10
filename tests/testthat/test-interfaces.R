@@ -29,6 +29,13 @@ test_that("setup_interface aborts when cores are missing", {
   )
 })
 
+test_that("setup_interface aborts when interface is missing", {
+  expect_error(
+    setup_interface(),
+    "interface"
+  )
+})
+
 test_that("setup_interface installs backends when reinstall = TRUE", {
   installed <- character()
 
