@@ -38,6 +38,7 @@ jobs:
           dependencies: '"hard"'
           extra-packages: local::., any::testthat
           cache-version: 2
+          upgrade: true
 
       - name: Test setup_interface (testthat)
         env:
