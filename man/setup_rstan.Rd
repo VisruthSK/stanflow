@@ -4,7 +4,7 @@
 \alias{setup_rstan}
 \title{Setup rstan}
 \usage{
-setup_rstan(quiet)
+setup_rstan(quiet, cores)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
@@ -14,4 +14,6 @@ Returns \code{NULL} invisibly.
 }
 \description{
 Configures \code{rstan} to use available cores and write compiled models to disk.
+Prefer \code{setup_interface()} for user-facing setup since it performs argument
+validation and defaults; \code{setup_rstan()} assumes inputs are already checked.
 }

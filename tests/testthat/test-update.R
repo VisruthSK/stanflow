@@ -2,7 +2,7 @@ run_update_with <- function(deps_df, update_fun, check = NULL) {
   stopifnot(is.function(update_fun))
   withr::local_options(list(stanflow.testing = TRUE))
   with_mocked_bindings(
-    stanflow_deps = function(recursive, dev) {
+    stanflow_deps = function(recursive, dev, check_updates = TRUE) {
       if (!is.null(check)) {
         check(recursive, dev)
       }

@@ -8,9 +8,9 @@ setup_interface(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan"),
+  cores = getOption("mc.cores"),
   quiet = FALSE,
   force = FALSE,
-  skip_setup = FALSE,
   check_updates = TRUE
 )
 }
@@ -24,13 +24,14 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 \code{getOption("brms.backend", "cmdstanr")} and must be one of
 \code{c("cmdstanr", "rstan")}.}
 
+\item{cores}{Integer. Number of cores to use. Defaults to
+\code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
+\code{cores} explicitly.}
+
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
 \item{force}{Logical. If \code{TRUE}, forces re-installation/setup. Required
 for installation in non-interactive sessions.}
-
-\item{skip_setup}{Logical. If \code{TRUE}, packages are only attached and no
-backend-specific configuration is run.}
 
 \item{check_updates}{Logical. If \code{FALSE}, skips checking for CmdStan updates.}
 }

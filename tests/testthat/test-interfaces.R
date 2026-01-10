@@ -6,13 +6,15 @@ test_that("setup_interface adds cmdstanr when brms_backend = cmdstanr", {
       stop("install_backend_package should not run")
     },
     same_library = function(pkg) libraries <<- c(libraries, pkg),
+    setup_cmdstanr = function(...) invisible(NULL),
+    setup_brms = function(...) invisible(NULL),
     .package = "stanflow"
   )
 
   setup_interface(
     interface = "brms",
     brms_backend = "cmdstanr",
-    skip_setup = TRUE,
+    cores = 2,
     quiet = FALSE
   )
 
@@ -28,6 +30,8 @@ test_that("setup_interface installs backends when force = TRUE", {
       installed <<- c(installed, pkg)
     },
     same_library = function(pkg) NULL,
+    setup_cmdstanr = function(...) invisible(NULL),
+    setup_rstan = function(...) invisible(NULL),
     .package = "stanflow"
   )
 
@@ -35,7 +39,7 @@ test_that("setup_interface installs backends when force = TRUE", {
     setup_interface(
       interface = c("cmdstanr", "rstan"),
       force = TRUE,
-      skip_setup = TRUE,
+      cores = 2,
       quiet = TRUE
     )
   )
@@ -53,6 +57,7 @@ test_that("setup_interface installs missing packages when not installed", {
       installed <<- c(installed, pkg)
     },
     same_library = function(pkg) NULL,
+    setup_brms = function(...) invisible(NULL),
     .package = "stanflow"
   )
 
@@ -61,7 +66,7 @@ test_that("setup_interface installs missing packages when not installed", {
       interface = c("brms"),
       brms_backend = "rstan",
       force = FALSE,
-      skip_setup = TRUE,
+      cores = 2,
       quiet = TRUE
     )
   )
@@ -69,7 +74,7 @@ test_that("setup_interface installs missing packages when not installed", {
   expect_equal(installed, "brms")
 })
 
-test_that("setup_interface runs backend setup helpers when skip_setup = FALSE", {
+test_that("setup_interface runs backend setup helpers", {
   calls <- character()
 
   local_mocked_bindings(
@@ -101,8 +106,9 @@ test_that("setup_interface runs backend setup helpers when skip_setup = FALSE", 
     setup_interface(
       interface = c("cmdstanr", "rstan", "brms", "rstanarm"),
       brms_backend = "cmdstanr",
+      cores = 2,
       quiet = TRUE,
-      skip_setup = FALSE
+      force = FALSE
     )
   )
 
@@ -204,12 +210,7 @@ test_that("install_backend_package installs when user accepts interactive prompt
 test_that("setup_brms configures brms backend", {
   withr::local_options(list(mc.cores = NULL, brms.backend = NULL))
 
-  local_mocked_bindings(
-    detectCores = function() 8,
-    .package = "parallel"
-  )
-
-  setup_brms(quiet = TRUE, brms_backend = "cmdstanr")
+  setup_brms(quiet = TRUE, brms_backend = "cmdstanr", cores = 8)
 
   expect_equal(getOption("mc.cores"), 8)
   expect_equal(getOption("brms.backend"), "cmdstanr")
@@ -221,15 +222,11 @@ test_that("setup_rstan configures parallel cores and rstan options", {
   skip_if_not_installed("rstan")
 
   local_mocked_bindings(
-    detectCores = function() 6,
-    .package = "parallel"
-  )
-  local_mocked_bindings(
     rstan_options = function(...) rstan_args <<- list(...),
     .package = "rstan"
   )
 
-  setup_rstan(quiet = TRUE)
+  setup_rstan(quiet = TRUE, cores = 6)
 
   expect_equal(getOption("mc.cores"), 6)
   expect_true(rstan_args$auto_write)
@@ -245,7 +242,7 @@ test_that("setup_cmdstanr aborts when toolchain check fails", {
         check_cmdstan_toolchain = function(...) stop("broken"),
         .package = "cmdstanr"
       )
-      setup_cmdstanr(quiet = TRUE, force = FALSE)
+      setup_cmdstanr(quiet = TRUE, force = FALSE, cores = 2)
     },
     "CmdStan toolchain check failed"
   )
@@ -264,7 +261,7 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
     .package = "cmdstanr"
   )
 
-  invisible(setup_cmdstanr(quiet = TRUE, force = TRUE))
+  invisible(setup_cmdstanr(quiet = TRUE, force = TRUE, cores = 2))
 
   expect_true(installed)
 })
@@ -283,7 +280,12 @@ test_that("setup_cmdstanr returns invisibly when up to date", {
     readLines = function(...) stop("no network"),
     .package = "base"
   )
-  result <- setup_cmdstanr(quiet = TRUE, force = FALSE)
+  result <- setup_cmdstanr(
+    quiet = TRUE,
+    force = FALSE,
+    check_updates = FALSE,
+    cores = 2
+  )
 
   expect_identical(result, TRUE)
 })
@@ -294,10 +296,11 @@ test_that("setup_interface aborts when install_backend_package fails", {
     install_backend_package = function(pkg, ...) {
       cli::cli_abort("Boom")
     },
+    setup_cmdstanr = function(...) invisible(NULL),
     .package = "stanflow"
   )
   expect_error(
-    setup_interface(interface = "cmdstanr", quiet = TRUE, skip_setup = TRUE),
+    setup_interface(interface = "cmdstanr", quiet = TRUE, cores = 2),
     "Boom"
   )
 })
@@ -306,10 +309,11 @@ test_that("setup_interface handles same_library errors gracefully", {
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
     same_library = function(pkg) stop("library error"),
+    setup_cmdstanr = function(...) invisible(NULL),
     .package = "stanflow"
   )
   expect_error(
-    setup_interface(interface = "cmdstanr", quiet = TRUE, skip_setup = TRUE),
+    setup_interface(interface = "cmdstanr", quiet = TRUE, cores = 2),
     "library error"
   )
 })
@@ -319,13 +323,15 @@ test_that("setup_interface warns when brms_backend adds cmdstanr", {
     is_installed = function(pkg) TRUE,
     same_library = function(pkg) NULL,
     install_backend_package = function(...) stop("install should not run"),
+    setup_cmdstanr = function(...) invisible(NULL),
+    setup_brms = function(...) invisible(NULL),
     .package = "stanflow"
   )
   expect_snapshot_output(
     setup_interface(
       interface = c("brms"),
       brms_backend = "cmdstanr",
-      skip_setup = TRUE,
+      cores = 2,
       quiet = FALSE
     )
   )

@@ -40,6 +40,7 @@ Use `setup_interface()` to install (if needed), attach, and configure interfaces
 setup_interface(
   interface = "brms",
   brms_backend = "cmdstanr",
+  cores = 2,
   quiet = TRUE,
   force = TRUE # only required for non-interactive usage
 )
@@ -52,6 +53,7 @@ If you prefer `RStan`, you could just load it alongside `brms`.
 #| eval: false
 setup_interface(
   interface = c("rstan", "brms"),
+  cores = 2,
   quiet = TRUE
 )
 ```

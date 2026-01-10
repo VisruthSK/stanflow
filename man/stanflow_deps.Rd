@@ -4,7 +4,7 @@
 \alias{stanflow_deps}
 \title{List all stanflow dependencies}
 \usage{
-stanflow_deps(recursive = FALSE, dev = FALSE)
+stanflow_deps(recursive = FALSE, dev = FALSE, check_updates = TRUE)
 }
 \arguments{
 \item{recursive}{If \code{TRUE}, will also list all dependencies.}
@@ -12,6 +12,9 @@ stanflow_deps(recursive = FALSE, dev = FALSE)
 \item{dev}{If \code{FALSE} (default), checks for updates in the R-multiverse or CRAN
 (stable releases). If \code{TRUE}, checks the Stan R-universe (dev versions). This is
 only cogent for Stan packages, and cannot compare two dev versions.}
+
+\item{check_updates}{Logical. If \code{FALSE}, skips checking for remote versions and
+only reports locally installed package versions.}
 }
 \description{
 List all stanflow dependencies

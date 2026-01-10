@@ -4,7 +4,7 @@
 \alias{setup_cmdstanr}
 \title{Setup cmdstanr and CmdStan}
 \usage{
-setup_cmdstanr(quiet, force, check_updates = TRUE)
+setup_cmdstanr(quiet, force, check_updates = TRUE, cores)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
@@ -13,6 +13,8 @@ setup_cmdstanr(quiet, force, check_updates = TRUE)
 non-interactive sessions.}
 
 \item{check_updates}{Logical. If \code{FALSE}, skips checking for CmdStan updates.}
+
+\item{cores}{Integer. Number of cores to use when building CmdStan.}
 }
 \value{
 Returns \code{TRUE} invisibly when no install/upgrade is needed.
@@ -20,5 +22,7 @@ Otherwise, returns \code{NULL} invisibly after installation.
 }
 \description{
 Checks the C++ toolchain, locates CmdStan, and installs or upgrades
-CmdStan if needed.
+CmdStan if needed. Prefer \code{setup_interface()} for user-facing setup since
+it performs argument validation and defaults; \code{setup_cmdstanr()} assumes
+inputs are already checked.
 }

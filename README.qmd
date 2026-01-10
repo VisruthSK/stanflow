@@ -35,9 +35,10 @@ setup_interface(
   interface = "brms",
   dev = FALSE,
   brms_backend = "cmdstanr",
+  cores = 2,
   quiet = FALSE,
   force = FALSE,
-  skip_setup = FALSE
+  check_updates = TRUE
 )
 set.seed(0)
 flow_check()

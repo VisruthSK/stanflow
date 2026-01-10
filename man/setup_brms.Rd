@@ -4,17 +4,21 @@
 \alias{setup_brms}
 \title{Setup brms}
 \usage{
-setup_brms(quiet, brms_backend = c("cmdstanr", "rstan"))
+setup_brms(quiet, brms_backend, cores)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
 \item{brms_backend}{Character. The \code{brms} backend to configure. Must be one
 of \code{c("cmdstanr", "rstan")}.}
+
+\item{cores}{Integer. Number of cores to use.}
 }
 \value{
 Returns \code{NULL} invisibly.
 }
 \description{
 Configures \code{brms} to use available cores and sets the backend.
+Prefer \code{setup_interface()} for user-facing setup since it performs argument
+validation and defaults; \code{setup_brms()} assumes inputs are already checked.
 }

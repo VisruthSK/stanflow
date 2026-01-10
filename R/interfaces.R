@@ -10,11 +10,12 @@
 #' @param brms_backend Character. The `brms` backend to use Defaults to
 #'   `getOption("brms.backend", "cmdstanr")` and must be one of
 #'   `c("cmdstanr", "rstan")`.
+#' @param cores Integer. Number of cores to use. Defaults to
+#'   `getOption("mc.cores")`. You must set `options(mc.cores = ...)` or pass
+#'   `cores` explicitly.
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @param force Logical. If `TRUE`, forces re-installation/setup. Required
 #'   for installation in non-interactive sessions.
-#' @param skip_setup Logical. If `TRUE`, packages are only attached and no
-#'   backend-specific configuration is run.
 #' @param check_updates Logical. If `FALSE`, skips checking for CmdStan updates.
 #' @return Returns `NULL` invisibly.
 #' @export
@@ -22,9 +23,9 @@ setup_interface <- function(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan"),
+  cores = getOption("mc.cores"),
   quiet = FALSE,
   force = FALSE,
-  skip_setup = FALSE,
   check_updates = TRUE
 ) {
   interface <- match.arg(interface, several.ok = TRUE)
@@ -33,6 +34,16 @@ setup_interface <- function(
     brms_backend <- getOption("brms.backend", "cmdstanr")
   }
   brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
+
+  if (is.null(cores)) {
+    cli::cli_abort(
+      c(
+        "{.arg cores} must be provided when setup is enabled.",
+        "x" = "No default {._opt mc.cores} option is set.",
+        "i" = "Set {.code options(mc.cores = ...)} or pass {.arg cores}."
+      )
+    )
+  }
 
   if (brms_backend == "cmdstanr" && !"cmdstanr" %in% interface) {
     if (!quiet) {
@@ -54,15 +65,13 @@ setup_interface <- function(
 
     suppressPackageStartupMessages(same_library(pkg))
 
-    if (!skip_setup) {
-      switch(
-        pkg,
-        "cmdstanr" = setup_cmdstanr(quiet, force, check_updates),
-        "rstan" = setup_rstan(quiet),
-        "brms" = setup_brms(quiet, brms_backend),
-        "rstanarm" = setup_rstanarm(quiet)
-      )
-    }
+    switch(
+      pkg,
+      "cmdstanr" = setup_cmdstanr(quiet, force, check_updates, cores),
+      "rstan" = setup_rstan(quiet, cores),
+      "brms" = setup_brms(quiet, brms_backend, cores),
+      "rstanarm" = setup_rstanarm(quiet, cores)
+    )
   }
 
   if (!quiet) {
@@ -90,11 +99,13 @@ install_backend_package <- function(pkg, dev, quiet, force) {
   }
 
   if (!interactive() && !force) {
-    cli::cli_abort(c(
-      "Package {.pkg {pkg}} is missing.",
-      "x" = "Cannot naively install automatically in a non-interactive session.",
-      "i" = "Run interactively or set {.code force = TRUE} to allow automated installation."
-    ))
+    cli::cli_abort(
+      c(
+        "Package {.pkg {pkg}} is missing.",
+        "x" = "Cannot naively install automatically in a non-interactive session.",
+        "i" = "Run interactively or set {.code force = TRUE} to allow automated installation."
+      )
+    )
   }
 
   if (interactive() && !force) {
@@ -119,16 +130,19 @@ install_backend_package <- function(pkg, dev, quiet, force) {
 #' Setup cmdstanr and CmdStan
 #'
 #' Checks the C++ toolchain, locates CmdStan, and installs or upgrades
-#' CmdStan if needed.
+#' CmdStan if needed. Prefer `setup_interface()` for user-facing setup since
+#' it performs argument validation and defaults; `setup_cmdstanr()` assumes
+#' inputs are already checked.
 #'
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @param force Logical. If `TRUE`, forces installation or upgrade in
 #'   non-interactive sessions.
 #' @param check_updates Logical. If `FALSE`, skips checking for CmdStan updates.
+#' @param cores Integer. Number of cores to use when building CmdStan.
 #' @return Returns `TRUE` invisibly when no install/upgrade is needed.
 #'   Otherwise, returns `NULL` invisibly after installation.
 #' @export
-setup_cmdstanr <- function(quiet, force, check_updates = TRUE) {
+setup_cmdstanr <- function(quiet, force, check_updates = TRUE, cores) {
   toolchain_ok <- tryCatch(
     {
       cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
@@ -143,10 +157,12 @@ setup_cmdstanr <- function(quiet, force, check_updates = TRUE) {
   )
 
   if (!toolchain_ok) {
-    cli::cli_abort(c(
-      "CmdStan toolchain check failed.",
-      "i" = "You need a C++ compiler (RTools on Windows, Xcode on Mac) to run Stan."
-    ))
+    cli::cli_abort(
+      c(
+        "CmdStan toolchain check failed.",
+        "i" = "You need a C++ compiler (RTools on Windows, Xcode on Mac) to run Stan."
+      )
+    )
   }
 
   cmdstan_ready <- FALSE
@@ -183,14 +199,13 @@ setup_cmdstanr <- function(quiet, force, check_updates = TRUE) {
         }
       },
       error = function(e) {
-        if (!quiet) {
-          cli::cli_alert_warning(
-            paste(
-              "Could not check for CmdStan updates (network/parsing error).",
-              "Set {.code check_updates = FALSE} to skip update checks."
-            )
+        cli::cli_abort(
+          c(
+            "Could not check for CmdStan updates.",
+            "x" = "Network or parsing error while reaching GitHub.",
+            "i" = "Set {.code check_updates = FALSE} to skip update checks."
           )
-        }
+        )
       }
     )
   }
@@ -221,11 +236,13 @@ setup_cmdstanr <- function(quiet, force, check_updates = TRUE) {
       }
       return(invisible(TRUE))
     }
-    cli::cli_abort(c(
-      "CmdStan setup required.",
-      "x" = "Cannot install in non-interactive session.",
-      "i" = "Run interactively or set {.code force = TRUE}."
-    ))
+    cli::cli_abort(
+      c(
+        "CmdStan setup required.",
+        "x" = "Cannot install in non-interactive session.",
+        "i" = "Run interactively or set {.code force = TRUE}."
+      )
+    )
   }
 
   if (interactive() && !force) {
@@ -247,7 +264,7 @@ setup_cmdstanr <- function(quiet, force, check_updates = TRUE) {
     cli::cli_process_start("Installing CmdStan (this takes time)...")
   }
 
-  cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = 2)
+  cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
 
   if (!quiet) cli::cli_process_done()
 }
@@ -256,17 +273,19 @@ setup_cmdstanr <- function(quiet, force, check_updates = TRUE) {
 #' Setup rstan
 #'
 #' Configures `rstan` to use available cores and write compiled models to disk.
+#' Prefer `setup_interface()` for user-facing setup since it performs argument
+#' validation and defaults; `setup_rstan()` assumes inputs are already checked.
 #'
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @return Returns `NULL` invisibly.
 #' @export
-setup_rstan <- function(quiet) {
-  options(mc.cores = parallel::detectCores())
+setup_rstan <- function(quiet, cores) {
+  options(mc.cores = cores)
   rstan::rstan_options(auto_write = TRUE)
 
   if (!quiet) {
     cli::cli_alert_info(
-      "Configured {.pkg rstan}: set {.code options(mc.cores = parallel::detectCores())} and {.code rstan::rstan_options(auto_write = TRUE)}"
+      "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = TRUE)}"
     )
   }
 }
@@ -274,17 +293,20 @@ setup_rstan <- function(quiet) {
 #' Setup brms
 #'
 #' Configures `brms` to use available cores and sets the backend.
+#' Prefer `setup_interface()` for user-facing setup since it performs argument
+#' validation and defaults; `setup_brms()` assumes inputs are already checked.
 #'
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @param brms_backend Character. The `brms` backend to configure. Must be one
 #'   of `c("cmdstanr", "rstan")`.
+#' @param cores Integer. Number of cores to use.
 #' @return Returns `NULL` invisibly.
 #' @export
-setup_brms <- function(quiet, brms_backend = c("cmdstanr", "rstan")) {
-  options(mc.cores = parallel::detectCores())
+setup_brms <- function(quiet, brms_backend, cores) {
+  options(mc.cores = cores)
 
-  msg <- "Configured {.pkg brms}: set {.code options(mc.cores = parallel::detectCores())}"
-  brms_backend <- match.arg(brms_backend)
+  msg <- "Configured {.pkg brms}: set {.code options(mc.cores = {cores})}"
+  brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
   options(brms.backend = brms_backend)
   msg <- paste0(
     msg,
@@ -301,14 +323,17 @@ setup_brms <- function(quiet, brms_backend = c("cmdstanr", "rstan")) {
 #' Setup rstanarm
 #'
 #' Configures `rstanarm` to use available cores.
+#' Prefer `setup_interface()` for user-facing setup since it performs argument
+#' validation and defaults; `setup_rstanarm()` assumes inputs are already checked.
 #'
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @param cores Integer. Number of cores to use.
 #' @return Returns `NULL` invisibly.
 #' @export
-setup_rstanarm <- function(quiet) {
-  options(mc.cores = parallel::detectCores())
+setup_rstanarm <- function(quiet, cores) {
+  options(mc.cores = cores)
 
-  msg <- "Configured {.pkg rstanarm}: set {.code options(mc.cores = parallel::detectCores())}"
+  msg <- "Configured {.pkg rstanarm}: set {.code options(mc.cores = {cores})}"
 
   if (!quiet) {
     cli::cli_alert_info(msg)

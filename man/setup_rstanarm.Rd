@@ -4,14 +4,18 @@
 \alias{setup_rstanarm}
 \title{Setup rstanarm}
 \usage{
-setup_rstanarm(quiet)
+setup_rstanarm(quiet, cores)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
+
+\item{cores}{Integer. Number of cores to use.}
 }
 \value{
 Returns \code{NULL} invisibly.
 }
 \description{
 Configures \code{rstanarm} to use available cores.
+Prefer \code{setup_interface()} for user-facing setup since it performs argument
+validation and defaults; \code{setup_rstanarm()} assumes inputs are already checked.
 }

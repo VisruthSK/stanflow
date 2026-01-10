@@ -38,13 +38,14 @@ setup_interface(
   interface = "brms",
   dev = FALSE,
   brms_backend = "cmdstanr",
+  cores = 2,
   quiet = FALSE,
   force = FALSE,
-  skip_setup = FALSE
+  check_updates = TRUE
 )
 #> ℹ Adding cmdstanr to setup because `brms_backend = 'cmdstanr'`
 #> ℹ Attaching brms...
-#> ℹ Configured brms: set `options(mc.cores = parallel::detectCores())` and `options(brms.backend = 'cmdstanr')`
+#> ℹ Configured brms: set `options(mc.cores = 2)` and `options(brms.backend = 'cmdstanr')`
 #> ℹ Attaching cmdstanr...
 #> The C++ toolchain required for CmdStan is setup properly!
 #> ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'
@@ -57,7 +58,7 @@ flow_check()
 #> ✔ posterior 1.6.1          
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.22.0          • rstan    2.36.0.9000
-#> ✔ cmdstanr 0.9.0.9000      • rstanarm 2.32.2     
+#> ✔ cmdstanr 0.9.0           • rstanarm 2.32.2     
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
 #> ✖ brms::ar()      masks stats::ar()
 #> ✖ brms::do_call() masks projpred::do_call()
