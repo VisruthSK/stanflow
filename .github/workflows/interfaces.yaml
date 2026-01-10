@@ -1,4 +1,4 @@
-name: Check Interfaces
+name: check-interfaces
 
 on:
   push:
@@ -16,15 +16,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         interface: [cmdstanr, rstan, brms, rstanarm]
-        include:
-          - interface: cmdstanr
-            test_file: tests/testthat/test-interfaces-cmdstanr-ci.R
-          - interface: rstan
-            test_file: tests/testthat/test-interfaces-rstan-ci.R
-          - interface: brms
-            test_file: tests/testthat/test-interfaces-brms-ci.R
-          - interface: rstanarm
-            test_file: tests/testthat/test-interfaces-rstanarm-ci.R
 
     name: Test ${{ matrix.interface }} (${{ matrix.os }})
 
@@ -52,7 +43,7 @@ jobs:
         env:
           STANFLOW_INTERFACES_CI: "true"
         run: |
-          Rscript -e 'testthat::test_file("${{ matrix.test_file }}")'
+          Rscript -e 'testthat::test_file("tests/testthat/test-interfaces-${{ matrix.interface }}-ci.R")'
 
   # Test cmdstanr-specific scenarios
   test-cmdstanr-scenarios:
