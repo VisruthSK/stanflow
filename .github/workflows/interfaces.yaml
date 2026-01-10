@@ -1,0 +1,94 @@
+name: check-interfaces
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  test-interface:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        interface: [cmdstanr, rstan, brms, rstanarm]
+
+    name: Test ${{ matrix.interface }} (${{ matrix.os }})
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+          extra-repositories: |
+            https://community.r-multiverse.org
+            https://stan-dev.r-universe.dev
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: local::., any::testthat
+          cache-version: 2
+          upgrade: true
+
+      - name: Test setup_interface (testthat)
+        env:
+          STANFLOW_INTERFACES_CI: "true"
+        run: |
+          Rscript -e 'testthat::test_file("tests/testthat/test-interfaces-${{ matrix.interface }}-ci.R")'
+
+  # Test cmdstanr-specific scenarios
+  test-cmdstanr-scenarios:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - name: reinstall
+            check_updates: true
+            reinstall: true
+          - name: check-update-no-reinstall
+            check_updates: true
+            reinstall: false
+          - name: no-update-check
+            check_updates: false
+            reinstall: false
+
+    name: cmdstanr - ${{ matrix.scenario.name }}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+          extra-repositories: |
+            https://community.r-multiverse.org
+            https://stan-dev.r-universe.dev
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: local::., any::testthat
+          cache-version: 2
+
+      - name: Test setup_cmdstanr (testthat)
+        env:
+          STANFLOW_CMDSTANR_CI: "true"
+          STANFLOW_CMDSTANR_CHECK_UPDATES: ${{ matrix.scenario.check_updates }}
+          STANFLOW_CMDSTANR_REINSTALL: ${{ matrix.scenario.reinstall }}
+        run: |
+          Rscript -e 'testthat::test_file("tests/testthat/test-cmdstanr-ci.R")'
