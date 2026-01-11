@@ -1,19 +1,3 @@
-.stan_pkgs <- c(stanflow_pkgs, "rstantools")
-.stan_citation_pkgs <- new.env(parent = emptyenv())
-.stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
-.stan_citation_pkgs$loo <- utils::packageDescription("loo") |>
-  (\(meta) {
-    utils::bibentry(
-      bibtype = "Misc",
-      key = "loo",
-      title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
-      author = do.call(c, lapply(meta$Author, as.person)),
-      note = sprintf("R package version %s", meta$Version),
-      year = sub("-.*", "", meta$Date),
-      url = "https://mc-stan.org/loo/"
-    )
-  })()
-
 #' Collect BibTeX citations for Stan usage
 #'
 #' `stan_scan_usage()` is primarily for developers; most users should call
@@ -62,7 +46,7 @@ stan_cite <- function(
         if (identical(match.arg(format, c("bibtex", "bibentry")), "bibentry")) {
           entries
         } else {
-          utils::toBibtex(entries)
+          toBibtex(entries)
         }
       }
     })()
@@ -192,7 +176,7 @@ stan_scan_usage <- function(
       next
     }
 
-    rx <- utils::glob2rx(pattern) |>
+    rx <- glob2rx(pattern) |>
       sub("^\\^", "", x = _) |>
       sub("\\$$", "", x = _)
 
@@ -249,7 +233,7 @@ stan_scan_usage <- function(
     return(list(pkgs = character(), keys = character()))
   }
 
-  pd <- utils::getParseData(expr, includeText = TRUE) |>
+  pd <- getParseData(expr, includeText = TRUE) |>
     (\(x) x[order(x$line1, x$col1, x$id), ])()
   token <- pd$token
   text <- pd$text
