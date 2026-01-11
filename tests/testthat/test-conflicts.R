@@ -73,7 +73,12 @@ test_that("print.stanflow_conflicts returns input invisibly", {
     class = "stanflow_conflicts"
   )
 
-  output <- capture.output(res <- print(conflicts))
+  tmp <- tempfile()
+  sink(tmp)
+  res <- print(conflicts)
+  sink()
+  output <- readLines(tmp, warn = FALSE)
+  unlink(tmp)
   expect_true(any(grepl("Conflicts", output)))
   expect_identical(res, conflicts)
 })

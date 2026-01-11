@@ -90,7 +90,12 @@ test_that("flow_check prints and returns messages", {
     .package = "stanflow"
   )
 
-  output <- capture.output(result <- flow_check())
+  tmp <- tempfile()
+  sink(tmp)
+  result <- flow_check()
+  sink()
+  output <- readLines(tmp, warn = FALSE)
+  unlink(tmp)
 
   expect_true(any(grepl("core-msg", output, fixed = TRUE)))
   expect_true(any(grepl("backend-msg", output, fixed = TRUE)))

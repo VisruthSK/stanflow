@@ -1,11 +1,15 @@
 test_that("setup_interface adds cmdstanr when brms_backend = cmdstanr", {
   libraries <- character()
+  same_library <- function(pkg) {
+    libraries <<- c(libraries, pkg)
+    invisible(NULL)
+  }
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
     install_backend_package = function(...) {
       stop("install_backend_package should not run")
     },
-    same_library = function(pkg) libraries <<- c(libraries, pkg),
+    same_library = same_library,
     setup_cmdstanr = function(...) invisible(NULL),
     setup_brms = function(...) invisible(NULL),
     .package = "stanflow"
@@ -246,9 +250,13 @@ test_that("setup_brms configures brms backend", {
 test_that("setup_brms emits configuration message when quiet = FALSE", {
   withr::local_options(list(mc.cores = NULL, brms.backend = NULL))
   msg <- NULL
+  cli_alert_info <- function(...) {
+    msg <<- paste0(...)
+    invisible(NULL)
+  }
 
   local_mocked_bindings(
-    cli_alert_info = function(...) msg <<- paste0(...),
+    cli_alert_info = cli_alert_info,
     .package = "cli"
   )
 
@@ -262,9 +270,13 @@ test_that("setup_rstan configures parallel cores and rstan options", {
   withr::local_options(list(mc.cores = NULL))
   rstan_args <- NULL
   skip_if_not_installed("rstan")
+  rstan_options <- function(...) {
+    rstan_args <<- list(...)
+    invisible(NULL)
+  }
 
   local_mocked_bindings(
-    rstan_options = function(...) rstan_args <<- list(...),
+    rstan_options = rstan_options,
     .package = "rstan"
   )
 
@@ -278,13 +290,17 @@ test_that("setup_rstan emits configuration message when quiet = FALSE", {
   withr::local_options(list(mc.cores = NULL))
   skip_if_not_installed("rstan")
   msg <- NULL
+  cli_alert_info <- function(...) {
+    msg <<- paste0(...)
+    invisible(NULL)
+  }
 
   local_mocked_bindings(
     rstan_options = function(...) NULL,
     .package = "rstan"
   )
   local_mocked_bindings(
-    cli_alert_info = function(...) msg <<- paste0(...),
+    cli_alert_info = cli_alert_info,
     .package = "cli"
   )
 
@@ -297,9 +313,13 @@ test_that("setup_rstan emits configuration message when quiet = FALSE", {
 test_that("setup_rstanarm emits configuration message when quiet = FALSE", {
   withr::local_options(list(mc.cores = NULL))
   msg <- NULL
+  cli_alert_info <- function(...) {
+    msg <<- paste0(...)
+    invisible(NULL)
+  }
 
   local_mocked_bindings(
-    cli_alert_info = function(...) msg <<- paste0(...),
+    cli_alert_info = cli_alert_info,
     .package = "cli"
   )
 
@@ -329,12 +349,16 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
   skip_on_cran()
   skip_if_not_installed("cmdstanr")
   installed <- FALSE
+  install_cmdstan <- function(...) {
+    installed <<- TRUE
+    invisible(NULL)
+  }
 
   local_mocked_bindings(
     check_cmdstan_toolchain = function(...) TRUE,
     cmdstan_path = function() stop("missing"),
     cmdstan_version = function() stop("missing"),
-    install_cmdstan = function(...) installed <<- TRUE,
+    install_cmdstan = install_cmdstan,
     .package = "cmdstanr"
   )
 
