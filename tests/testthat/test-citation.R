@@ -48,9 +48,10 @@ test_that(".scan_tokens chooses the first candidate when unattached", {
 
 test_that(".scan_tokens handles single-package functions", {
   candidates <- .fun_to_pkgs
-  single_fun <- names(candidates)[lengths(candidates) == 1L]
-  single_fun <- setdiff(single_fun, stdlib_funs())
-  single_fun <- single_fun[make.names(single_fun) == single_fun]
+  single_fun <- candidates |>
+    (\(x) names(x)[lengths(x) == 1L])() |>
+    setdiff(stdlib_funs()) |>
+    (\(x) x[make.names(x) == x])()
   if (!length(single_fun)) {
     skip("No single-package functions found.")
   }
@@ -71,7 +72,7 @@ test_that(".scan_tokens handles single-package functions", {
     skip("No single-package functions resolved in .scan_tokens.")
   }
 
-  hits <- .scan_tokens(paste0(picked_fun, "(1)", stdlib_funs()))
+  hits <- .scan_tokens(paste0(picked_fun, "(1)"), stdlib_funs())
   expect_true(paste0(picked_pkg, "::", picked_fun) %in% hits$keys)
 })
 
@@ -158,7 +159,93 @@ test_that(".extract_code extracts Qmd chunks", {
   expect_match(out, "as_draws\\(")
 })
 
-test_that("stan_usage handles a single file path", {
+test_that("stan_cite returns empty when no citations match", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "script.R"),
+    c(
+      "library(posterior)",
+      "posterior::as_draws(1)"
+    )
+  )
+
+  pkg_env <- getFromNamespace(".stan_citation_pkgs", "stanflow")
+  fun_env <- getFromNamespace(".stan_citation_funs", "stanflow")
+  pkg_snapshot <- as.list(pkg_env, all.names = TRUE)
+  fun_snapshot <- as.list(fun_env, all.names = TRUE)
+
+  withr::defer({
+    rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
+    if (length(pkg_snapshot)) {
+      list2env(pkg_snapshot, envir = pkg_env)
+    }
+    rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
+    if (length(fun_snapshot)) {
+      list2env(fun_snapshot, envir = fun_env)
+    }
+  })
+
+  rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
+  rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
+
+  res <- stan_cite(path)
+  expect_equal(res, character())
+})
+
+test_that("stan_cite returns bibtex or bibentry", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "script.R"),
+    c(
+      "library(posterior)",
+      "posterior::as_draws(1)"
+    )
+  )
+
+  pkg_env <- getFromNamespace(".stan_citation_pkgs", "stanflow")
+  fun_env <- getFromNamespace(".stan_citation_funs", "stanflow")
+  pkg_snapshot <- as.list(pkg_env, all.names = TRUE)
+  fun_snapshot <- as.list(fun_env, all.names = TRUE)
+
+  withr::defer({
+    rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
+    if (length(pkg_snapshot)) {
+      list2env(pkg_snapshot, envir = pkg_env)
+    }
+    rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
+    if (length(fun_snapshot)) {
+      list2env(fun_snapshot, envir = fun_env)
+    }
+  })
+
+  rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
+  rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
+  pkg_env$posterior <- utils::bibentry(
+    "Manual",
+    key = "posterior",
+    title = "Posterior",
+    author = "A",
+    year = "2020"
+  )
+  fun_env$`posterior::as_draws` <- utils::bibentry(
+    "Manual",
+    key = "posterior-as_draws",
+    title = "As Draws",
+    author = "B",
+    year = "2021"
+  )
+
+  bibtex <- stan_cite(path)
+  expect_true(is.character(bibtex))
+  expect_true(any(grepl("Posterior", bibtex)))
+  expect_true(any(grepl("As Draws", bibtex)))
+
+  bibentry <- stan_cite(path, format = "bibentry")
+  expect_true(inherits(bibentry, "bibentry"))
+  expect_true(any(grepl("Posterior", utils::toBibtex(bibentry))))
+})
+
+test_that("stan_scan_usage handles a single file path", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "single.R"),
@@ -167,12 +254,12 @@ test_that("stan_usage handles a single file path", {
       "as_draws(1)"
     )
   )
-  res <- stan_usage(path)
+  res <- stan_scan_usage(path)
   expect_equal(res$packages, "posterior")
   expect_equal(res$functions, "posterior::as_draws")
 })
 
-test_that("stan_usage returns empty results for non-Stan files", {
+test_that("stan_scan_usage returns empty results for non-Stan files", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "plain.R"),
@@ -181,12 +268,12 @@ test_that("stan_usage returns empty results for non-Stan files", {
       "x"
     )
   )
-  res <- stan_usage(path)
+  res <- stan_scan_usage(path)
   expect_equal(res$packages, character())
   expect_equal(res$functions, character())
 })
 
-test_that("stan_usage supports multiple file paths", {
+test_that("stan_scan_usage supports multiple file paths", {
   tmp <- withr::local_tempdir()
   path1 <- write_file(
     file.path(tmp, "one.R"),
@@ -203,7 +290,7 @@ test_that("stan_usage supports multiple file paths", {
     )
   )
 
-  res <- stan_usage(c(path1, path2))
+  res <- stan_scan_usage(c(path1, path2))
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
   expect_true(setequal(
@@ -212,7 +299,7 @@ test_that("stan_usage supports multiple file paths", {
   ))
 })
 
-test_that("stan_usage errors on multiple directories", {
+test_that("stan_scan_usage errors on multiple directories", {
   tmp <- withr::local_tempdir()
   dir1 <- file.path(tmp, "proj1")
   dir2 <- file.path(tmp, "proj2")
@@ -220,12 +307,12 @@ test_that("stan_usage errors on multiple directories", {
   dir.create(dir2)
 
   expect_error(
-    stan_usage(c(dir1, dir2)),
+    stan_scan_usage(c(dir1, dir2)),
     "single directory"
   )
 })
 
-test_that("stan_usage alerts full paths for file vectors", {
+test_that("stan_scan_usage alerts full paths for file vectors", {
   tmp <- withr::local_tempdir()
   path1 <- write_file(
     file.path(tmp, "one.R"),
@@ -250,20 +337,19 @@ test_that("stan_usage alerts full paths for file vectors", {
   res <- with_mocked_bindings(
     cli_alert_info = cli_alert_info,
     .package = "cli",
-    stan_usage(c(path1, path2))
+    stan_scan_usage(c(path1, path2))
   )
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
-  expected <- normalizePath(c(path1, path2), winslash = "/", mustWork = FALSE)
-  expected <- vapply(
-    expected,
-    function(path) cli::format_inline("Searching {.path {path}}"),
-    character(1)
-  )
+  expected <- normalizePath(c(path1, path2), winslash = "/", mustWork = FALSE) |>
+    vapply(
+      function(path) cli::format_inline("Searching {.path {path}}"),
+      character(1)
+    )
   expect_true(all(expected %in% seen))
 })
 
-test_that("stan_usage alerts full paths for directories", {
+test_that("stan_scan_usage alerts full paths for directories", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -283,16 +369,16 @@ test_that("stan_usage alerts full paths for directories", {
   res <- with_mocked_bindings(
     cli_alert_info = cli_alert_info,
     .package = "cli",
-    stan_usage(dir_path)
+    stan_scan_usage(dir_path)
   )
 
   expect_true(setequal(res$packages, "brms"))
-  expected <- normalizePath(dir_path, winslash = "/", mustWork = FALSE)
-  expected <- cli::format_inline("Searching directory {.path {expected}}")
+  expected <- normalizePath(dir_path, winslash = "/", mustWork = FALSE) |>
+    (\(path) cli::format_inline("Searching directory {.path {path}}"))()
   expect_true(expected %in% seen)
 })
 
-test_that("stan_usage errors when mixing directories and files", {
+test_that("stan_scan_usage errors when mixing directories and files", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -305,12 +391,12 @@ test_that("stan_usage errors when mixing directories and files", {
   )
 
   expect_error(
-    stan_usage(c(dir_path, file_path)),
+    stan_scan_usage(c(dir_path, file_path)),
     "single directory"
   )
 })
 
-test_that("stan_usage scans directories with mixed inputs", {
+test_that("stan_scan_usage scans directories with mixed inputs", {
   tmp <- withr::local_tempdir()
   write_file(
     file.path(tmp, "script.R"),
@@ -345,7 +431,7 @@ test_that("stan_usage scans directories with mixed inputs", {
     )
   )
 
-  res <- stan_usage(tmp)
+  res <- stan_scan_usage(tmp)
 
   expect_equal(res$packages, sort(res$packages))
   expect_equal(res$functions, sort(res$functions))
@@ -356,15 +442,15 @@ test_that("stan_usage scans directories with mixed inputs", {
   ))
 })
 
-test_that("stan_usage returns empty vectors for empty directories", {
+test_that("stan_scan_usage returns empty vectors for empty directories", {
   tmp <- withr::local_tempdir()
   expect_error(
-    stan_usage(tmp),
+    stan_scan_usage(tmp),
     "No files found"
   )
 })
 
-test_that("stan_usage ignores non-R files in directories", {
+test_that("stan_scan_usage ignores non-R files in directories", {
   tmp <- withr::local_tempdir()
   write_file(
     file.path(tmp, "note.txt"),
@@ -374,12 +460,12 @@ test_that("stan_usage ignores non-R files in directories", {
     )
   )
   expect_error(
-    stan_usage(tmp),
+    stan_scan_usage(tmp),
     "No files found"
   )
 })
 
-test_that("stan_usage applies ignore patterns for directory searches", {
+test_that("stan_scan_usage applies ignore patterns for directory searches", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -436,7 +522,7 @@ test_that("stan_usage applies ignore patterns for directory searches", {
     )
   )
 
-  res <- stan_usage(dir_path, ignore_files = ignore_path)
+  res <- stan_scan_usage(dir_path, ignore_files = ignore_path)
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
   expect_true(setequal(
@@ -445,7 +531,7 @@ test_that("stan_usage applies ignore patterns for directory searches", {
   ))
 })
 
-test_that("stan_usage respects anchored ignore patterns", {
+test_that("stan_scan_usage respects anchored ignore patterns", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -471,11 +557,11 @@ test_that("stan_usage respects anchored ignore patterns", {
     )
   )
 
-  res <- stan_usage(dir_path, ignore_files = ignore_path)
+  res <- stan_scan_usage(dir_path, ignore_files = ignore_path)
   expect_true(setequal(res$packages, "brms"))
 })
 
-test_that("stan_usage errors when ignore is used with file vectors", {
+test_that("stan_scan_usage errors when ignore is used with file vectors", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "script.R"),
@@ -492,12 +578,12 @@ test_that("stan_usage errors when ignore is used with file vectors", {
   )
 
   expect_error(
-    stan_usage(path, ignore_files = ignore_path),
+    stan_scan_usage(path, ignore_files = ignore_path),
     "ignore"
   )
 })
 
-test_that("stan_usage keeps files when ignore file is empty", {
+test_that("stan_scan_usage keeps files when ignore file is empty", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -517,12 +603,12 @@ test_that("stan_usage keeps files when ignore file is empty", {
     )
   )
 
-  res <- stan_usage(dir_path, ignore_files = ignore_path)
+  res <- stan_scan_usage(dir_path, ignore_files = ignore_path)
   expect_true(setequal(res$packages, "posterior"))
   expect_true(setequal(res$functions, "posterior::as_draws"))
 })
 
-test_that("stan_usage handles empty directories with ignore files", {
+test_that("stan_scan_usage handles empty directories with ignore files", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -534,18 +620,18 @@ test_that("stan_usage handles empty directories with ignore files", {
   )
 
   expect_error(
-    stan_usage(dir_path, ignore_files = ignore_path),
+    stan_scan_usage(dir_path, ignore_files = ignore_path),
     "No files found"
   )
 })
 
-test_that("stan_usage errors when ignore file is missing", {
+test_that("stan_scan_usage errors when ignore file is missing", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
 
   expect_error(
-    stan_usage(dir_path, ignore_files = file.path(tmp, "missing")),
+    stan_scan_usage(dir_path, ignore_files = file.path(tmp, "missing")),
     "ignore"
   )
 })
