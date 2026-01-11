@@ -266,119 +266,165 @@ stan_scan_usage <- function(
     ))
   }
 
-  pd <- getParseData(expr, includeText = TRUE) |>
-    (\(x) x[order(x$line1, x$col1, x$id), ])()
+  pd <- getParseData(expr, includeText = TRUE)
+  if (is.null(pd) || nrow(pd) == 0) {
+    return(list(
+      pkgs = character(),
+      keys = character(),
+      ambiguous = character()
+    ))
+  }
+
+  # Filter to terminal tokens. getParseData returns them in order.
+  pd <- pd[pd$terminal, ]
   token <- pd$token
   text <- pd$text
+  n <- length(token)
 
-  attached_pos <- integer()
   pkgs <- character()
   keys <- character()
   ambiguous <- character()
-  ignore_functions <- unique(ignore_functions)
 
-  choose_attached <- function(candidates) {
-    if (length(candidates) == 1L) {
-      return(candidates)
-    }
-    if (!length(attached_pos)) {
-      return(candidates[1L])
-    }
-    pos <- attached_pos[candidates]
-    if (all(is.na(pos))) {
-      return(candidates[1L])
-    }
-    pos[is.na(pos)] <- 0L
-    candidates[which.max(pos)]
-  }
-
-  n <- length(token)
-  for (i in seq_len(n)) {
-    tok <- token[i]
-    txt <- text[i]
-
-    # Track attachment order: library()/require()/requireNamespace()
-    if (
-      tok == "SYMBOL_FUNCTION_CALL" &&
-        txt %in% c("library", "require", "requireNamespace")
-    ) {
+  # 1. Identify Library Calls
+  lib_call_idx <- which(
+    token == "SYMBOL_FUNCTION_CALL" &
+      text %in% c("library", "require", "requireNamespace")
+  )
+  lib_data <- if (length(lib_call_idx) > 0) {
+    res <- lapply(lib_call_idx, function(i) {
+      j_end <- min(i + 10L, n)
       pkg <- ""
-      if (i < n) {
-        j_end <- min(i + 20L, n)
-        for (j in seq.int(i + 1L, j_end)) {
-          if (token[j] %in% c("RPAR", "')'", ")")) {
-            break
-          }
-          if (token[j] %in% c("SYMBOL", "STR_CONST")) {
-            pkg <- gsub("^['\"]|['\"]$", "", text[j])
-            break
-          }
+      for (j in (i + 1):j_end) {
+        if (token[j] %in% c("RPAR", "')'", ")")) {
+          break
+        }
+        if (token[j] %in% c("SYMBOL", "STR_CONST")) {
+          pkg <- gsub("^['\"]|['\"]$", "", text[j])
+          break
         }
       }
       if (nzchar(pkg) && pkg %in% .stan_pkgs) {
-        pkgs <- c(pkgs, pkg)
+        data.frame(
+          pos = i,
+          pkg = pkg,
+          is_attach = text[i] != "requireNamespace",
+          stringsAsFactors = FALSE
+        )
+      } else {
+        NULL
       }
-      if (nzchar(pkg) && txt %in% c("library", "require")) {
-        attach_idx <- if (length(attached_pos)) max(attached_pos) + 1L else 1L
-        attached_pos[pkg] <- attach_idx
-      }
-      next
-    }
+    })
+    do.call(rbind, res)
+  }
 
-    # Namespaced calls: pkg::fun / pkg:::fun
-    if (
-      tok %in%
-        c("SYMBOL_FUNCTION_CALL", "SYMBOL") &&
-        i >= 2L &&
-        token[i - 1L] %in% c("NS_GET", "NS_GET_INT")
-    ) {
-      pkg_idx <- i - 2L
-      while (pkg_idx >= 1L && token[pkg_idx] == "expr") {
-        pkg_idx <- pkg_idx - 1L
-      }
-      if (pkg_idx >= 1L && token[pkg_idx] == "SYMBOL_PACKAGE") {
-        pkg <- text[pkg_idx]
-        fun <- gsub("^`(.*)`$", "\\1", text[i])
-        if (fun %in% ignore_functions) {
-          next
-        }
+  # 2. Identify Namespaced Calls
+  is_ns_get <- token %in% c("NS_GET", "NS_GET_INT")
+  ns_get_idx <- which(is_ns_get)
+  if (length(ns_get_idx) > 0) {
+    valid <- ns_get_idx > 1 & ns_get_idx < n
+    ns_get_idx <- ns_get_idx[valid]
 
-        if (pkg %in% .stan_pkgs) {
-          pkgs <- c(pkgs, pkg)
-          keys <- c(keys, paste0(pkg, "::", fun))
-        }
-        next
-      }
-    }
+    pkg_idx <- ns_get_idx - 1
+    fun_idx <- ns_get_idx + 1
 
-    # Unqualified calls: resolve by attachment order (best-effort)
-    if (tok == "SYMBOL_FUNCTION_CALL") {
-      fun <- gsub("^`(.*)`$", "\\1", txt)
-      if (fun %in% ignore_functions) {
-        next
-      }
+    is_stan_pkg <- text[pkg_idx] %in% .stan_pkgs
+    pkg_idx <- pkg_idx[is_stan_pkg]
+    fun_idx <- fun_idx[is_stan_pkg]
 
-      candidates <- split(
-        rep(names(.stan_exports), lengths(.stan_exports)),
-        .stan_exports |> unlist(use.names = FALSE)
-      )[[fun]]
-      if (length(candidates)) {
-        if (length(candidates) > 1L) {
-          ambiguous <- c(ambiguous, fun)
-          if (strict) {
-            next
-          }
-        }
-        pkg <- choose_attached(candidates)
-        pkgs <- c(pkgs, pkg)
-        keys <- c(keys, paste0(pkg, "::", fun))
+    if (length(pkg_idx) > 0) {
+      funs <- gsub("^`(.*)`$", "\\1", text[fun_idx])
+      keep <- !(funs %in% ignore_functions)
+      if (any(keep)) {
+        pkgs <- c(pkgs, text[pkg_idx[keep]])
+        keys <- c(keys, paste0(text[pkg_idx[keep]], "::", funs[keep]))
       }
     }
   }
 
-  pkgs <- pkgs[pkgs %in% .stan_pkgs]
-  keys <- keys[sub("::.*$", "", keys) %in% .stan_pkgs]
-  list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
+  # 3. Identify Unqualified Calls
+  prev_is_ns <- c(FALSE, is_ns_get[-n])
+  is_lib_call <- logical(n)
+  if (length(lib_call_idx) > 0) {
+    is_lib_call[lib_call_idx] <- TRUE
+  }
+
+  unqual_idx <- which(
+    token == "SYMBOL_FUNCTION_CALL" & !prev_is_ns & !is_lib_call
+  )
+
+  if (length(unqual_idx) > 0) {
+    unqual_funs <- gsub("^`(.*)`$", "\\1", text[unqual_idx])
+    keep_unqual <- !(unqual_funs %in% ignore_functions)
+    unqual_idx <- unqual_idx[keep_unqual]
+    unqual_funs <- unqual_funs[keep_unqual]
+
+    if (length(unqual_idx) > 0) {
+      candidates_list <- .stan_export_index[unqual_funs]
+      has_candidates <- !vapply(candidates_list, is.null, logical(1))
+
+      unqual_idx <- unqual_idx[has_candidates]
+      unqual_funs <- unqual_funs[has_candidates]
+      candidates_list <- candidates_list[has_candidates]
+
+      if (length(unqual_idx) > 0) {
+        n_cand <- lengths(candidates_list)
+        is_ambig <- n_cand > 1
+
+        if (!all(is_ambig)) {
+          best_pkgs <- unlist(candidates_list[!is_ambig], use.names = FALSE)
+          pkgs <- c(pkgs, best_pkgs)
+          keys <- c(keys, paste0(best_pkgs, "::", unqual_funs[!is_ambig]))
+        }
+
+        if (any(is_ambig)) {
+          ambig_idx <- unqual_idx[is_ambig]
+          ambig_funs <- unqual_funs[is_ambig]
+          ambig_cands <- candidates_list[is_ambig]
+          ambiguous <- sort(unique(ambig_funs))
+
+          if (!strict) {
+            attaching_pkgs <- character(0)
+            lib_pos <- integer(0)
+            if (!is.null(lib_data) && any(lib_data$is_attach)) {
+              attaching_pkgs <- lib_data$pkg[lib_data$is_attach]
+              lib_pos <- lib_data$pos[lib_data$is_attach]
+            }
+
+            intervals <- findInterval(ambig_idx, lib_pos)
+
+            for (i in seq_along(ambig_idx)) {
+              k <- intervals[i]
+              cands <- ambig_cands[[i]]
+
+              if (k == 0) {
+                pkg <- cands[1]
+              } else {
+                attached_before <- attaching_pkgs[seq_len(k)]
+                matches <- match(cands, attached_before)
+                if (all(is.na(matches))) {
+                  pkg <- cands[1]
+                } else {
+                  pkg <- cands[which.max(ifelse(is.na(matches), -1L, matches))]
+                }
+              }
+              pkgs <- c(pkgs, pkg)
+              keys <- c(keys, paste0(pkg, "::", ambig_funs[i]))
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (!is.null(lib_data)) {
+    pkgs <- c(pkgs, lib_data$pkg)
+  }
+
+  list(
+    pkgs = sort(unique(pkgs)),
+    keys = sort(unique(keys)),
+    ambiguous = ambiguous
+  )
 }
 
 #' Standard-library function names to never attribute to Stan packages
