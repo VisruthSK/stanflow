@@ -57,7 +57,7 @@ stan_cite <- function(
 }
 
 #' Find Stan packages + Stan functions used
-#'
+#' @export
 #' @return list(packages=character(), functions=character())
 #' @rdname stan_cite
 stan_scan_usage <- function(
@@ -163,7 +163,7 @@ stan_scan_usage <- function(
         unlist(use.names = FALSE) |>
         unique() |>
         sort(),
-      amiguous = ambiguous
+      ambiguous = ambiguous
     ),
     class = "stan_scan_usage"
   )

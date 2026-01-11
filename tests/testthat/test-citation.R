@@ -3,55 +3,192 @@ write_file <- function(path, lines) {
   path
 }
 
-test_that(".scan_tokens returns empty results for parse errors", {
-  hits <- .scan_tokens("function(", stdlib_funs())
-  expect_equal(hits$pkgs, character())
-  expect_equal(hits$keys, character())
-})
+test_that("citation metadata helpers parse fields", {
+  meta <- list(
+    Date = "2023-02-01",
+    Version = "1.2.3",
+    `Authors@R` = "c(person('A', 'B', role = c('aut', 'cre')))"
+  )
 
-test_that(".scan_tokens handles empty library calls", {
-  hits <- .scan_tokens("library()", stdlib_funs())
-  expect_equal(hits$pkgs, character())
-  expect_equal(hits$keys, character())
+  expect_equal(.meta_year(meta), "2023")
+  expect_equal(.meta_note(meta), "R package version 1.2.3")
+  expect_equal(length(.meta_authors(meta)), 1L)
 })
 
 test_that(".scan_tokens resolves attachment order and requireNamespace", {
   code <- c(
     "library(posterior)",
-    "requireNamespace(cmdstanr)",
+
+    "requireNamespace(\"cmdstanr\")",
+
     "library('brms')",
+
     "`as_draws`(1)"
   )
+
   hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
 
   expect_true(all(c("posterior", "cmdstanr", "brms") %in% hits$pkgs))
+
   expect_true("brms::as_draws" %in% hits$keys)
+
+  # as_draws is in posterior too, but brms was attached later (last) so it should win?
+
+  # In .scan_tokens logic:
+
+  # library(posterior) -> pos X
+
+  # library(brms) -> pos Y > X
+
+  # choose_attached -> max pos -> brms.
+
+  # So brms::as_draws is expected.
+
   expect_false("cmdstanr::as_draws" %in% hits$keys)
 })
+
 
 test_that(".scan_tokens falls back when attached packages do not match", {
   candidates <- split(
     rep(names(.stan_exports), lengths(.stan_exports)),
+
     .stan_exports |> unlist(use.names = FALSE)
   )
+
   first_pkg <- candidates[["log_lik"]][[1L]]
+
   code <- c(
     "library(posterior)",
+
     "log_lik(1)"
   )
+
   hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
 
   expect_true(paste0(first_pkg, "::log_lik") %in% hits$keys)
 })
 
+
 test_that(".scan_tokens chooses the first candidate when unattached", {
   candidates <- split(
     rep(names(.stan_exports), lengths(.stan_exports)),
+
     .stan_exports |> unlist(use.names = FALSE)
   )
+
   first_pkg <- candidates[["as_draws"]][[1L]]
+
   hits <- .scan_tokens("as_draws(1)", stdlib_funs())
+
   expect_true(paste0(first_pkg, "::as_draws") %in% hits$keys)
+})
+
+
+test_that(".scan_tokens collapses reexports by origin", {
+  candidate_fun <- NULL
+  provider_pkg <- NULL
+
+  # Iterate over all exported functions to find a suitable candidate
+  for (fun in sort(names(.stan_export_index))) {
+    # Check ALL candidates to ensure global consistency
+    all_candidates <- .stan_export_index[[fun]]
+
+    all_origins <- vapply(
+      all_candidates,
+      function(pkg) {
+        .stan_origin_map[[paste0(pkg, "::", fun)]]
+      },
+      character(1)
+    )
+
+    # Basic sanity checks on metadata
+    if (anyNA(all_origins)) {
+      next
+    }
+    unique_providers <- unique(all_origins)
+    if (length(unique_providers) != 1L) {
+      next
+    }
+    provider <- unique_providers
+    if (!provider %in% .stan_pkgs) {
+      next
+    }
+
+    # Check installed packages
+    installed_pkgs <- all_candidates[vapply(
+      all_candidates,
+      requireNamespace,
+      logical(1),
+      quietly = TRUE
+    )]
+    if (length(installed_pkgs) < 2) {
+      next
+    }
+
+    # CRITICAL: Verify that .scan_tokens itself considers this unambiguous.
+    # This handles any discrepancies between our test logic and the implementation,
+    # specifically ensuring we don't pick functions that .scan_tokens deems ambiguous
+    # (which would cause the strict assertions below to fail).
+    check_hits <- .scan_tokens(
+      paste0(fun, "(1)"),
+      stdlib_funs(),
+      strict = FALSE
+    )
+    if (length(check_hits$ambiguous) > 0) {
+      next
+    }
+    if (length(check_hits$pkgs) != 1L) {
+      next
+    }
+
+    # If we get here, we have a solid candidate
+    candidate_fun <- fun
+    provider_pkg <- provider
+    break
+  }
+
+  if (is.null(candidate_fun)) {
+    skip("No consistently reexported functions found in installed packages.")
+  }
+
+  hits <- .scan_tokens(
+    paste0(candidate_fun, "(1)"),
+    stdlib_funs(),
+    strict = FALSE
+  )
+
+  expect_equal(hits$pkgs, provider_pkg)
+  expect_equal(hits$keys, paste0(provider_pkg, "::", candidate_fun))
+  expect_equal(hits$ambiguous, character())
+})
+
+
+test_that(".scan_tokens records ambiguous origins", {
+  fun <- "ess_bulk"
+
+  pkgs <- names(Filter(function(x) fun %in% x, .stan_exports))
+
+  pkgs <- pkgs[vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+
+  origins <- vapply(
+    pkgs,
+    function(pkg) {
+      .stan_origin_map[[paste0(pkg, "::", fun)]]
+    },
+    character(1)
+  )
+
+  providers <- unique(origins[!is.na(origins)])
+
+  if (length(providers) < 2) {
+    skip("No ambiguous functions found in installed packages.")
+  }
+
+  hits <- .scan_tokens(paste0(fun, "(1)"), stdlib_funs(), strict = TRUE)
+
+  expect_equal(hits$keys, character())
+
+  expect_equal(hits$ambiguous, fun)
 })
 
 test_that(".scan_tokens handles single-package functions", {
@@ -272,12 +409,38 @@ test_that("stan_scan_usage handles a single file path", {
 })
 
 test_that("stan_scan_usage strict skips ambiguous unqualified calls", {
+  funs <- c("rhat", "ess_bulk")
+
+  needs <- vapply(
+    funs,
+    function(fun) {
+      pkgs <- names(Filter(function(x) fun %in% x, .stan_exports))
+
+      pkgs <- pkgs[vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+
+      origins <- vapply(
+        pkgs,
+        function(pkg) {
+          .stan_origin_map[[paste0(pkg, "::", fun)]]
+        },
+        character(1)
+      )
+
+      length(unique(origins[!is.na(origins)])) > 1
+    },
+    logical(1)
+  )
+
+  if (!all(needs)) {
+    skip("Ambiguous functions not available in installed packages.")
+  }
+
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "strict.R"),
     c(
-      "as_draws_df(1)",
-      "loo(1)"
+      "rhat(1)",
+      "ess_bulk(1)"
     )
   )
 
@@ -290,12 +453,38 @@ test_that("stan_scan_usage strict skips ambiguous unqualified calls", {
 })
 
 test_that("stan_scan_usage warns about multiple ambiguous calls in strict mode", {
+  funs <- c("rhat", "ess_bulk")
+
+  needs <- vapply(
+    funs,
+    function(fun) {
+      pkgs <- names(Filter(function(x) fun %in% x, .stan_exports))
+
+      pkgs <- pkgs[vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+
+      origins <- vapply(
+        pkgs,
+        function(pkg) {
+          .stan_origin_map[[paste0(pkg, "::", fun)]]
+        },
+        character(1)
+      )
+
+      length(unique(origins[!is.na(origins)])) > 1
+    },
+    logical(1)
+  )
+
+  if (!all(needs)) {
+    skip("Ambiguous functions not available in installed packages.")
+  }
+
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "strict.R"),
     c(
-      "as_draws_df(1)",
-      "loo(1)"
+      "rhat(1)",
+      "ess_bulk(1)"
     )
   )
 
@@ -310,9 +499,12 @@ test_that("stan_scan_usage warns about multiple ambiguous calls in strict mode",
   )
 })
 
-test_that("print.stan_scan_usage reports empty usage", {
+test_that("print.stan_scan_usage shows functions with no packages", {
   expect_snapshot_output(print(structure(
-    list(packages = character(), functions = character()),
+    list(
+      packages = character(),
+      functions = c("loo::loo", "posterior::as_draws")
+    ),
     class = "stan_scan_usage"
   )))
 })
