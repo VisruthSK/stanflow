@@ -27,6 +27,11 @@ same_library <- function(pkg) {
   library(pkg, lib.loc = loc, character.only = TRUE, warn.conflicts = FALSE)
 }
 
+#' Stan package repositories
+#'
+#' @param dev Include the development r-universe repo.
+#' @return Character vector of repository URLs.
+#' @export
 stan_repos <- function(dev = FALSE) {
   if (dev) {
     c("https://stan-dev.r-universe.dev", getOption("repos"))

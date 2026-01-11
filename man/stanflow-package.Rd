@@ -22,7 +22,7 @@ Useful links:
 Other contributors:
 \itemize{
   \item Jonah Gabry [contributor]
-  \item tidyverse authors (Some code adapted from tidyverse package (MIT)) [copyright holder]
+  \item tidyverse authors (Some code adapted from tidyverse package (MIT). See LICENSE.note) [copyright holder]
 }
 
 }

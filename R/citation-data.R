@@ -18,32 +18,6 @@
   }
 }
 
-.stan_citation_pkgs$loo <- packageDescription("loo") |>
-  (\(meta) {
-    bibentry(
-      bibtype = "Misc",
-      key = "loo",
-      title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
-      author = .meta_Authors(meta),
-      note = .meta_note(meta),
-      year = .meta_year(meta),
-      url = "https://mc-stan.org/loo/"
-    )
-  })()
-
-.stan_citation_pkgs$shinystan <- packageDescription("shinystan") |>
-  (\(meta) {
-    bibentry(
-      bibtype = "Manual",
-      key = "shinystan",
-      title = "shinystan: Interactive Visual and Numerical Diagnostics and Posterior Analysis for Bayesian Models",
-      author = .meta_Authors(meta),
-      year = .meta_year(meta),
-      note = .meta_note(meta),
-      url = "https://mc-stan.org/shinystan/"
-    )
-  })()
-
 .stan_citation_pkgs$bayesplot <- packageDescription("bayesplot") |>
   (\(meta) {
     c(
@@ -93,6 +67,19 @@
     )
   })()
 
+.stan_citation_pkgs$loo <- packageDescription("loo") |>
+  (\(meta) {
+    bibentry(
+      bibtype = "Misc",
+      key = "loo",
+      title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
+      author = .meta_Authors(meta),
+      note = .meta_note(meta),
+      year = .meta_year(meta),
+      url = "https://mc-stan.org/loo/"
+    )
+  })()
+
 .stan_citation_pkgs$posterior <- packageDescription("posterior") |>
   (\(meta) {
     c(
@@ -125,6 +112,19 @@
     )
   })()
 
+.stan_citation_pkgs$projpred <- packageDescription("projpred") |>
+  (\(meta) {
+    bibentry(
+      bibtype = "Misc",
+      key = "projpred",
+      title = "{{projpred}}: {{Projection}} Predictive Feature Selection",
+      author = .meta_Authors(meta),
+      year = .meta_year(meta),
+      note = .meta_note(meta),
+      url = "https://mc-stan.org/projpred/"
+    )
+  })()
+
 .stan_citation_pkgs$rstan <- packageDescription("rstan") |>
   (\(meta) {
     bibentry(
@@ -137,16 +137,16 @@
     )
   })()
 
-.stan_citation_pkgs$projpred <- packageDescription("projpred") |>
+.stan_citation_pkgs$shinystan <- packageDescription("shinystan") |>
   (\(meta) {
     bibentry(
-      bibtype = "Misc",
-      key = "projpred",
-      title = "{{projpred}}: {{Projection}} Predictive Feature Selection",
+      bibtype = "Manual",
+      key = "shinystan",
+      title = "shinystan: Interactive Visual and Numerical Diagnostics and Posterior Analysis for Bayesian Models",
       author = .meta_Authors(meta),
       year = .meta_year(meta),
       note = .meta_note(meta),
-      url = "https://mc-stan.org/projpred/"
+      url = "https://mc-stan.org/shinystan/"
     )
   })()
 # nocov end
