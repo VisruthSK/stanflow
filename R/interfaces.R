@@ -59,7 +59,7 @@ setup_interface <- function(
 
   if (
     brms_backend == "cmdstanr" &&
-      brms %in% interface &&
+      "brms" %in% interface &&
       !"cmdstanr" %in% interface
   ) {
     cli::cli_alert_info(
