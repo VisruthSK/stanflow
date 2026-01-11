@@ -37,7 +37,6 @@ jobs:
         with:
           dependencies: '"hard"'
           extra-packages: local::., any::testthat
-          cache-version: 2
 
       - name: Test setup_interface (testthat)
         env:
@@ -82,7 +81,6 @@ jobs:
         with:
           dependencies: '"hard"'
           extra-packages: local::., any::testthat
-          cache-version: 2
 
       - name: Test setup_cmdstanr (testthat)
         env:
