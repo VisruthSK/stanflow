@@ -8,6 +8,10 @@ on:
 
 permissions: read-all
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-interface:
     runs-on: ${{ matrix.os }}
@@ -42,7 +46,7 @@ jobs:
         env:
           STANFLOW_INTERFACES_CI: "true"
         run: |
-          Rscript -e 'testthat::test_file("tests/testthat/test-interfaces-${{ matrix.interface }}-ci.R")'
+          Rscript -e 'testthat::test_file("tests/testthat/test-interfaces-${{ matrix.interface }}-ci.R", stop_on_failure = TRUE)'
 
   # Test cmdstanr-specific scenarios
   test-cmdstanr-scenarios:
@@ -88,4 +92,4 @@ jobs:
           STANFLOW_CMDSTANR_CHECK_UPDATES: ${{ matrix.scenario.check_updates }}
           STANFLOW_CMDSTANR_REINSTALL: ${{ matrix.scenario.reinstall }}
         run: |
-          Rscript -e 'testthat::test_file("tests/testthat/test-cmdstanr-ci.R")'
+          Rscript -e 'testthat::test_file("tests/testthat/test-cmdstanr-ci.R", stop_on_failure = TRUE)'
