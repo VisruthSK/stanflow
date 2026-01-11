@@ -5,13 +5,19 @@
   (\(meta) {
     utils::bibentry(
       bibtype = "Misc",
+      key = "loo",
       title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
+      author = do.call(c, lapply(meta$Author, as.person)),
       note = sprintf("R package version %s", meta$Version),
+      year = sub("-.*", "", meta$Date),
       url = "https://mc-stan.org/loo/"
     )
   })()
 
 #' Collect BibTeX citations for Stan usage
+#'
+#' `stan_scan_usage()` is primarily for developers; most users should call
+#' `stan_cite()`.
 #'
 #' @param path A single project directory (searched recursively) or a vector of
 #'   files (.R/.Rmd/.Qmd).
@@ -47,8 +53,8 @@ stan_cite <- function(
         ifnotfound = list(NULL)
       )
     })() |>
-    (\(entries) entries[!vapply(entries, is.null, logical(1))])() |>
     (\(entries) {
+      entries <- entries[!vapply(entries, is.null, logical(1))]
       if (!length(entries)) {
         character()
       } else {
@@ -64,8 +70,8 @@ stan_cite <- function(
 
 #' Find Stan packages + Stan functions used
 #'
-#' @inheritParams stan_cite
 #' @return list(packages=character(), functions=character())
+#' @rdname stan_cite
 stan_scan_usage <- function(
   path = ".",
   ignore_files = NULL,
