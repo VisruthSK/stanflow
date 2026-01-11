@@ -6,7 +6,7 @@ Authors@R: c(
            comment = c(ORCID = "0009-0005-9097-0688")),
     person("Jonah", "Gabry", role = "ctb"),
     person("tidyverse authors", role = "cph",
-           comment = "Some code adapted from tidyverse package (MIT)")
+           comment = "Some code adapted from tidyverse package (MIT). See LICENSE.note")
   )
 Description: Streamlines access to the Stan ecosystem by attaching core
     workflow packages, surfacing conflicts, and providing helpers to set

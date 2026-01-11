@@ -341,7 +341,11 @@ test_that("stan_scan_usage alerts full paths for file vectors", {
   )
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
-  expected <- normalizePath(c(path1, path2), winslash = "/", mustWork = FALSE) |>
+  expected <- normalizePath(
+    c(path1, path2),
+    winslash = "/",
+    mustWork = FALSE
+  ) |>
     vapply(
       function(path) cli::format_inline("Searching {.path {path}}"),
       character(1)
