@@ -1,4 +1,3 @@
-.stan_pkgs <- c(stanflow_pkgs, "rstantools")
 .stan_citation_pkgs <- new.env(parent = emptyenv())
 .stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
 .meta_year <- function(meta) sub("-.*", "", meta[["Date"]])

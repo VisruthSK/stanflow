@@ -1,10 +1,14 @@
 # stan_scan_usage warns about multiple ambiguous calls in strict mode
 
-    couldn't reliably detect which packages these functions are from: `as_draws_df()`, `loo()`. Please namespace them (`pkg::function()`) and re-run stan_cite().
+    couldn't reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and re-run stan_cite().
 
-# print.stan_scan_usage reports empty usage
+# print.stan_scan_usage shows functions with no packages
 
-    
+    -- Stan usage --------------------------------------------- stan_scan_usage() --
+    Packages: <none>
+    Functions (2):
+      loo (1): `loo()`
+      posterior (1): `as_draws()`
 
 # print.stan_scan_usage shows many packages with no functions
 
