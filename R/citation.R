@@ -11,6 +11,8 @@
 #'   attributing calls to Stan packages. Defaults to exports from
 #'   base R packages listed in `stdlib_funs()`.
 #' @param quiet Silence informational output.
+#' @param strict If `TRUE`, only count unqualified function calls that resolve
+#'   to a single Stan package.
 #' @param format One of "bibtex" or "bibentry".
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
@@ -19,13 +21,15 @@ stan_cite <- function(
   ignore_files = NULL,
   ignore_functions = stdlib_funs(),
   quiet = FALSE,
+  strict = FALSE,
   format = c("bibtex", "bibentry")
 ) {
   stan_scan_usage(
     path = path,
     ignore_files = ignore_files,
     ignore_functions = ignore_functions,
-    quiet = quiet
+    quiet = quiet,
+    strict = strict
   ) |>
     (\(usage) c(usage$packages, usage$functions, "stan", "stanflow"))() |>
     unique() |>
@@ -60,7 +64,8 @@ stan_scan_usage <- function(
   path = ".",
   ignore_files = NULL,
   ignore_functions = stdlib_funs(),
-  quiet = FALSE
+  quiet = FALSE,
+  strict = FALSE
 ) {
   local_cli_quiet(quiet)
   paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
@@ -122,21 +127,45 @@ stan_scan_usage <- function(
       \(file) {
         file |>
           .extract_code() |>
-          .scan_tokens(ignore_functions = ignore_functions)
+          .scan_tokens(ignore_functions = ignore_functions, strict = strict)
       }
     )
 
-  list(
-    packages = hits |>
-      lapply(`[[`, "pkgs") |>
-      unlist(use.names = FALSE) |>
-      unique() |>
-      sort(),
-    functions = hits |>
-      lapply(`[[`, "keys") |>
-      unlist(use.names = FALSE) |>
-      unique() |>
-      sort()
+  ambiguous <- hits |>
+    lapply(`[[`, "ambiguous") |>
+    unlist(use.names = FALSE) |>
+    unique() |>
+    sort()
+  if (strict && length(ambiguous)) {
+    cli::cli_alert_warning(
+      ambiguous |>
+        (\(funs) paste0("{.code ", funs, "()}"))() |>
+        paste(collapse = ", ") |>
+        (\(calls) {
+          paste0(
+            "couldn't reliably detect which packages these functions are from: ",
+            calls,
+            ". Please namespace them ({.code pkg::function()}) and re-run stan_cite()."
+          )
+        })()
+    )
+  }
+
+  structure(
+    list(
+      packages = hits |>
+        lapply(`[[`, "pkgs") |>
+        unlist(use.names = FALSE) |>
+        unique() |>
+        sort(),
+      functions = hits |>
+        lapply(`[[`, "keys") |>
+        unlist(use.names = FALSE) |>
+        unique() |>
+        sort(),
+      amiguous = ambiguous
+    ),
+    class = "stan_scan_usage"
   )
 }
 
@@ -225,12 +254,16 @@ stan_scan_usage <- function(
   paste(readLines(tmp, warn = FALSE), collapse = "\n")
 }
 
-.scan_tokens <- function(code, ignore_functions) {
+.scan_tokens <- function(code, ignore_functions, strict = FALSE) {
   expr <- tryCatch(parse(text = code, keep.source = TRUE), error = function(e) {
     NULL
   })
   if (is.null(expr)) {
-    return(list(pkgs = character(), keys = character()))
+    return(list(
+      pkgs = character(),
+      keys = character(),
+      ambiguous = character()
+    ))
   }
 
   pd <- getParseData(expr, includeText = TRUE) |>
@@ -241,6 +274,7 @@ stan_scan_usage <- function(
   attached_pos <- integer()
   pkgs <- character()
   keys <- character()
+  ambiguous <- character()
   ignore_functions <- unique(ignore_functions)
 
   choose_attached <- function(candidates) {
@@ -329,6 +363,12 @@ stan_scan_usage <- function(
         .stan_exports |> unlist(use.names = FALSE)
       )[[fun]]
       if (length(candidates)) {
+        if (length(candidates) > 1L) {
+          ambiguous <- c(ambiguous, fun)
+          if (strict) {
+            next
+          }
+        }
         pkg <- choose_attached(candidates)
         pkgs <- c(pkgs, pkg)
         keys <- c(keys, paste0(pkg, "::", fun))
@@ -338,7 +378,7 @@ stan_scan_usage <- function(
 
   pkgs <- pkgs[pkgs %in% .stan_pkgs]
   keys <- keys[sub("::.*$", "", keys) %in% .stan_pkgs]
-  list(pkgs = pkgs, keys = keys)
+  list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
 }
 
 #' Standard-library function names to never attribute to Stan packages
@@ -352,4 +392,71 @@ stdlib_funs <- function() {
     lapply(getNamespaceExports) |>
     unlist(use.names = FALSE) |>
     unique()
+}
+
+#' @export
+print.stan_scan_usage <- function(x, ...) {
+  pkg_count <- length(x$packages)
+  fun_count <- length(x$functions)
+
+  if (!pkg_count && !fun_count) {
+    cli::cli_alert_info(
+      "No Stan function calls found."
+    )
+    return(invisible(x))
+  }
+
+  header <- cli::rule(
+    left = cli::style_bold("Stan usage"),
+    right = "stan_scan_usage()"
+  )
+  cli::cat_line(header)
+
+  if (pkg_count) {
+    cli::cat_line(cli::col_blue("Packages"), " (", pkg_count, "):")
+    cli::cat_line("  ", paste(x$packages, collapse = ", "))
+  } else {
+    cli::cat_line(cli::col_blue("Packages"), ": <none>")
+  }
+
+  if (fun_count) {
+    cli::cat_line(cli::col_blue("Functions"), " (", fun_count, "):")
+
+    x$functions |>
+      (\(funs) {
+        split(
+          sub("^.*::", "", funs),
+          sub("::.*$", "", funs)
+        ) |>
+          lapply(sort) |>
+          (\(funs_by_pkg) {
+            vapply(
+              sort(names(funs_by_pkg)),
+              \(pkg_name) {
+                fun_calls <- paste0(
+                  "{.code ",
+                  funs_by_pkg[[pkg_name]],
+                  "()}"
+                ) |>
+                  paste(collapse = ", ")
+                cli::format_inline(paste0(
+                  "  ",
+                  pkg_name,
+                  " (",
+                  length(funs_by_pkg[[pkg_name]]),
+                  "): ",
+                  fun_calls
+                ))
+              },
+              character(1)
+            ) |>
+              paste(collapse = "\n")
+          })()
+      })() |>
+      cli::cat_line()
+  } else {
+    cli::cat_line(cli::col_blue("Functions"), ": <none>")
+  }
+
+  invisible(x)
 }

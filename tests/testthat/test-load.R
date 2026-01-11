@@ -1,5 +1,4 @@
 test_that("core_attach_message reflects real core packages", {
-  testthat::local_reproducible_output(width = 80)
   pinned_versions <- c(
     bayesplot = "1.15.0",
     loo = "2.8.0.9000",
@@ -27,7 +26,6 @@ test_that("core_attach_message reflects real core packages", {
 })
 
 test_that("backends_attach_message shows installed vs missing", {
-  testthat::local_reproducible_output(width = 80)
   pinned_versions <- c(
     brms = "2.22.0",
     cmdstanr = "0.9.0.9000",
@@ -57,7 +55,6 @@ test_that("core_attach_message returns NULL when nothing to show", {
 })
 
 test_that("backends_attach_message shows attached packages", {
-  testthat::local_reproducible_output(width = 80)
   pinned_versions <- c(
     brms = "2.22.0",
     cmdstanr = "0.9.0.9000",

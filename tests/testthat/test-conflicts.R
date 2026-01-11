@@ -27,7 +27,6 @@ test_that("confirm_conflict ignores identical implementations", {
 })
 
 test_that("stanflow_conflict_message renders deterministic output", {
-  testthat::local_reproducible_output(width = 60)
   conflicts <- structure(
     list(
       filter = c("package:stanflow", "package:dplyr", "package:stats"),
@@ -65,7 +64,6 @@ test_that("stanflow_conflicts filters by requested packages", {
 })
 
 test_that("print.stanflow_conflicts returns input invisibly", {
-  testthat::local_reproducible_output(width = 60)
   conflicts <- structure(
     list(
       compare = c("package:stanflow", "package:stats")

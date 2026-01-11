@@ -21,7 +21,6 @@ run_update_with <- function(deps_df, update_fun, check = NULL) {
 }
 
 test_that("stanflow_update reports when nothing is behind", {
-  testthat::local_reproducible_output(width = 60)
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")
   ))
@@ -39,7 +38,6 @@ test_that("stanflow_update reports when nothing is behind", {
 })
 
 test_that("stanflow_update lists behind packages", {
-  testthat::local_reproducible_output(width = 60)
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")
   ))
@@ -249,7 +247,6 @@ test_that("stanflow_update aborts in non-interactive sessions", {
 })
 
 test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)", {
-  testthat::local_reproducible_output(width = 60)
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")
   ))
@@ -293,7 +290,6 @@ test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)
 })
 
 test_that("stanflow_update reports packages that need reinstall after warnings", {
-  testthat::local_reproducible_output(width = 60)
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org"),
     stanflow.testing = FALSE,
@@ -327,7 +323,6 @@ test_that("stanflow_update reports packages that need reinstall after warnings",
 })
 
 test_that("stanflow_update uses Stan universe when dev = TRUE", {
-  testthat::local_reproducible_output(width = 60)
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")
   ))

@@ -1,5 +1,5 @@
-testthat::skip_if_not(Sys.getenv("STANFLOW_CMDSTANR_CI") == "true")
-testthat::skip_on_cran()
+skip_if_not(Sys.getenv("STANFLOW_CMDSTANR_CI") == "true")
+skip_on_cran()
 
 as_logical_env <- function(name, default = FALSE) {
   value <- tolower(Sys.getenv(name, ""))
