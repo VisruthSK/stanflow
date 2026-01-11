@@ -21,15 +21,15 @@ Depends:
 Imports:
     bayesplot (>= 1.15.0),
     cli (>= 3.6.5),
+    knitr,
     loo (>= 2.8.0),
     posterior (>= 1.6.0),
     projpred (>= 2.10.0),
+    quarto,
     shinystan (>= 2.7.0)
 Suggests:
     brms,
     cmdstanr,
-    knitr,
-    quarto,
     rstan,
     rstanarm,
     testthat (>= 3.0.0),

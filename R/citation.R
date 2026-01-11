@@ -17,16 +17,18 @@ stan_usage <- function(path = ".") {
     path
   }
 
-  used_pkgs <- character()
-  used_keys <- character()
+  used_pkgs <- vector("list", length(files))
+  used_keys <- vector("list", length(files))
 
-  for (file in files) {
-    code <- .tangle(file)
+  for (i in seq_along(files)) {
+    code <- .tangle(files[[i]])
     hits <- .scan_tokens(code)
-    used_pkgs <- c(used_pkgs, hits$pkgs)
-    used_keys <- c(used_keys, hits$keys)
+    used_pkgs[[i]] <- hits$pkgs
+    used_keys[[i]] <- hits$keys
   }
 
+  used_pkgs <- unlist(used_pkgs, use.names = FALSE)
+  used_keys <- unlist(used_keys, use.names = FALSE)
   list(packages = sort(unique(used_pkgs)), functions = sort(unique(used_keys)))
 }
 
@@ -59,8 +61,10 @@ stan_usage <- function(path = ".") {
 
   pd <- utils::getParseData(expr, includeText = TRUE)
   pd <- pd[order(pd$line1, pd$col1, pd$id), ]
+  token <- pd$token
+  text <- pd$text
 
-  attached <- character()
+  attached_pos <- integer()
   pkgs <- character()
   keys <- character()
 
@@ -68,24 +72,21 @@ stan_usage <- function(path = ".") {
     if (length(candidates) == 1L) {
       return(candidates)
     }
-    if (!length(attached)) {
+    if (!length(attached_pos)) {
       return(candidates[1L])
     }
-    pos <- vapply(
-      candidates,
-      function(p) {
-        w <- which(attached == p)
-        if (length(w)) max(w) else 0L
-      },
-      integer(1)
-    )
+    pos <- attached_pos[candidates]
+    if (all(is.na(pos))) {
+      return(candidates[1L])
+    }
+    pos[is.na(pos)] <- 0L
     candidates[which.max(pos)]
   }
 
-  n <- nrow(pd)
+  n <- length(token)
   for (i in seq_len(n)) {
-    tok <- pd$token[i]
-    txt <- pd$text[i]
+    tok <- token[i]
+    txt <- text[i]
 
     # Track attachment order: library()/require()/requireNamespace()
     if (
@@ -93,20 +94,24 @@ stan_usage <- function(path = ".") {
         txt %in% c("library", "require", "requireNamespace")
     ) {
       pkg <- ""
-      for (j in (i + 1L):min(i + 20L, n)) {
-        if (pd$token[j] == "RPAR") {
-          break
-        }
-        if (pd$token[j] %in% c("SYMBOL", "STR_CONST")) {
-          pkg <- gsub("^['\"]|['\"]$", "", pd$text[j])
-          break
+      if (i < n) {
+        j_end <- min(i + 20L, n)
+        for (j in seq.int(i + 1L, j_end)) {
+          if (token[j] == "RPAR") {
+            break
+          }
+          if (token[j] %in% c("SYMBOL", "STR_CONST")) {
+            pkg <- gsub("^['\"]|['\"]$", "", text[j])
+            break
+          }
         }
       }
       if (nzchar(pkg) && pkg %in% .stan_pkgs) {
         pkgs <- c(pkgs, pkg)
       }
       if (nzchar(pkg) && txt %in% c("library", "require")) {
-        attached <- c(attached, pkg)
+        attach_idx <- if (length(attached_pos)) max(attached_pos) + 1L else 1L
+        attached_pos[pkg] <- attach_idx
       }
       next
     }
@@ -116,11 +121,11 @@ stan_usage <- function(path = ".") {
       tok %in%
         c("SYMBOL_FUNCTION_CALL", "SYMBOL") &&
         i >= 3L &&
-        pd$token[i - 1L] %in% c("NS_GET", "NS_GET_INT") &&
-        pd$token[i - 2L] == "SYMBOL_PACKAGE"
+        token[i - 1L] %in% c("NS_GET", "NS_GET_INT") &&
+        token[i - 2L] == "SYMBOL_PACKAGE"
     ) {
-      pkg <- pd$text[i - 2L]
-      fun <- gsub("^`(.*)`$", "\\1", pd$text[i])
+      pkg <- text[i - 2L]
+      fun <- gsub("^`(.*)`$", "\\1", text[i])
       if (fun %in% .stdlib_funs) {
         next
       }
@@ -161,6 +166,13 @@ stan_usage <- function(path = ".") {
 
 # stdlib function names to never attribute to Stan pkgs (even if re-exported)
 .stdlib_funs <- local({
-  stdlib <- c("base", "stats", "utils", "graphics", "grDevices", "methods")
-  unique(unlist(lapply(stdlib, getNamespaceExports), use.names = FALSE))
+  unique(
+    unlist(
+      lapply(
+        c("base", "stats", "utils", "graphics", "grDevices", "methods"),
+        getNamespaceExports
+      ),
+      use.names = FALSE
+    )
+  )
 })
