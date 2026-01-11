@@ -10,10 +10,9 @@
 }
 
 # TODO: add citations for R and for stanflow.
-
 # TODO: add more package citations--wrap brms and rstanarm in requireNamespace checks
-
 # TODO: add function citations for specific functions (use pkg::function as key)
+# TODO: Move paper citations to sysdata since they don't rely on packageDescription?
 
 .stan_citation_pkgs$bayesplot <- packageDescription("bayesplot") |>
   (\(meta) {

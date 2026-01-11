@@ -15,6 +15,28 @@ test_that("citation metadata helpers parse fields", {
   expect_equal(length(.meta_authors(meta)), 1L)
 })
 
+test_that(".scan_tokens handles empty or no-code files", {
+  expect_equal(
+    .scan_tokens("", stdlib_funs()),
+    list(pkgs = character(), keys = character(), ambiguous = character())
+  )
+  expect_equal(
+    .scan_tokens("# just a comment", stdlib_funs()),
+    list(pkgs = character(), keys = character(), ambiguous = character())
+  )
+})
+
+test_that(".scan_tokens handles non-Stan and empty library calls", {
+  code <- c(
+    "library()",
+    "library(ggplot2)",
+    "requireNamespace('base')"
+  )
+  hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
+  expect_equal(hits$pkgs, character())
+  expect_equal(hits$keys, character())
+})
+
 test_that(".scan_tokens resolves attachment order and requireNamespace", {
   code <- c(
     "library(posterior)",
