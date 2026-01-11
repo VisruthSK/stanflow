@@ -4,10 +4,16 @@
 \alias{stan_usage}
 \title{Find Stan packages + Stan functions used}
 \usage{
-stan_usage(path = ".")
+stan_usage(path = ".", ignore = NULL, quiet = FALSE)
 }
 \arguments{
-\item{path}{A project directory OR a single file (.R/.Rmd/.Qmd).}
+\item{path}{A single project directory (searched recursively) or a vector of
+files (.R/.Rmd/.Qmd).}
+
+\item{ignore}{Path to a .gitignore-style file used to exclude paths while
+searching a directory.}
+
+\item{quiet}{Silence informational output.}
 }
 \value{
 list(packages=character(), functions=character())
