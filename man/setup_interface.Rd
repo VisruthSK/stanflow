@@ -38,7 +38,7 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 \code{c("cmdstanr", "rstan")}.}
 }
 \value{
-Returns \code{NULL} invisibly.
+Returns the attached packages invisibly.
 }
 \description{
 This function ensures specific Stan interfaces are installed, configured,
