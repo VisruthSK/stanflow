@@ -57,7 +57,11 @@ setup_interface <- function(
     )
   }
 
-  if (brms_backend == "cmdstanr" && brms %in% interface && !"cmdstanr" %in% interface) {
+  if (
+    brms_backend == "cmdstanr" &&
+      brms %in% interface &&
+      !"cmdstanr" %in% interface
+  ) {
     cli::cli_alert_info(
       "Adding {.pkg cmdstanr} to setup because {.arg brms_backend = 'cmdstanr'}"
     )
