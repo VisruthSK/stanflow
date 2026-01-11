@@ -1,6 +1,17 @@
 .stan_pkgs <- c(stanflow_pkgs, "rstantools")
+.stan_citation_pkgs <- new.env(parent = emptyenv())
+.stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
+.stan_citation_pkgs$loo <- utils::packageDescription("loo") |>
+  (\(meta) {
+    utils::bibentry(
+      bibtype = "Misc",
+      title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
+      note = sprintf("R package version %s", meta$Version),
+      url = "https://mc-stan.org/loo/"
+    )
+  })()
 
-#' Find Stan packages + Stan functions used
+#' Collect BibTeX citations for Stan usage
 #'
 #' @param path A single project directory (searched recursively) or a vector of
 #'   files (.R/.Rmd/.Qmd).
@@ -10,8 +21,52 @@
 #'   attributing calls to Stan packages. Defaults to exports from
 #'   base R packages listed in `stdlib_funs()`.
 #' @param quiet Silence informational output.
+#' @param format One of "bibtex" or "bibentry".
+#' @return A BibTeX character vector or a bibentry object.
+#' @export
+stan_cite <- function(
+  path = ".",
+  ignore_files = NULL,
+  ignore_functions = stdlib_funs(),
+  quiet = FALSE,
+  format = c("bibtex", "bibentry")
+) {
+  stan_scan_usage(
+    path = path,
+    ignore_files = ignore_files,
+    ignore_functions = ignore_functions,
+    quiet = quiet
+  ) |>
+    (\(usage) c(usage$packages, usage$functions, "stan", "stanflow"))() |>
+    unique() |>
+    (\(keys) {
+      mget(
+        keys,
+        envir = .stan_citation_funs,
+        inherits = TRUE,
+        ifnotfound = list(NULL)
+      )
+    })() |>
+    (\(entries) entries[!vapply(entries, is.null, logical(1))])() |>
+    (\(entries) {
+      if (!length(entries)) {
+        character()
+      } else {
+        entries <- do.call(what = c, args = entries)
+        if (identical(match.arg(format, c("bibtex", "bibentry")), "bibentry")) {
+          entries
+        } else {
+          utils::toBibtex(entries)
+        }
+      }
+    })()
+}
+
+#' Find Stan packages + Stan functions used
+#'
+#' @inheritParams stan_cite
 #' @return list(packages=character(), functions=character())
-stan_usage <- function(
+stan_scan_usage <- function(
   path = ".",
   ignore_files = NULL,
   ignore_functions = stdlib_funs(),
@@ -21,27 +76,32 @@ stan_usage <- function(
   paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
   dir_flags <- dir.exists(paths)
 
-  files <- character()
-  if (length(paths) == 1L && dir_flags) {
+  files <- if (length(paths) == 1L && dir_flags) {
     dir_path <- paths[[1L]]
     cli::cli_alert_info("Searching directory {.path {dir_path}}")
-    files <- list.files(
+    list.files(
       dir_path,
       recursive = TRUE,
       full.names = TRUE,
       ignore.case = TRUE,
       pattern = "\\.(R|Rmd|Qmd)$"
-    )
-    if (!is.null(ignore_files)) {
-      if (!file.exists(ignore_files)) {
-        cli::cli_abort("{.arg ignore_files} must point to an existing file.")
-      }
-      files <- files |>
-        .filter_ignored(
-          dir_path,
-          normalizePath(ignore_files, winslash = "/", mustWork = TRUE)
-        )
-    }
+    ) |>
+      (\(files) {
+        if (is.null(ignore_files)) {
+          files
+        } else {
+          if (!file.exists(ignore_files)) {
+            cli::cli_abort(
+              "{.arg ignore_files} must point to an existing file."
+            )
+          }
+          files |>
+            .filter_ignored(
+              dir_path,
+              normalizePath(ignore_files, winslash = "/", mustWork = TRUE)
+            )
+        }
+      })()
   } else {
     if (any(dir_flags)) {
       cli::cli_abort(
@@ -53,32 +113,40 @@ stan_usage <- function(
         "{.arg ignore_files} can only be used when {.arg path} is a directory."
       )
     }
-    for (file_path in paths) {
-      cli::cli_alert_info("Searching {.path {file_path}}")
-    }
-    files <- paths
+    paths |>
+      (\(paths) {
+        lapply(
+          paths,
+          \(file_path) cli::cli_alert_info("Searching {.path {file_path}}")
+        )
+        paths
+      })()
   }
 
   if (!length(files)) {
     cli::cli_abort("No files found.")
   }
 
-  hits <- files |>
-    unique() |>
-    lapply(\(file) .extract_code(file)) |>
-    lapply(.scan_tokens, ignore_functions = ignore_functions)
+  hits <- unique(files) |>
+    lapply(
+      \(file) {
+        file |>
+          .extract_code() |>
+          .scan_tokens(ignore_functions = ignore_functions)
+      }
+    )
 
-  used_pkgs <- hits |> lapply(`[[`, "pkgs") |> unlist(use.names = FALSE)
-  used_keys <- hits |> lapply(`[[`, "keys") |> unlist(use.names = FALSE)
-  if (!length(used_pkgs)) {
-    used_pkgs <- character()
-  }
-  if (!length(used_keys)) {
-    used_keys <- character()
-  }
   list(
-    packages = sort(unique(used_pkgs)),
-    functions = sort(unique(used_keys))
+    packages = hits |>
+      lapply(`[[`, "pkgs") |>
+      unlist(use.names = FALSE) |>
+      unique() |>
+      sort(),
+    functions = hits |>
+      lapply(`[[`, "keys") |>
+      unlist(use.names = FALSE) |>
+      unique() |>
+      sort()
   )
 }
 
@@ -118,7 +186,6 @@ stan_usage <- function(
       next
     }
 
-    has_slash <- grepl("/", pattern, fixed = TRUE)
     rx <- utils::glob2rx(pattern) |>
       sub("^\\^", "", x = _) |>
       sub("\\$$", "", x = _)
@@ -128,12 +195,6 @@ stan_usage <- function(
         rx <- paste0("^", rx, "(/|$)")
       } else {
         rx <- paste0("^", rx, "$")
-      }
-    } else if (has_slash) {
-      if (dir_only) {
-        rx <- paste0("(^|.*/)", rx, "(/|$)")
-      } else {
-        rx <- paste0("(^|.*/)", rx, "$")
       }
     } else {
       if (dir_only) {
@@ -167,8 +228,7 @@ stan_usage <- function(
 
   if (ext == "rmd") {
     knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
-  }
-  if (ext == "qmd") {
+  } else if (ext == "qmd") {
     quarto::qmd_to_r_script(file, tmp)
   }
 
@@ -183,8 +243,8 @@ stan_usage <- function(
     return(list(pkgs = character(), keys = character()))
   }
 
-  pd <- utils::getParseData(expr, includeText = TRUE)
-  pd <- pd |> (\(x) x[order(x$line1, x$col1, x$id), ])()
+  pd <- utils::getParseData(expr, includeText = TRUE) |>
+    (\(x) x[order(x$line1, x$col1, x$id), ])()
   token <- pd$token
   text <- pd$text
 
