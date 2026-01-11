@@ -59,7 +59,11 @@ test_that("stanflow_update lists behind packages", {
   result <- run_update_with(
     behind,
     function() {
-      utils::capture.output(out <- stanflow_update())
+      tmp <- tempfile()
+      sink(tmp)
+      out <- stanflow_update()
+      sink()
+      unlink(tmp)
       out
     }
   )
@@ -254,7 +258,11 @@ test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)
   result <- run_update_with(
     recursive,
     function() {
-      utils::capture.output(out <- stanflow_update(recursive = TRUE))
+      tmp <- tempfile()
+      sink(tmp)
+      out <- stanflow_update(recursive = TRUE)
+      sink()
+      unlink(tmp)
       out
     },
     check = function(recursive_flag, dev_flag) {
@@ -328,7 +336,11 @@ test_that("stanflow_update uses Stan universe when dev = TRUE", {
   result <- run_update_with(
     behind,
     function() {
-      utils::capture.output(out <- stanflow_update(dev = TRUE))
+      tmp <- tempfile()
+      sink(tmp)
+      out <- stanflow_update(dev = TRUE)
+      sink()
+      unlink(tmp)
       out
     },
     check = function(recursive_flag, dev_flag) {
