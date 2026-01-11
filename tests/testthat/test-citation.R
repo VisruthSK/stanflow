@@ -4,13 +4,13 @@ write_file <- function(path, lines) {
 }
 
 test_that(".scan_tokens returns empty results for parse errors", {
-  hits <- .scan_tokens("function(")
+  hits <- .scan_tokens("function(", stdlib_funs())
   expect_equal(hits$pkgs, character())
   expect_equal(hits$keys, character())
 })
 
 test_that(".scan_tokens handles empty library calls", {
-  hits <- .scan_tokens("library()")
+  hits <- .scan_tokens("library()", stdlib_funs())
   expect_equal(hits$pkgs, character())
   expect_equal(hits$keys, character())
 })
@@ -22,7 +22,7 @@ test_that(".scan_tokens resolves attachment order and requireNamespace", {
     "library('brms')",
     "`as_draws`(1)"
   )
-  hits <- .scan_tokens(paste(code, collapse = "\n"))
+  hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
 
   expect_true(all(c("posterior", "cmdstanr", "brms") %in% hits$pkgs))
   expect_true("brms::as_draws" %in% hits$keys)
@@ -35,14 +35,14 @@ test_that(".scan_tokens falls back when attached packages do not match", {
     "library(posterior)",
     "log_lik(1)"
   )
-  hits <- .scan_tokens(paste(code, collapse = "\n"))
+  hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
 
   expect_true(paste0(first_pkg, "::log_lik") %in% hits$keys)
 })
 
 test_that(".scan_tokens chooses the first candidate when unattached", {
   first_pkg <- .fun_to_pkgs[["as_draws"]][[1L]]
-  hits <- .scan_tokens("as_draws(1)")
+  hits <- .scan_tokens("as_draws(1)", stdlib_funs())
   expect_true(paste0(first_pkg, "::as_draws") %in% hits$keys)
 })
 
@@ -59,7 +59,7 @@ test_that(".scan_tokens handles single-package functions", {
   picked_pkg <- NULL
   for (fun in single_fun) {
     pkg <- candidates[[fun]][[1L]]
-    hits <- .scan_tokens(paste0(fun, "(1)"))
+    hits <- .scan_tokens(paste0(fun, "(1)"), stdlib_funs())
     if (paste0(pkg, "::", fun) %in% hits$keys) {
       picked_fun <- fun
       picked_pkg <- pkg
@@ -71,7 +71,7 @@ test_that(".scan_tokens handles single-package functions", {
     skip("No single-package functions resolved in .scan_tokens.")
   }
 
-  hits <- .scan_tokens(paste0(picked_fun, "(1)"))
+  hits <- .scan_tokens(paste0(picked_fun, "(1)", stdlib_funs()))
   expect_true(paste0(picked_pkg, "::", picked_fun) %in% hits$keys)
 })
 
@@ -82,7 +82,7 @@ test_that(".scan_tokens handles namespaced calls and stdlib exclusions", {
     "rstan::plot(3)",
     "stats::lm(1, 2)"
   )
-  hits <- .scan_tokens(paste(code, collapse = "\n"))
+  hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
 
   expect_true(all(c("posterior::as_draws", "brms::as_draws") %in% hits$keys))
   expect_false("rstan::plot" %in% hits$keys)
@@ -92,7 +92,7 @@ test_that(".scan_tokens handles namespaced calls and stdlib exclusions", {
 })
 
 test_that(".scan_tokens ignores unqualified stdlib calls", {
-  hits <- .scan_tokens("plot(1)")
+  hits <- .scan_tokens("plot(1)", stdlib_funs())
   expect_equal(hits$pkgs, character())
   expect_equal(hits$keys, character())
 })

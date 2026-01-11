@@ -82,14 +82,12 @@ stan_usage <- function(
   )
 }
 
-.read_ignore_patterns <- function(ignore_path) {
-  readLines(ignore_path, warn = FALSE) |>
+.filter_ignored <- function(files, dir_path, ignore_path) {
+  patterns <- ignore_path |>
+    readLines(warn = FALSE) |>
     trimws() |>
     (\(x) x[nzchar(x) & !startsWith(x, "#")])()
-}
 
-.filter_ignored <- function(files, dir_path, ignore_path) {
-  patterns <- .read_ignore_patterns(ignore_path)
   if (!length(patterns) || !length(files)) {
     return(files)
   }
@@ -177,7 +175,7 @@ stan_usage <- function(
   paste(readLines(tmp, warn = FALSE), collapse = "\n")
 }
 
-.scan_tokens <- function(code, ignore_functions = stdlib_funs()) {
+.scan_tokens <- function(code, ignore_functions) {
   expr <- tryCatch(parse(text = code, keep.source = TRUE), error = function(e) {
     NULL
   })
