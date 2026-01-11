@@ -1,5 +1,7 @@
+library(stanflow)
+
 run_interface_setup <- function(interface, brms_backend = NULL) {
-  stanflow::setup_interface(
+  setup_interface(
     interface,
     cores = 2,
     force = TRUE,
