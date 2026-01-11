@@ -10,6 +10,8 @@
     Filter(\(person) any(person$role %in% c("aut", "cre")), x = _)
 }
 
+# TODO: add citations for R and for stanflow.
+
 # TODO: add more package citations--wrap brms and rstanarm in requireNamespace checks
 
 # TODO: add function citations for specific functions (use pkg::function as key)
@@ -133,6 +135,26 @@ if (requireNamespace("rstan", quietly = TRUE)) {
         author = .meta_authors(meta),
         note = .meta_note(meta),
         url = "https://mc-stan.org/"
+      )
+    })()
+}
+
+if (requireNamespace("rstanarm", quietly = TRUE)) {
+  .stan_citation_pkgs$rstanarm <- packageDescription("rstanarm") |>
+    (\(meta) {
+      bibentry(
+        bibtype = "Misc",
+        key = "rstanarm",
+        title = "rstanarm: {Bayesian} applied regression modeling via {Stan}.",
+        author = c(
+          person("Ben", "Goodrich"),
+          person("Jonah", "Gabry"),
+          person("Imad", "Ali"),
+          person("Sam", "Brilleman")
+        ),
+        note = .meta_note(meta),
+        year = .meta_year(meta),
+        url = "https://mc-stan.org/rstanarm/"
       )
     })()
 }

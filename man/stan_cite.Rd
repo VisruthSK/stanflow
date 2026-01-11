@@ -10,6 +10,7 @@ stan_cite(
   ignore_files = NULL,
   ignore_functions = stdlib_funs(),
   quiet = FALSE,
+  strict = FALSE,
   format = c("bibtex", "bibentry")
 )
 
@@ -17,7 +18,8 @@ stan_scan_usage(
   path = ".",
   ignore_files = NULL,
   ignore_functions = stdlib_funs(),
-  quiet = FALSE
+  quiet = FALSE,
+  strict = FALSE
 )
 }
 \arguments{
@@ -32,6 +34,9 @@ attributing calls to Stan packages. Defaults to exports from
 base R packages listed in \code{stdlib_funs()}.}
 
 \item{quiet}{Silence informational output.}
+
+\item{strict}{If \code{TRUE}, only count unqualified function calls that resolve
+to a single Stan package.}
 
 \item{format}{One of "bibtex" or "bibentry".}
 }

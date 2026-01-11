@@ -266,8 +266,109 @@ test_that("stan_scan_usage handles a single file path", {
     )
   )
   res <- stan_scan_usage(path)
+  expect_true(inherits(res, "stan_scan_usage"))
   expect_equal(res$packages, "posterior")
   expect_equal(res$functions, "posterior::as_draws")
+})
+
+test_that("stan_scan_usage strict skips ambiguous unqualified calls", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "strict.R"),
+    c(
+      "as_draws_df(1)",
+      "loo(1)"
+    )
+  )
+
+  res <- stan_scan_usage(path)
+  res_strict <- stan_scan_usage(path, strict = TRUE)
+
+  expect_true(length(res$functions) == 2L)
+  expect_equal(res_strict$packages, character())
+  expect_equal(res_strict$functions, character())
+})
+
+test_that("stan_scan_usage warns about multiple ambiguous calls in strict mode", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "strict.R"),
+    c(
+      "as_draws_df(1)",
+      "loo(1)"
+    )
+  )
+
+  expect_snapshot_output(
+    with_mocked_bindings(
+      cli_alert_warning = function(msg, ...) {
+        cli::cat_line(cli::format_inline(msg, .envir = parent.frame()))
+      },
+      .package = "cli",
+      stan_scan_usage(path, strict = TRUE)
+    )
+  )
+})
+
+test_that("print.stan_scan_usage reports empty usage", {
+  expect_snapshot_output(print(structure(
+    list(packages = character(), functions = character()),
+    class = "stan_scan_usage"
+  )))
+})
+
+test_that("print.stan_scan_usage shows many packages with no functions", {
+  expect_snapshot_output(print(structure(
+    list(
+      packages = c(
+        "bayesplot",
+        "brms",
+        "cmdstanr",
+        "loo",
+        "posterior",
+        "projpred",
+        "rstan",
+        "shinystan"
+      ),
+      functions = character()
+    ),
+    class = "stan_scan_usage"
+  )))
+})
+
+test_that("print.stan_scan_usage shows many functions for one package", {
+  expect_snapshot_output(print(structure(
+    list(
+      packages = "posterior",
+      functions = c(
+        "posterior::summarise_draws",
+        "posterior::as_draws_df",
+        "posterior::rhat",
+        "posterior::ess_bulk",
+        "posterior::as_draws"
+      )
+    ),
+    class = "stan_scan_usage"
+  )))
+})
+
+test_that("print.stan_scan_usage shows many functions across packages", {
+  expect_snapshot_output(print(structure(
+    list(
+      packages = c("bayesplot", "loo", "posterior", "rstan"),
+      functions = c(
+        "rstan::rstan_options",
+        "bayesplot::mcmc_trace",
+        "loo::loo",
+        "posterior::as_draws",
+        "bayesplot::pp_check",
+        "loo::loo_compare",
+        "posterior::summarise_draws",
+        "rstan::stan_model"
+      )
+    ),
+    class = "stan_scan_usage"
+  )))
 })
 
 test_that("stan_scan_usage returns empty results for non-Stan files", {
