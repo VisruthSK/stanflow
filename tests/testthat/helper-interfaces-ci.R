@@ -5,8 +5,8 @@ run_interface_setup <- function(interface, brms_backend = NULL) {
     interface,
     cores = 2,
     force = TRUE,
-    reinstall = TRUE,
-    quiet = TRUE,
+    reinstall = FALSE,
+    quiet = FALSE,
     brms_backend = brms_backend
   )
 
