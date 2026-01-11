@@ -4,13 +4,13 @@ write_file <- function(path, lines) {
 }
 
 test_that(".scan_tokens returns empty results for parse errors", {
-  hits <- stanflow:::.scan_tokens("function(")
+  hits <- .scan_tokens("function(")
   expect_equal(hits$pkgs, character())
   expect_equal(hits$keys, character())
 })
 
 test_that(".scan_tokens handles empty library calls", {
-  hits <- stanflow:::.scan_tokens("library()")
+  hits <- .scan_tokens("library()")
   expect_equal(hits$pkgs, character())
   expect_equal(hits$keys, character())
 })
@@ -22,7 +22,7 @@ test_that(".scan_tokens resolves attachment order and requireNamespace", {
     "library('brms')",
     "`as_draws`(1)"
   )
-  hits <- stanflow:::.scan_tokens(paste(code, collapse = "\n"))
+  hits <- .scan_tokens(paste(code, collapse = "\n"))
 
   expect_true(all(c("posterior", "cmdstanr", "brms") %in% hits$pkgs))
   expect_true("brms::as_draws" %in% hits$keys)
@@ -30,26 +30,26 @@ test_that(".scan_tokens resolves attachment order and requireNamespace", {
 })
 
 test_that(".scan_tokens falls back when attached packages do not match", {
-  first_pkg <- stanflow:::.fun_to_pkgs[["log_lik"]][[1L]]
+  first_pkg <- .fun_to_pkgs[["log_lik"]][[1L]]
   code <- c(
     "library(posterior)",
     "log_lik(1)"
   )
-  hits <- stanflow:::.scan_tokens(paste(code, collapse = "\n"))
+  hits <- .scan_tokens(paste(code, collapse = "\n"))
 
   expect_true(paste0(first_pkg, "::log_lik") %in% hits$keys)
 })
 
 test_that(".scan_tokens chooses the first candidate when unattached", {
-  first_pkg <- stanflow:::.fun_to_pkgs[["as_draws"]][[1L]]
-  hits <- stanflow:::.scan_tokens("as_draws(1)")
+  first_pkg <- .fun_to_pkgs[["as_draws"]][[1L]]
+  hits <- .scan_tokens("as_draws(1)")
   expect_true(paste0(first_pkg, "::as_draws") %in% hits$keys)
 })
 
 test_that(".scan_tokens handles single-package functions", {
-  candidates <- stanflow:::.fun_to_pkgs
+  candidates <- .fun_to_pkgs
   single_fun <- names(candidates)[lengths(candidates) == 1L]
-  single_fun <- setdiff(single_fun, stanflow:::.stdlib_funs)
+  single_fun <- setdiff(single_fun, stdlib_funs())
   single_fun <- single_fun[make.names(single_fun) == single_fun]
   if (!length(single_fun)) {
     skip("No single-package functions found.")
@@ -59,7 +59,7 @@ test_that(".scan_tokens handles single-package functions", {
   picked_pkg <- NULL
   for (fun in single_fun) {
     pkg <- candidates[[fun]][[1L]]
-    hits <- stanflow:::.scan_tokens(paste0(fun, "(1)"))
+    hits <- .scan_tokens(paste0(fun, "(1)"))
     if (paste0(pkg, "::", fun) %in% hits$keys) {
       picked_fun <- fun
       picked_pkg <- pkg
@@ -71,7 +71,7 @@ test_that(".scan_tokens handles single-package functions", {
     skip("No single-package functions resolved in .scan_tokens.")
   }
 
-  hits <- stanflow:::.scan_tokens(paste0(picked_fun, "(1)"))
+  hits <- .scan_tokens(paste0(picked_fun, "(1)"))
   expect_true(paste0(picked_pkg, "::", picked_fun) %in% hits$keys)
 })
 
@@ -82,7 +82,7 @@ test_that(".scan_tokens handles namespaced calls and stdlib exclusions", {
     "rstan::plot(3)",
     "stats::lm(1, 2)"
   )
-  hits <- stanflow:::.scan_tokens(paste(code, collapse = "\n"))
+  hits <- .scan_tokens(paste(code, collapse = "\n"))
 
   expect_true(all(c("posterior::as_draws", "brms::as_draws") %in% hits$keys))
   expect_false("rstan::plot" %in% hits$keys)
@@ -92,7 +92,16 @@ test_that(".scan_tokens handles namespaced calls and stdlib exclusions", {
 })
 
 test_that(".scan_tokens ignores unqualified stdlib calls", {
-  hits <- stanflow:::.scan_tokens("plot(1)")
+  hits <- .scan_tokens("plot(1)")
+  expect_equal(hits$pkgs, character())
+  expect_equal(hits$keys, character())
+})
+
+test_that(".scan_tokens honors ignore_functions overrides", {
+  hits <- .scan_tokens(
+    "posterior::as_draws(1)",
+    ignore_functions = "as_draws"
+  )
   expect_equal(hits$pkgs, character())
   expect_equal(hits$keys, character())
 })
@@ -100,7 +109,7 @@ test_that(".scan_tokens ignores unqualified stdlib calls", {
 test_that(".extract_code returns R source verbatim", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "script.R"), c("x <- 1", "x"))
-  expect_equal(stanflow:::.extract_code(path), "x <- 1\nx")
+  expect_equal(.extract_code(path), "x <- 1\nx")
 })
 
 test_that(".extract_code extracts Rmd chunks", {
@@ -118,7 +127,7 @@ test_that(".extract_code extracts Rmd chunks", {
       "```"
     )
   )
-  out <- stanflow:::.extract_code(path)
+  out <- .extract_code(path)
   expect_match(out, "as_draws\\(")
 })
 
@@ -197,7 +206,10 @@ test_that("stan_usage supports multiple file paths", {
   res <- stan_usage(c(path1, path2))
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
-  expect_true(setequal(res$functions, c("posterior::as_draws", "brms::as_draws")))
+  expect_true(setequal(
+    res$functions,
+    c("posterior::as_draws", "brms::as_draws")
+  ))
 })
 
 test_that("stan_usage errors on multiple directories", {
@@ -338,7 +350,10 @@ test_that("stan_usage scans directories with mixed inputs", {
   expect_equal(res$packages, sort(res$packages))
   expect_equal(res$functions, sort(res$functions))
   expect_true(setequal(res$packages, c("brms", "cmdstanr", "posterior")))
-  expect_true(setequal(res$functions, c("brms::as_draws", "posterior::as_draws")))
+  expect_true(setequal(
+    res$functions,
+    c("brms::as_draws", "posterior::as_draws")
+  ))
 })
 
 test_that("stan_usage returns empty vectors for empty directories", {
@@ -421,10 +436,13 @@ test_that("stan_usage applies ignore patterns for directory searches", {
     )
   )
 
-  res <- stan_usage(dir_path, ignore = ignore_path)
+  res <- stan_usage(dir_path, ignore_files = ignore_path)
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
-  expect_true(setequal(res$functions, c("posterior::as_draws", "brms::as_draws")))
+  expect_true(setequal(
+    res$functions,
+    c("posterior::as_draws", "brms::as_draws")
+  ))
 })
 
 test_that("stan_usage respects anchored ignore patterns", {
@@ -453,7 +471,7 @@ test_that("stan_usage respects anchored ignore patterns", {
     )
   )
 
-  res <- stan_usage(dir_path, ignore = ignore_path)
+  res <- stan_usage(dir_path, ignore_files = ignore_path)
   expect_true(setequal(res$packages, "brms"))
 })
 
@@ -474,7 +492,7 @@ test_that("stan_usage errors when ignore is used with file vectors", {
   )
 
   expect_error(
-    stan_usage(path, ignore = ignore_path),
+    stan_usage(path, ignore_files = ignore_path),
     "ignore"
   )
 })
@@ -499,7 +517,7 @@ test_that("stan_usage keeps files when ignore file is empty", {
     )
   )
 
-  res <- stan_usage(dir_path, ignore = ignore_path)
+  res <- stan_usage(dir_path, ignore_files = ignore_path)
   expect_true(setequal(res$packages, "posterior"))
   expect_true(setequal(res$functions, "posterior::as_draws"))
 })
@@ -516,7 +534,7 @@ test_that("stan_usage handles empty directories with ignore files", {
   )
 
   expect_error(
-    stan_usage(dir_path, ignore = ignore_path),
+    stan_usage(dir_path, ignore_files = ignore_path),
     "No files found"
   )
 })
@@ -527,7 +545,7 @@ test_that("stan_usage errors when ignore file is missing", {
   dir.create(dir_path)
 
   expect_error(
-    stan_usage(dir_path, ignore = file.path(tmp, "missing")),
+    stan_usage(dir_path, ignore_files = file.path(tmp, "missing")),
     "ignore"
   )
 })
