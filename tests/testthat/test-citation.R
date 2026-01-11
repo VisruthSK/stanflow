@@ -30,7 +30,11 @@ test_that(".scan_tokens resolves attachment order and requireNamespace", {
 })
 
 test_that(".scan_tokens falls back when attached packages do not match", {
-  first_pkg <- .fun_to_pkgs[["log_lik"]][[1L]]
+  candidates <- split(
+    rep(names(.stan_exports), lengths(.stan_exports)),
+    .stan_exports |> unlist(use.names = FALSE)
+  )
+  first_pkg <- candidates[["log_lik"]][[1L]]
   code <- c(
     "library(posterior)",
     "log_lik(1)"
@@ -41,13 +45,20 @@ test_that(".scan_tokens falls back when attached packages do not match", {
 })
 
 test_that(".scan_tokens chooses the first candidate when unattached", {
-  first_pkg <- .fun_to_pkgs[["as_draws"]][[1L]]
+  candidates <- split(
+    rep(names(.stan_exports), lengths(.stan_exports)),
+    .stan_exports |> unlist(use.names = FALSE)
+  )
+  first_pkg <- candidates[["as_draws"]][[1L]]
   hits <- .scan_tokens("as_draws(1)", stdlib_funs())
   expect_true(paste0(first_pkg, "::as_draws") %in% hits$keys)
 })
 
 test_that(".scan_tokens handles single-package functions", {
-  candidates <- .fun_to_pkgs
+  candidates <- split(
+    rep(names(.stan_exports), lengths(.stan_exports)),
+    .stan_exports |> unlist(use.names = FALSE)
+  )
   single_fun <- candidates |>
     (\(x) names(x)[lengths(x) == 1L])() |>
     setdiff(stdlib_funs()) |>
@@ -237,12 +248,12 @@ test_that("stan_cite returns bibtex or bibentry", {
 
   bibtex <- stan_cite(path)
   expect_true(is.character(bibtex))
-  expect_true(any(grepl("Posterior", bibtex)))
-  expect_true(any(grepl("As Draws", bibtex)))
+  expect_true(any(grepl("Posterior", bibtex, fixed = TRUE)))
+  expect_true(any(grepl("As Draws", bibtex, fixed = TRUE)))
 
   bibentry <- stan_cite(path, format = "bibentry")
   expect_true(inherits(bibentry, "bibentry"))
-  expect_true(any(grepl("Posterior", utils::toBibtex(bibentry))))
+  expect_true(any(grepl("Posterior", utils::toBibtex(bibentry), fixed = TRUE)))
 })
 
 test_that("stan_scan_usage handles a single file path", {
