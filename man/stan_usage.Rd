@@ -4,14 +4,23 @@
 \alias{stan_usage}
 \title{Find Stan packages + Stan functions used}
 \usage{
-stan_usage(path = ".", ignore = NULL, quiet = FALSE)
+stan_usage(
+  path = ".",
+  ignore_files = NULL,
+  ignore_functions = stdlib_funs(),
+  quiet = FALSE
+)
 }
 \arguments{
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.Qmd).}
 
-\item{ignore}{Path to a .gitignore-style file used to exclude paths while
+\item{ignore_files}{Path to a .gitignore-style file used to exclude paths while
 searching a directory.}
+
+\item{ignore_functions}{Character vector of function names to ignore when
+attributing calls to Stan packages. Defaults to exports from
+base R packages listed in \code{stdlib_funs()}.}
 
 \item{quiet}{Silence informational output.}
 }

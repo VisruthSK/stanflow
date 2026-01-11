@@ -4,11 +4,19 @@
 #'
 #' @param path A single project directory (searched recursively) or a vector of
 #'   files (.R/.Rmd/.Qmd).
-#' @param ignore Path to a .gitignore-style file used to exclude paths while
+#' @param ignore_files Path to a .gitignore-style file used to exclude paths while
 #'   searching a directory.
+#' @param ignore_functions Character vector of function names to ignore when
+#'   attributing calls to Stan packages. Defaults to exports from
+#'   base R packages listed in `stdlib_funs()`.
 #' @param quiet Silence informational output.
 #' @return list(packages=character(), functions=character())
-stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
+stan_usage <- function(
+  path = ".",
+  ignore_files = NULL,
+  ignore_functions = stdlib_funs(),
+  quiet = FALSE
+) {
   local_cli_quiet(quiet)
   paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
   dir_flags <- dir.exists(paths)
@@ -24,14 +32,14 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
       ignore.case = TRUE,
       pattern = "\\.(R|Rmd|Qmd)$"
     )
-    if (!is.null(ignore)) {
-      if (!file.exists(ignore)) {
-        cli::cli_abort("{.arg ignore} must point to an existing file.")
+    if (!is.null(ignore_files)) {
+      if (!file.exists(ignore_files)) {
+        cli::cli_abort("{.arg ignore_files} must point to an existing file.")
       }
       files <- files |>
         .filter_ignored(
           dir_path,
-          normalizePath(ignore, winslash = "/", mustWork = TRUE)
+          normalizePath(ignore_files, winslash = "/", mustWork = TRUE)
         )
     }
   } else {
@@ -40,9 +48,9 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
         "{.arg path} must be a single directory or a vector of files."
       )
     }
-    if (!is.null(ignore)) {
+    if (!is.null(ignore_files)) {
       cli::cli_abort(
-        "{.arg ignore} can only be used when {.arg path} is a directory."
+        "{.arg ignore_files} can only be used when {.arg path} is a directory."
       )
     }
     for (file_path in paths) {
@@ -55,27 +63,23 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
     cli::cli_abort("No files found.")
   }
 
-  files <- unique(files)
+  hits <- files |>
+    unique() |>
+    lapply(\(file) .extract_code(file)) |>
+    lapply(.scan_tokens, ignore_functions = ignore_functions)
 
-  used_pkgs <- vector("list", length(files))
-  used_keys <- vector("list", length(files))
-
-  for (i in seq_along(files)) {
-    code <- .extract_code(files[[i]])
-    hits <- .scan_tokens(code)
-    used_pkgs[[i]] <- hits$pkgs
-    used_keys[[i]] <- hits$keys
-  }
-
-  used_pkgs <- unlist(used_pkgs, use.names = FALSE)
-  used_keys <- unlist(used_keys, use.names = FALSE)
+  used_pkgs <- hits |> lapply(`[[`, "pkgs") |> unlist(use.names = FALSE)
+  used_keys <- hits |> lapply(`[[`, "keys") |> unlist(use.names = FALSE)
   if (!length(used_pkgs)) {
     used_pkgs <- character()
   }
   if (!length(used_keys)) {
     used_keys <- character()
   }
-  list(packages = sort(unique(used_pkgs)), functions = sort(unique(used_keys)))
+  list(
+    packages = sort(unique(used_pkgs)),
+    functions = sort(unique(used_keys))
+  )
 }
 
 .read_ignore_patterns <- function(ignore_path) {
@@ -173,7 +177,7 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
   paste(readLines(tmp, warn = FALSE), collapse = "\n")
 }
 
-.scan_tokens <- function(code) {
+.scan_tokens <- function(code, ignore_functions = stdlib_funs()) {
   expr <- tryCatch(parse(text = code, keep.source = TRUE), error = function(e) {
     NULL
   })
@@ -189,6 +193,7 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
   attached_pos <- integer()
   pkgs <- character()
   keys <- character()
+  ignore_functions <- unique(ignore_functions)
 
   choose_attached <- function(candidates) {
     if (length(candidates) == 1L) {
@@ -252,7 +257,7 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
       if (pkg_idx >= 1L && token[pkg_idx] == "SYMBOL_PACKAGE") {
         pkg <- text[pkg_idx]
         fun <- gsub("^`(.*)`$", "\\1", text[i])
-        if (fun %in% .stdlib_funs) {
+        if (fun %in% ignore_functions) {
           next
         }
 
@@ -267,7 +272,7 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
     # Unqualified calls: resolve by attachment order (best-effort)
     if (tok == "SYMBOL_FUNCTION_CALL") {
       fun <- gsub("^`(.*)`$", "\\1", txt)
-      if (fun %in% .stdlib_funs) {
+      if (fun %in% ignore_functions) {
         next
       }
 
@@ -286,15 +291,21 @@ stan_usage <- function(path = ".", ignore = NULL, quiet = FALSE) {
 }
 
 .fun_to_pkgs <- local({
-  funs <- .stan_exports |> unlist(use.names = FALSE)
-  pkgs <- rep(names(.stan_exports), lengths(.stan_exports))
-  split(pkgs, funs)
+  split(
+    rep(names(.stan_exports), lengths(.stan_exports)),
+    .stan_exports |> unlist(use.names = FALSE)
+  )
 })
 
-# stdlib function names to never attribute to Stan pkgs (even if re-exported)
-.stdlib_funs <- local({
+#' Standard-library function names to never attribute to Stan packages
+#'
+#' This includes exports from: base, stats, utils, graphics, grDevices, methods.
+#'
+#' @return Character vector of standard-library function names.
+#' @export
+stdlib_funs <- function() {
   c("base", "stats", "utils", "graphics", "grDevices", "methods") |>
     lapply(getNamespaceExports) |>
     unlist(use.names = FALSE) |>
     unique()
-})
+}
