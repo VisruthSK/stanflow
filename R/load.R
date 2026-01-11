@@ -1,5 +1,4 @@
 # Portions of this file are adapted from the tidyverse package.
-# Copyright (c) 2021 tidyverse authors. Licensed under the MIT license.
 # See LICENSE.note for details.
 find_unloaded <- function(pkgs) pkgs[!paste0("package:", pkgs) %in% search()]
 
