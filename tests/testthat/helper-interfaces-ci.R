@@ -10,6 +10,10 @@ run_interface_setup <- function(interface, brms_backend = NULL) {
     brms_backend = brms_backend
   )
 
+  # TODO: temp test to make sure failures surface in GHA; delete
+  if (interface == "rstanarm") {
+    expect_true(FALSE)
+  }
   expect_true(
     requireNamespace(interface, quietly = TRUE),
     info = paste("Missing package:", interface)
