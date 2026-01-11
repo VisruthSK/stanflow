@@ -79,7 +79,7 @@ test_that("print.stanflow_conflicts returns input invisibly", {
   sink()
   output <- readLines(tmp, warn = FALSE)
   unlink(tmp)
-  expect_true(any(grepl("Conflicts", output)))
+  expect_true(any(grepl("Conflicts", output, fixed = TRUE)))
   expect_identical(res, conflicts)
 })
 
