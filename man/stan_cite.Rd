@@ -2,6 +2,7 @@
 % Please edit documentation in R/citation.R
 \name{stan_cite}
 \alias{stan_cite}
+\alias{stan_scan_usage}
 \title{Collect BibTeX citations for Stan usage}
 \usage{
 stan_cite(
@@ -10,6 +11,13 @@ stan_cite(
   ignore_functions = stdlib_funs(),
   quiet = FALSE,
   format = c("bibtex", "bibentry")
+)
+
+stan_scan_usage(
+  path = ".",
+  ignore_files = NULL,
+  ignore_functions = stdlib_funs(),
+  quiet = FALSE
 )
 }
 \arguments{
@@ -29,7 +37,10 @@ base R packages listed in \code{stdlib_funs()}.}
 }
 \value{
 A BibTeX character vector or a bibentry object.
+
+list(packages=character(), functions=character())
 }
 \description{
-Collect BibTeX citations for Stan usage
+\code{stan_scan_usage()} is primarily for developers; most users should call
+\code{stan_cite()}.
 }
