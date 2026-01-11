@@ -324,7 +324,10 @@ stan_scan_usage <- function(
         next
       }
 
-      candidates <- .fun_to_pkgs[[fun]]
+      candidates <- split(
+        rep(names(.stan_exports), lengths(.stan_exports)),
+        .stan_exports |> unlist(use.names = FALSE)
+      )[[fun]]
       if (length(candidates)) {
         pkg <- choose_attached(candidates)
         pkgs <- c(pkgs, pkg)
@@ -337,13 +340,6 @@ stan_scan_usage <- function(
   keys <- keys[sub("::.*$", "", keys) %in% .stan_pkgs]
   list(pkgs = pkgs, keys = keys)
 }
-
-.fun_to_pkgs <- local({
-  split(
-    rep(names(.stan_exports), lengths(.stan_exports)),
-    .stan_exports |> unlist(use.names = FALSE)
-  )
-})
 
 #' Standard-library function names to never attribute to Stan packages
 #'

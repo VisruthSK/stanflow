@@ -2,7 +2,8 @@ core <- c("bayesplot", "loo", "posterior", "projpred", "shinystan")
 backends <- c("brms", "cmdstanr", "rstan", "rstanarm")
 stanflow_pkgs <- c(core, backends)
 
-# TODO: regenerate on releases? just do dynamically? regen in CI on pushes?
+# TODO: regenerate on releases? just do dynamically? regen in CI on pushes? also should sort within package.
+# TODO: include stanflow itself here? or ad dynamically
 # generated on 20260110
 .stan_exports <-
   list(
