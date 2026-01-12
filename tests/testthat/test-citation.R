@@ -798,3 +798,100 @@ test_that("stan_scan_usage ignores non-R files in directories", {
     "No files found"
   )
 })
+
+test_that("internal helpers cover NULL/expression/list/pairlist branches in .ast_walk", {
+  ast_walk <- getFromNamespace(".ast_walk", "stanflow")
+
+  new_acc <- function() {
+    acc <- new.env(parent = emptyenv())
+    acc$pos <- 0L
+    acc$lib_pkgs <- character()
+    acc$lib_pos <- integer()
+    acc$lib_is_attach <- logical()
+    acc$ns_pkgs <- character()
+    acc$ns_keys <- character()
+    acc$unqual_funs <- character()
+    acc$unqual_pos <- integer()
+    acc
+  }
+
+  lib_funs <- c("library", "require", "requireNamespace")
+  ignore <- stanflow::stdlib_funs()
+
+  # is.null(x) branch  :contentReference[oaicite:1]{index=1}
+  acc <- new_acc()
+  expect_invisible(ast_walk(NULL, acc, ignore, lib_funs))
+
+  # is.expression(x) branch  :contentReference[oaicite:2]{index=2}
+  acc <- new_acc()
+  expect_invisible(ast_walk(
+    expression(posterior::as_draws(1)),
+    acc,
+    ignore,
+    lib_funs
+  ))
+  expect_true("posterior::as_draws" %in% acc$ns_keys)
+
+  # is.list(x) branch (list)  :contentReference[oaicite:3]{index=3}
+  acc <- new_acc()
+  expect_invisible(ast_walk(
+    list(quote(posterior::as_draws(1))),
+    acc,
+    ignore,
+    lib_funs
+  ))
+  expect_true("posterior::as_draws" %in% acc$ns_keys)
+
+  # is.pairlist(x) branch (pairlist)  :contentReference[oaicite:4]{index=4}
+  acc <- new_acc()
+  expect_invisible(ast_walk(
+    pairlist(a = quote(posterior::as_draws(1))),
+    acc,
+    ignore,
+    lib_funs
+  ))
+  expect_true("posterior::as_draws" %in% acc$ns_keys)
+})
+
+test_that(".ast_lit_name returns NULL for non-literals", {
+  ast_lit_name <- getFromNamespace(".ast_lit_name", "stanflow")
+  expect_null(ast_lit_name(1)) # hits the trailing NULL return :contentReference[oaicite:5]{index=5}
+})
+
+test_that(".ast_get_lib_pkg handles empty args and named `package=`", {
+  ast_get_lib_pkg <- getFromNamespace(".ast_get_lib_pkg", "stanflow")
+
+  # no args -> early NULL  :contentReference[oaicite:6]{index=6}
+  expect_null(ast_get_lib_pkg(quote(library())))
+
+  # named package= branch  :contentReference[oaicite:7]{index=7}
+  expect_identical(
+    ast_get_lib_pkg(quote(library(package = "posterior"))),
+    "posterior"
+  )
+})
+
+test_that(".resolve_candidates returns empty when no Stan candidates exist", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+  export_index <- getFromNamespace(".stan_export_index", "stanflow")
+
+  # pick a deterministic name not in the index
+  candidates <- c(
+    "___stanflow_not_a_real_stan_fun___",
+    "___stanflow_not_a_real_stan_fun_2___",
+    "___stanflow_not_a_real_stan_fun_3___"
+  )
+  fun <- candidates[!candidates %in% names(export_index)][1]
+  expect_true(length(fun) == 1 && nzchar(fun))
+
+  out <- resolve_candidates(
+    unqual = list(funs = fun, idx = 1L),
+    lib_data = NULL,
+    strict = FALSE
+  )
+
+  # triggers the `!any(has_candidates)` early return  :contentReference[oaicite:8]{index=8}
+  expect_identical(out$pkgs, character())
+  expect_identical(out$keys, character())
+  expect_identical(out$ambiguous, character())
+})
