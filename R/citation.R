@@ -16,7 +16,7 @@
 #' @export
 stan_cite <- function(
   path = ".",
-  ignore_functions = stdlib_funs(),
+  ignore_functions = .stdlib_funs,
   quiet = FALSE,
   strict = FALSE,
   format = c("bibtex", "bibentry")
@@ -58,7 +58,7 @@ stan_cite <- function(
 #' @rdname stan_cite
 stan_scan_usage <- function(
   path = ".",
-  ignore_functions = stdlib_funs(),
+  ignore_functions = .stdlib_funs,
   quiet = FALSE,
   strict = FALSE
 ) {
@@ -160,9 +160,12 @@ stan_scan_usage <- function(
 }
 
 .scan_tokens <- function(code, ignore_functions, strict = FALSE) {
-  expr <- tryCatch(parse(text = code, keep.source = TRUE), error = function(e) {
-    NULL
-  })
+  expr <- tryCatch(
+    parse(text = code, keep.source = TRUE),
+    error = function(e) {
+      NULL
+    }
+  )
   if (is.null(expr)) {
     return(list(
       pkgs = character(),
@@ -391,10 +394,7 @@ stan_scan_usage <- function(
 #' @return Character vector of standard-library function names.
 #' @export
 stdlib_funs <- function() {
-  c("base", "stats", "utils", "graphics", "grDevices", "methods") |>
-    lapply(getNamespaceExports) |>
-    unlist(use.names = FALSE) |>
-    unique()
+  .stdlib_funs
 }
 
 #' @export
