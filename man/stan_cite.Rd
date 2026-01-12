@@ -7,7 +7,6 @@
 \usage{
 stan_cite(
   path = ".",
-  ignore_file = NULL,
   ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE,
@@ -16,7 +15,6 @@ stan_cite(
 
 stan_scan_usage(
   path = ".",
-  ignore_file = NULL,
   ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE
@@ -25,9 +23,6 @@ stan_scan_usage(
 \arguments{
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.Qmd).}
-
-\item{ignore_file}{Path to a .gitignore-style file used to exclude paths while
-searching a directory.}
 
 \item{ignore_functions}{Character vector of function names to ignore when
 attributing calls to Stan packages. Defaults to exports from
