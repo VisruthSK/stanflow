@@ -5,9 +5,10 @@
 #'
 #' @param path A single project directory (searched recursively) or a vector of
 #'   files (.R/.Rmd/.Qmd).
-#' @param ignore_functions Character vector of function names to ignore when
-#'   attributing calls to Stan packages. Defaults to exports from
-#'   base R packages listed in `stdlib_funs()`.
+#' @param ignore_unqualified_functions Character vector of function names to ignore when
+#'   attributing (unqualified) calls to Stan packages. Defaults to exports from
+#'   base R packages listed in `stdlib_funs()`. Calls like `rstan::plot()` will NOT
+#'   be ignored even if `plot` is in `ignore_unqualified_functions`.
 #' @param quiet Silence informational output.
 #' @param strict If `TRUE`, only count unqualified function calls that resolve
 #'   to a single Stan package.
@@ -16,14 +17,14 @@
 #' @export
 stan_cite <- function(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_unqualified_functions = .stdlib_funs,
   quiet = FALSE,
   strict = FALSE,
   format = c("bibtex", "bibentry")
 ) {
   stan_scan_usage(
     path = path,
-    ignore_functions = ignore_functions,
+    ignore_unqualified_functions = ignore_unqualified_functions,
     quiet = quiet,
     strict = strict
   ) |>
@@ -58,7 +59,7 @@ stan_cite <- function(
 #' @rdname stan_cite
 stan_scan_usage <- function(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_unqualified_functions = .stdlib_funs,
   quiet = FALSE,
   strict = FALSE
 ) {
@@ -101,7 +102,10 @@ stan_scan_usage <- function(
       \(file) {
         file |>
           .extract_code() |>
-          .scan_tokens(ignore_functions = ignore_functions, strict = strict)
+          .scan_tokens(
+            ignore_unqualified_functions = ignore_unqualified_functions,
+            strict = strict
+          )
       }
     )
 
@@ -139,7 +143,7 @@ stan_scan_usage <- function(
     sort()
 }
 
-.ast_walk <- function(x, acc, ignore_functions, lib_funs) {
+.ast_walk <- function(x, acc, ignore_unqualified_functions, lib_funs) {
   if (is.null(x)) {
     return(invisible(NULL))
   } else if (is.call(x)) {
@@ -156,8 +160,7 @@ stan_scan_usage <- function(
         if (
           !is.null(pkg) &&
             !is.null(fun) &&
-            pkg %in% .stan_pkgs &&
-            !(fun %in% ignore_functions)
+            pkg %in% .stan_pkgs
         ) {
           acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
           acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", fun))
@@ -174,31 +177,31 @@ stan_scan_usage <- function(
         )
       }
     } else if (!is.null(head_name)) {
-      if (!(head_name %in% ignore_functions)) {
+      if (!(head_name %in% ignore_unqualified_functions)) {
         acc$unqual_funs <- c(acc$unqual_funs, head_name)
         acc$unqual_pos <- c(acc$unqual_pos, acc$pos)
       }
     }
 
     if (is.call(head)) {
-      .ast_walk(head, acc, ignore_functions, lib_funs)
+      .ast_walk(head, acc, ignore_unqualified_functions, lib_funs)
     }
 
     if (length(x) >= 2L) {
       for (i in 2L:length(x)) {
-        .ast_walk(x[[i]], acc, ignore_functions, lib_funs)
+        .ast_walk(x[[i]], acc, ignore_unqualified_functions, lib_funs)
       }
     }
 
     return(invisible(NULL))
   } else if (is.expression(x)) {
     for (i in seq_along(x)) {
-      .ast_walk(x[[i]], acc, ignore_functions, lib_funs)
+      .ast_walk(x[[i]], acc, ignore_unqualified_functions, lib_funs)
     }
     return(invisible(NULL))
   } else if (is.pairlist(x) || is.list(x)) {
     for (i in seq_along(x)) {
-      .ast_walk(x[[i]], acc, ignore_functions, lib_funs)
+      .ast_walk(x[[i]], acc, ignore_unqualified_functions, lib_funs)
     }
     return(invisible(NULL))
   }
@@ -252,7 +255,7 @@ stan_scan_usage <- function(
   .ast_lit_name(arg)
 }
 
-.scan_tokens <- function(code, ignore_functions, strict = FALSE) {
+.scan_tokens <- function(code, ignore_unqualified_functions, strict = FALSE) {
   empty <- list(pkgs = character(), keys = character(), ambiguous = character())
   expr <- tryCatch(
     parse(text = code, keep.source = FALSE),
@@ -275,7 +278,7 @@ stan_scan_usage <- function(
   lib_funs <- c("library", "require", "requireNamespace")
 
   for (i in seq_along(expr)) {
-    .ast_walk(expr[[i]], acc, ignore_functions, lib_funs)
+    .ast_walk(expr[[i]], acc, ignore_unqualified_functions, lib_funs)
   }
 
   lib_data <- if (length(acc$lib_pkgs)) {
@@ -295,13 +298,10 @@ stan_scan_usage <- function(
     strict
   )
 
-  pkgs <- c(acc$lib_pkgs, acc$ns_pkgs, resolved$pkgs)
-  keys <- c(acc$ns_keys, resolved$keys)
-
   list(
-    pkgs = sort(unique(pkgs)),
-    keys = sort(unique(keys)),
-    ambiguous = sort(unique(resolved$ambiguous))
+    pkgs = c(acc$lib_pkgs, acc$ns_pkgs, resolved$pkgs),
+    keys = c(acc$ns_keys, resolved$keys),
+    ambiguous = resolved$ambiguous
   )
 }
 
@@ -329,25 +329,33 @@ stan_scan_usage <- function(
   funs <- unqual$funs[has_candidates]
   candidates_list <- candidates_list[has_candidates]
 
-  n_cand <- lengths(candidates_list)
-  is_ambig <- n_cand > 1
+  is_ambiguous <- lengths(candidates_list) > 1
 
   pkgs <- character()
   keys <- character()
   ambiguous <- character()
 
   # Unambiguous calls
-  if (!all(is_ambig)) {
-    best_pkgs <- unlist(candidates_list[!is_ambig], use.names = FALSE)
-    pkgs <- c(pkgs, best_pkgs)
-    keys <- c(keys, paste0(best_pkgs, "::", funs[!is_ambig]))
+  if (!all(is_ambiguous)) {
+    best_pkgs0 <- unlist(candidates_list[!is_ambiguous], use.names = FALSE)
+    funs0 <- funs[!is_ambiguous]
+    keys0 <- paste0(best_pkgs0, "::", funs0)
+
+    origin0 <- unname(.stan_origin_map[keys0])
+    origin0[is.na(origin0)] <- best_pkgs0
+
+    keep <- origin0 %in% .stan_pkgs
+    if (any(keep)) {
+      pkgs <- c(pkgs, origin0[keep])
+      keys <- c(keys, paste0(origin0[keep], "::", funs0[keep]))
+    }
   }
 
   # Ambiguous calls
-  if (any(is_ambig)) {
-    ambig_idx <- idx[is_ambig]
-    ambig_funs <- funs[is_ambig]
-    ambig_cands <- candidates_list[is_ambig]
+  if (any(is_ambiguous)) {
+    ambig_idx <- idx[is_ambiguous]
+    ambig_funs <- funs[is_ambiguous]
+    ambig_cands <- candidates_list[is_ambiguous]
     ambiguous <- sort(unique(ambig_funs))
 
     if (!strict) {
