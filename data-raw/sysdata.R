@@ -29,6 +29,13 @@ if (length(missing) > 0) {
   )
 }
 
+# Record versions and generation time (UTC)
+.stan_pkg_versions <- .stan_pkgs |>
+  lapply(\(pkg) packageVersion(pkg) |> as.character()) |>
+  setNames(.stan_pkgs)
+
+.date_generated <- Sys.Date()
+
 # Precompute standard library functions
 .stdlib_funs <- lapply(
   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
@@ -87,6 +94,8 @@ save(
   .stan_origin_map,
   .stan_pkgs,
   .stdlib_funs,
+  .stan_pkg_versions,
+  .date_generated,
   file = "R/sysdata.rda",
   compress = "xz"
 )

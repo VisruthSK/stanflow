@@ -7,7 +7,7 @@
 \usage{
 stan_cite(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_unqualified_functions = .stdlib_funs,
   quiet = FALSE,
   strict = FALSE,
   format = c("bibtex", "bibentry")
@@ -15,7 +15,7 @@ stan_cite(
 
 stan_scan_usage(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_unqualified_functions = .stdlib_funs,
   quiet = FALSE,
   strict = FALSE
 )
@@ -24,9 +24,10 @@ stan_scan_usage(
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.Qmd).}
 
-\item{ignore_functions}{Character vector of function names to ignore when
-attributing calls to Stan packages. Defaults to exports from
-base R packages listed in \code{stdlib_funs()}.}
+\item{ignore_unqualified_functions}{Character vector of function names to ignore when
+attributing (unqualified) calls to Stan packages. Defaults to exports from
+base R packages listed in \code{stdlib_funs()}. Calls like \code{rstan::plot()} will NOT
+be ignored even if \code{plot} is in \code{ignore_unqualified_functions}.}
 
 \item{quiet}{Silence informational output.}
 

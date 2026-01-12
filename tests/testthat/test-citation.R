@@ -255,10 +255,10 @@ test_that(".scan_tokens handles namespaced calls and stdlib exclusions", {
   hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
 
   expect_true(all(c("posterior::as_draws", "brms::as_draws") %in% hits$keys))
-  expect_false("rstan::plot" %in% hits$keys)
+  expect_true("rstan::plot" %in% hits$keys)
   expect_false("stats::lm" %in% hits$keys)
   expect_true(all(c("posterior", "brms") %in% hits$pkgs))
-  expect_false("rstan" %in% hits$pkgs)
+  expect_true("rstan" %in% hits$pkgs)
 })
 
 test_that(".scan_tokens ignores unqualified stdlib calls", {
@@ -267,13 +267,18 @@ test_that(".scan_tokens ignores unqualified stdlib calls", {
   expect_equal(hits$keys, character())
 })
 
-test_that(".scan_tokens honors ignore_functions overrides", {
-  hits <- .scan_tokens(
-    "posterior::as_draws(1)",
-    ignore_functions = "as_draws"
+test_that(".scan_tokens ignore_unqualified_functions overrides apply only to unqualified calls", {
+  code <- c(
+    "as_draws(1)",
+    "posterior::as_draws(2)"
   )
-  expect_equal(hits$pkgs, character())
-  expect_equal(hits$keys, character())
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    ignore_unqualified_functions = "as_draws"
+  )
+  expect_true("posterior::as_draws" %in% hits$keys)
+  expect_true("posterior" %in% hits$pkgs)
+  expect_identical(hits$keys, "posterior::as_draws")
 })
 
 test_that(".extract_code returns R source verbatim", {
