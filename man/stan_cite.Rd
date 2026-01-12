@@ -3,11 +3,11 @@
 \name{stan_cite}
 \alias{stan_cite}
 \alias{stan_scan_usage}
-\title{Collect BibTeX citations for Stan usage}
+\title{Collect citations for Stan usage}
 \usage{
 stan_cite(
   path = ".",
-  ignore_files = NULL,
+  ignore_file = NULL,
   ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE,
@@ -16,7 +16,7 @@ stan_cite(
 
 stan_scan_usage(
   path = ".",
-  ignore_files = NULL,
+  ignore_file = NULL,
   ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE
@@ -26,7 +26,7 @@ stan_scan_usage(
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.Qmd).}
 
-\item{ignore_files}{Path to a .gitignore-style file used to exclude paths while
+\item{ignore_file}{Path to a .gitignore-style file used to exclude paths while
 searching a directory.}
 
 \item{ignore_functions}{Character vector of function names to ignore when
