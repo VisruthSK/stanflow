@@ -139,6 +139,73 @@ stan_scan_usage <- function(
     sort()
 }
 
+.ast_walk <- function(x, acc, ignore_functions, lib_funs) {
+  if (is.null(x)) {
+    return(invisible(NULL))
+  } else if (is.call(x)) {
+    acc$pos <- acc$pos + 1L
+
+    head <- x[[1L]]
+    head_name <- if (is.symbol(head)) as.character(head) else NULL
+
+    if (!is.null(head_name) && head_name %in% c("::", ":::")) {
+      if (length(x) >= 3L) {
+        pkg <- .ast_lit_name(x[[2L]])
+        fun <- .ast_lit_name(x[[3L]])
+
+        if (
+          !is.null(pkg) &&
+            !is.null(fun) &&
+            pkg %in% .stan_pkgs &&
+            !(fun %in% ignore_functions)
+        ) {
+          acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
+          acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", fun))
+        }
+      }
+    } else if (!is.null(head_name) && head_name %in% lib_funs) {
+      pkg <- .ast_get_lib_pkg(x)
+      if (!is.null(pkg) && pkg %in% .stan_pkgs) {
+        acc$lib_pkgs <- c(acc$lib_pkgs, pkg)
+        acc$lib_pos <- c(acc$lib_pos, acc$pos)
+        acc$lib_is_attach <- c(
+          acc$lib_is_attach,
+          head_name != "requireNamespace"
+        )
+      }
+    } else if (!is.null(head_name)) {
+      if (!(head_name %in% ignore_functions)) {
+        acc$unqual_funs <- c(acc$unqual_funs, head_name)
+        acc$unqual_pos <- c(acc$unqual_pos, acc$pos)
+      }
+    }
+
+    if (is.call(head)) {
+      .ast_walk(head, acc, ignore_functions, lib_funs)
+    }
+
+    if (length(x) >= 2L) {
+      for (i in 2L:length(x)) {
+        .ast_walk(x[[i]], acc, ignore_functions, lib_funs)
+      }
+    }
+
+    return(invisible(NULL))
+  } else if (is.expression(x)) {
+    for (i in seq_along(x)) {
+      .ast_walk(x[[i]], acc, ignore_functions, lib_funs)
+    }
+    return(invisible(NULL))
+  } else if (is.pairlist(x) || is.list(x)) {
+    for (i in seq_along(x)) {
+      .ast_walk(x[[i]], acc, ignore_functions, lib_funs)
+    }
+    return(invisible(NULL))
+  }
+
+  invisible(NULL)
+}
+
 .extract_code <- function(file) {
   ext <- file |>
     sub(".*\\.", "", x = _) |>
@@ -159,154 +226,83 @@ stan_scan_usage <- function(
   paste(readLines(tmp, warn = FALSE), collapse = "\n")
 }
 
+.ast_lit_name <- function(x) {
+  if (is.symbol(x)) {
+    return(as.character(x))
+  }
+  if (is.character(x) && length(x) == 1L) {
+    return(x)
+  }
+  NULL
+}
+
+.ast_get_lib_pkg <- function(call) {
+  args <- as.list(call)[-1L]
+  if (!length(args)) {
+    return(NULL)
+  }
+
+  nms <- names(args)
+  arg <- if (!is.null(nms) && "package" %in% nms) {
+    args[[match("package", nms)]]
+  } else {
+    args[[1L]]
+  }
+
+  .ast_lit_name(arg)
+}
+
 .scan_tokens <- function(code, ignore_functions, strict = FALSE) {
+  empty <- list(pkgs = character(), keys = character(), ambiguous = character())
   expr <- tryCatch(
-    parse(text = code, keep.source = TRUE),
-    error = function(e) {
-      NULL
-    }
+    parse(text = code, keep.source = FALSE),
+    error = function(e) NULL
   )
   if (is.null(expr)) {
-    return(list(
-      pkgs = character(),
-      keys = character(),
-      ambiguous = character()
-    ))
+    return(empty)
   }
 
-  pd <- getParseData(expr, includeText = TRUE)
-  if (is.null(pd) || nrow(pd) == 0) {
-    return(list(
-      pkgs = character(),
-      keys = character(),
-      ambiguous = character()
-    ))
+  acc <- new.env(parent = emptyenv())
+  acc$pos <- 0L
+  acc$lib_pkgs <- character()
+  acc$lib_pos <- integer()
+  acc$lib_is_attach <- logical()
+  acc$ns_pkgs <- character()
+  acc$ns_keys <- character()
+  acc$unqual_funs <- character()
+  acc$unqual_pos <- integer()
+
+  lib_funs <- c("library", "require", "requireNamespace")
+
+  for (i in seq_along(expr)) {
+    .ast_walk(expr[[i]], acc, ignore_functions, lib_funs)
   }
 
-  pd <- pd[pd$terminal, ]
-  token <- pd$token
-  text <- pd$text
-  n <- length(token)
+  lib_data <- if (length(acc$lib_pkgs)) {
+    data.frame(
+      pos = acc$lib_pos,
+      pkg = acc$lib_pkgs,
+      is_attach = acc$lib_is_attach,
+      stringsAsFactors = FALSE
+    )
+  } else {
+    NULL
+  }
 
-  lib_res <- .find_library_calls(token, text, n)
-  ns_res <- .find_namespaced_calls(token, text, n, ignore_functions)
-  resolved <- .find_unqualified_calls(
-    token,
-    text,
-    n,
-    lib_res$idx,
-    ignore_functions
-  ) |>
-    .resolve_candidates(lib_res$data, strict)
-
-  pkgs <- c(
-    lib_res$data$pkg,
-    ns_res$pkgs,
-    resolved$pkgs
+  resolved <- .resolve_candidates(
+    list(funs = acc$unqual_funs, idx = acc$unqual_pos),
+    lib_data,
+    strict
   )
-  keys <- c(ns_res$keys, resolved$keys)
+
+  pkgs <- c(acc$lib_pkgs, acc$ns_pkgs, resolved$pkgs)
+  keys <- c(acc$ns_keys, resolved$keys)
 
   list(
     pkgs = sort(unique(pkgs)),
     keys = sort(unique(keys)),
     ambiguous = sort(unique(resolved$ambiguous))
   )
-}
-
-.find_library_calls <- function(token, text, n) {
-  idx <- which(
-    token == "SYMBOL_FUNCTION_CALL" &
-      text %in% c("library", "require", "requireNamespace")
-  )
-
-  if (!length(idx)) {
-    return(list(idx = integer(), data = NULL))
-  }
-
-  data <- do.call(
-    rbind,
-    lapply(idx, function(i) {
-      pkg <- ""
-      for (j in (i + 1):min(i + 10L, n)) {
-        if (token[j] %in% c("RPAR", "')'", ")")) {
-          break
-        }
-        if (token[j] %in% c("SYMBOL", "STR_CONST")) {
-          pkg <- gsub("^['\"]|['\"]$", "", text[j])
-          break
-        }
-      }
-      if (nzchar(pkg) && pkg %in% .stan_pkgs) {
-        data.frame(
-          pos = i,
-          pkg = pkg,
-          is_attach = text[i] != "requireNamespace",
-          stringsAsFactors = FALSE
-        )
-      } else {
-        NULL
-      }
-    })
-  )
-
-  list(idx = idx, data = data)
-}
-
-.find_namespaced_calls <- function(token, text, n, ignore_functions) {
-  idx <- which(token %in% c("NS_GET", "NS_GET_INT"))
-
-  if (!length(idx)) {
-    return(list(pkgs = character(), keys = character()))
-  }
-
-  valid <- idx > 1 & idx < n
-  idx <- idx[valid]
-
-  pkg_idx <- idx - 1L
-  fun_idx <- idx + 1L
-
-  is_stan_pkg <- text[pkg_idx] %in% .stan_pkgs
-  pkg_idx <- pkg_idx[is_stan_pkg]
-  fun_idx <- fun_idx[is_stan_pkg]
-
-  if (!length(pkg_idx)) {
-    return(list(pkgs = character(), keys = character()))
-  }
-
-  funs <- gsub("^`(.*)`$", "\\1", text[fun_idx])
-  keep <- !(funs %in% ignore_functions)
-
-  if (!any(keep)) {
-    return(list(pkgs = character(), keys = character()))
-  }
-
-  pkgs <- text[pkg_idx[keep]]
-  keys <- paste0(pkgs, "::", funs[keep])
-
-  list(pkgs = pkgs, keys = keys)
-}
-
-.find_unqualified_calls <- function(token, text, n, lib_idx, ignore_functions) {
-  is_ns_get <- token %in% c("NS_GET", "NS_GET_INT")
-  prev_is_ns <- c(FALSE, is_ns_get[-n])
-
-  is_lib_call <- logical(n)
-  if (length(lib_idx)) {
-    is_lib_call[lib_idx] <- TRUE
-  }
-
-  idx <- which(
-    token == "SYMBOL_FUNCTION_CALL" & !prev_is_ns & !is_lib_call
-  )
-
-  if (!length(idx)) {
-    return(list(funs = character(), idx = integer()))
-  }
-
-  funs <- gsub("^`(.*)`$", "\\1", text[idx])
-  keep <- !(funs %in% ignore_functions)
-
-  list(funs = funs[keep], idx = idx[keep])
 }
 
 .resolve_candidates <- function(unqual, lib_data, strict) {
@@ -387,6 +383,7 @@ stan_scan_usage <- function(
 
   list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
 }
+
 #' Standard-library function names to never attribute to Stan packages
 #'
 #' This includes exports from: base, stats, utils, graphics, grDevices, methods.
@@ -394,6 +391,13 @@ stan_scan_usage <- function(
 #' @return Character vector of standard-library function names.
 #' @export
 stdlib_funs <- function() {
+  # lapply(
+  #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
+  #   getNamespaceExports
+  # ) |>
+  #   unlist(use.names = FALSE) |>
+  #   unique() |>
+  #   sort()
   .stdlib_funs
 }
 

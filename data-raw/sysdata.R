@@ -30,13 +30,11 @@ if (length(missing) > 0) {
 }
 
 # Precompute standard library functions
-.stdlib_funs <- unlist(
-  lapply(
-    c("base", "stats", "utils", "graphics", "grDevices", "methods"),
-    getNamespaceExports
-  ),
-  use.names = FALSE
+.stdlib_funs <- lapply(
+  c("base", "stats", "utils", "graphics", "grDevices", "methods"),
+  getNamespaceExports
 ) |>
+  unlist(use.names = FALSE) |>
   unique() |>
   sort()
 
