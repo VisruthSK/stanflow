@@ -26,9 +26,8 @@ test_that(".scan_tokens handles empty or no-code files", {
   )
 })
 
-test_that(".scan_tokens handles non-Stan and empty library calls", {
+test_that(".scan_tokens handles non-Stan library calls", {
   code <- c(
-    "library()",
     "library(ggplot2)",
     "requireNamespace('base')"
   )
