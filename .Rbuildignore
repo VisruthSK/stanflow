@@ -13,4 +13,3 @@
 ^vignettes/\.quarto$
 ^vignettes/*_files$
 ^\.covrignore$
-^data-raw$

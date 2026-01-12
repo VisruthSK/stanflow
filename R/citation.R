@@ -16,7 +16,7 @@
 #' @export
 stan_cite <- function(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE,
   format = c("bibtex", "bibentry")
@@ -58,7 +58,7 @@ stan_cite <- function(
 #' @rdname stan_cite
 stan_scan_usage <- function(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE
 ) {
@@ -213,7 +213,7 @@ stan_scan_usage <- function(
 .find_library_calls <- function(token, text, n) {
   idx <- which(
     token == "SYMBOL_FUNCTION_CALL" &
-      fastmatch::`%fin%`(text, c("library", "require", "requireNamespace"))
+      text %in% c("library", "require", "requireNamespace")
   )
 
   if (!length(idx)) {
@@ -225,15 +225,15 @@ stan_scan_usage <- function(
     lapply(idx, function(i) {
       pkg <- ""
       for (j in (i + 1):min(i + 10L, n)) {
-        if (fastmatch::`%fin%`(token[j], c("RPAR", "')'", ")"))) {
+        if (token[j] %in% c("RPAR", "')'", ")")) {
           break
         }
-        if (fastmatch::`%fin%`(token[j], c("SYMBOL", "STR_CONST"))) {
+        if (token[j] %in% c("SYMBOL", "STR_CONST")) {
           pkg <- gsub("^['\"]|['\"]$", "", text[j])
           break
         }
       }
-      if (nzchar(pkg) && fastmatch::`%fin%`(pkg, .stan_pkgs)) {
+      if (nzchar(pkg) && pkg %in% .stan_pkgs) {
         data.frame(
           pos = i,
           pkg = pkg,
@@ -250,7 +250,7 @@ stan_scan_usage <- function(
 }
 
 .find_namespaced_calls <- function(token, text, n, ignore_functions) {
-  idx <- which(fastmatch::`%fin%`(token, c("NS_GET", "NS_GET_INT")))
+  idx <- which(token %in% c("NS_GET", "NS_GET_INT"))
 
   if (!length(idx)) {
     return(list(pkgs = character(), keys = character()))
@@ -262,7 +262,7 @@ stan_scan_usage <- function(
   pkg_idx <- idx - 1L
   fun_idx <- idx + 1L
 
-  is_stan_pkg <- fastmatch::`%fin%`(text[pkg_idx], .stan_pkgs)
+  is_stan_pkg <- text[pkg_idx] %in% .stan_pkgs
   pkg_idx <- pkg_idx[is_stan_pkg]
   fun_idx <- fun_idx[is_stan_pkg]
 
@@ -271,7 +271,7 @@ stan_scan_usage <- function(
   }
 
   funs <- gsub("^`(.*)`$", "\\1", text[fun_idx])
-  keep <- !(fastmatch::`%fin%`(funs, ignore_functions))
+  keep <- !(funs %in% ignore_functions)
 
   if (!any(keep)) {
     return(list(pkgs = character(), keys = character()))
@@ -284,7 +284,7 @@ stan_scan_usage <- function(
 }
 
 .find_unqualified_calls <- function(token, text, n, lib_idx, ignore_functions) {
-  is_ns_get <- fastmatch::`%fin%`(token, c("NS_GET", "NS_GET_INT"))
+  is_ns_get <- token %in% c("NS_GET", "NS_GET_INT")
   prev_is_ns <- c(FALSE, is_ns_get[-n])
 
   is_lib_call <- logical(n)
@@ -301,7 +301,7 @@ stan_scan_usage <- function(
   }
 
   funs <- gsub("^`(.*)`$", "\\1", text[idx])
-  keep <- !(fastmatch::`%fin%`(funs, ignore_functions))
+  keep <- !(funs %in% ignore_functions)
 
   list(funs = funs[keep], idx = idx[keep])
 }
@@ -369,7 +369,7 @@ stan_scan_usage <- function(
           pkg <- cands[1]
         } else {
           attached_before <- attaching_pkgs[seq_len(k)]
-          matches <- fastmatch::fmatch(cands, attached_before)
+          matches <- match(cands, attached_before)
           if (all(is.na(matches))) {
             pkg <- cands[1]
           } else {
@@ -384,7 +384,6 @@ stan_scan_usage <- function(
 
   list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
 }
-
 #' Standard-library function names to never attribute to Stan packages
 #'
 #' This includes exports from: base, stats, utils, graphics, grDevices, methods.
@@ -392,7 +391,10 @@ stan_scan_usage <- function(
 #' @return Character vector of standard-library function names.
 #' @export
 stdlib_funs <- function() {
-  .stdlib_funs
+  c("base", "stats", "utils", "graphics", "grDevices", "methods") |>
+    lapply(getNamespaceExports) |>
+    unlist(use.names = FALSE) |>
+    unique()
 }
 
 #' @export
