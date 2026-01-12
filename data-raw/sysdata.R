@@ -29,6 +29,17 @@ if (length(missing) > 0) {
   )
 }
 
+# Precompute standard library functions
+.stdlib_funs <- unlist(
+  lapply(
+    c("base", "stats", "utils", "graphics", "grDevices", "methods"),
+    getNamespaceExports
+  ),
+  use.names = FALSE
+) |>
+  unique() |>
+  sort()
+
 # Helper to determine origin
 get_origin <- function(pkg, name) {
   obj <- tryCatch(getExportedValue(pkg, name), error = function(e) NULL)
@@ -77,8 +88,11 @@ save(
   .stan_export_index,
   .stan_origin_map,
   .stan_pkgs,
+  .stdlib_funs,
   file = "R/sysdata.rda",
   compress = "xz"
 )
 
-message("Export list, index, and origin map saved to R/sysdata.rda")
+message(
+  "Export list, index, origin map, and stdlib functions saved to R/sysdata.rda"
+)
