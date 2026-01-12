@@ -1,6 +1,6 @@
 # stan_scan_usage warns about multiple ambiguous calls in strict mode
 
-    couldn't reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and re-run stan_cite().
+    Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and re-run stan_cite().
 
 # print.stan_scan_usage shows functions with no packages
 
