@@ -7,7 +7,7 @@
 \usage{
 stan_cite(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE,
   format = c("bibtex", "bibentry")
@@ -15,7 +15,7 @@ stan_cite(
 
 stan_scan_usage(
   path = ".",
-  ignore_functions = .stdlib_funs,
+  ignore_functions = stdlib_funs(),
   quiet = FALSE,
   strict = FALSE
 )
