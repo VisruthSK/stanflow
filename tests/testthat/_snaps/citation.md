@@ -1,38 +1,65 @@
-# stan_scan_usage warns about multiple ambiguous calls in strict mode
+# scan_usage warns about multiple ambiguous calls in strict mode
 
     Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and re-run stan_cite().
+    $packages
+    character(0)
+    
+    $functions
+    character(0)
+    
+    $ambiguous
+    [1] "ess_bulk" "rhat"    
+    
+    attr(,"class")
+    [1] "scan_usage"
 
-# print.stan_scan_usage shows functions with no packages
+# print.scan_usage shows functions with no packages
 
-    -- Stan usage --------------------------------------------- stan_scan_usage() --
-    Packages: <none>
-    Functions (2):
-      loo (1): `loo()`
-      posterior (1): `as_draws()`
+    $packages
+    character(0)
+    
+    $functions
+    [1] "loo::loo"            "posterior::as_draws"
+    
+    attr(,"class")
+    [1] "scan_usage"
 
-# print.stan_scan_usage shows many packages with no functions
+# print.scan_usage shows many packages with no functions
 
-    -- Stan usage --------------------------------------------- stan_scan_usage() --
-    Packages (8):
-      bayesplot, brms, cmdstanr, loo, posterior, projpred, rstan, shinystan
-    Functions: <none>
+    $packages
+    [1] "bayesplot" "brms"      "cmdstanr"  "loo"       "posterior" "projpred" 
+    [7] "rstan"     "shinystan"
+    
+    $functions
+    character(0)
+    
+    attr(,"class")
+    [1] "scan_usage"
 
-# print.stan_scan_usage shows many functions for one package
+# print.scan_usage shows many functions for one package
 
-    -- Stan usage --------------------------------------------- stan_scan_usage() --
-    Packages (1):
-      posterior
-    Functions (5):
-      posterior (5): `as_draws()`, `as_draws_df()`, `ess_bulk()`, `rhat()`, `summarise_draws()`
+    $packages
+    [1] "posterior"
+    
+    $functions
+    [1] "posterior::summarise_draws" "posterior::as_draws_df"    
+    [3] "posterior::rhat"            "posterior::ess_bulk"       
+    [5] "posterior::as_draws"       
+    
+    attr(,"class")
+    [1] "scan_usage"
 
-# print.stan_scan_usage shows many functions across packages
+# print.scan_usage shows many functions across packages
 
-    -- Stan usage --------------------------------------------- stan_scan_usage() --
-    Packages (4):
-      bayesplot, loo, posterior, rstan
-    Functions (8):
-      bayesplot (2): `mcmc_trace()`, `pp_check()`
-      loo (2): `loo()`, `loo_compare()`
-      posterior (2): `as_draws()`, `summarise_draws()`
-      rstan (2): `rstan_options()`, `stan_model()`
+    $packages
+    [1] "bayesplot" "loo"       "posterior" "rstan"    
+    
+    $functions
+    [1] "rstan::rstan_options"       "bayesplot::mcmc_trace"     
+    [3] "loo::loo"                   "posterior::as_draws"       
+    [5] "bayesplot::pp_check"        "loo::loo_compare"          
+    [7] "posterior::summarise_draws" "rstan::stan_model"         
+    
+    attr(,"class")
+    [1] "scan_usage"
 
