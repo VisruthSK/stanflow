@@ -6,7 +6,6 @@
 #'   attributing (unqualified) calls to Stan packages. Defaults to exports from
 #'   base R packages listed in `stdlib_funs()`. Calls like `rstan::plot()` will NOT
 #'   be ignored even if `plot` is in `ignore_unqualified_functions`.
-#' @param quiet Silence informational output.
 #' @param strict If `TRUE`, only count unqualified function calls that resolve
 #'   to a single Stan package.
 #' @param format One of "bibtex" or "bibentry".
@@ -15,14 +14,12 @@
 stan_cite <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
-  quiet = FALSE,
   strict = FALSE,
   format = c("bibtex", "bibentry")
 ) {
   scan_usage(
     path = path,
     ignore_unqualified_functions = ignore_unqualified_functions,
-    quiet = quiet,
     strict = strict,
     allowed_packages = .stan_pkgs,
     export_index = .stan_export_index,
@@ -30,16 +27,13 @@ stan_cite <- function(
   ) |>
     (\(usage) c(usage$packages, usage$functions, "stan", "stanflow"))() |>
     unique() |>
-    (\(keys) {
-      mget(
-        keys,
-        envir = .stan_citation_funs,
-        inherits = TRUE,
-        ifnotfound = list(NULL)
-      )
-    })() |>
+    mget(
+      envir = .stan_citation_funs,
+      inherits = TRUE,
+      ifnotfound = list(NULL)
+    ) |>
+    Filter(Negate(is.null), x = _) |>
     (\(entries) {
-      entries <- entries[!vapply(entries, is.null, logical(1))]
       if (!length(entries)) {
         character()
       } else {
@@ -70,13 +64,11 @@ stan_cite <- function(
 scan_usage <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
-  quiet = FALSE,
   strict = FALSE,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map
 ) {
-  local_cli_quiet(quiet)
   paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
   dir_flags <- dir.exists(paths)
 
@@ -127,7 +119,7 @@ scan_usage <- function(
 
   ambiguous <- .collect_unique(hits, "ambiguous")
   if (strict && length(ambiguous)) {
-    cli::cli_alert_warning(
+    cli::cli_abort(
       ambiguous |>
         (\(funs) paste0("{.code ", funs, "()}"))() |>
         paste(collapse = ", ") |>
@@ -157,6 +149,92 @@ scan_usage <- function(
     unlist(use.names = FALSE) |>
     unique() |>
     sort()
+}
+
+.extract_code <- function(file) {
+  ext <- file |>
+    sub(".*\\.", "", x = _) |>
+    tolower()
+  if (ext == "r") {
+    return(paste(readLines(file, warn = FALSE), collapse = "\n"))
+  }
+
+  tmp <- tempfile(fileext = ".R")
+  on.exit(unlink(tmp), add = TRUE)
+
+  if (ext == "rmd") {
+    knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
+  } else if (ext == "qmd") {
+    quarto::qmd_to_r_script(file, tmp)
+  }
+
+  paste(readLines(tmp, warn = FALSE), collapse = "\n")
+}
+
+.scan_tokens <- function(
+  code,
+  ignore_unqualified_functions,
+  strict = FALSE,
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map
+) {
+  empty <- list(pkgs = character(), keys = character(), ambiguous = character())
+  expr <- tryCatch(
+    parse(text = code, keep.source = FALSE),
+    error = function(e) NULL
+  )
+  if (is.null(expr)) {
+    return(empty)
+  }
+
+  acc <- new.env(parent = emptyenv())
+  acc$pos <- 0L
+  acc$lib_pkgs <- character()
+  acc$lib_pos <- integer()
+  acc$lib_is_attach <- logical()
+  acc$ns_pkgs <- character()
+  acc$ns_keys <- character()
+  acc$unqual_funs <- character()
+  acc$unqual_pos <- integer()
+
+  lib_funs <- c("library", "require", "requireNamespace")
+
+  for (i in seq_along(expr)) {
+    .ast_walk(
+      expr[[i]],
+      acc,
+      ignore_unqualified_functions,
+      lib_funs,
+      allowed_packages
+    )
+  }
+
+  lib_data <- if (length(acc$lib_pkgs)) {
+    data.frame(
+      pos = acc$lib_pos,
+      pkg = acc$lib_pkgs,
+      is_attach = acc$lib_is_attach,
+      stringsAsFactors = FALSE
+    )
+  } else {
+    NULL
+  }
+
+  resolved <- .resolve_candidates(
+    list(funs = acc$unqual_funs, idx = acc$unqual_pos),
+    lib_data,
+    strict,
+    allowed_packages,
+    export_index,
+    origin_map
+  )
+
+  list(
+    pkgs = c(acc$lib_pkgs, acc$ns_pkgs, resolved$pkgs),
+    keys = c(acc$ns_keys, resolved$keys),
+    ambiguous = resolved$ambiguous
+  )
 }
 
 .ast_walk <- function(
@@ -264,26 +342,6 @@ scan_usage <- function(
   invisible(NULL)
 }
 
-.extract_code <- function(file) {
-  ext <- file |>
-    sub(".*\\.", "", x = _) |>
-    tolower()
-  if (ext == "r") {
-    return(paste(readLines(file, warn = FALSE), collapse = "\n"))
-  }
-
-  tmp <- tempfile(fileext = ".R")
-  on.exit(unlink(tmp), add = TRUE)
-
-  if (ext == "rmd") {
-    knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
-  } else if (ext == "qmd") {
-    quarto::qmd_to_r_script(file, tmp)
-  }
-
-  paste(readLines(tmp, warn = FALSE), collapse = "\n")
-}
-
 .ast_lit_name <- function(x) {
   if (is.symbol(x)) {
     return(as.character(x))
@@ -354,72 +412,6 @@ scan_usage <- function(
   fun_args <- args[-pkg_idx]
   funs <- unlist(lapply(fun_args, .ast_collect_use_funs), use.names = FALSE)
   funs[nzchar(funs)]
-}
-
-.scan_tokens <- function(
-  code,
-  ignore_unqualified_functions,
-  strict = FALSE,
-  allowed_packages = .stan_pkgs,
-  export_index = .stan_export_index,
-  origin_map = .stan_origin_map
-) {
-  empty <- list(pkgs = character(), keys = character(), ambiguous = character())
-  expr <- tryCatch(
-    parse(text = code, keep.source = FALSE),
-    error = function(e) NULL
-  )
-  if (is.null(expr)) {
-    return(empty)
-  }
-
-  acc <- new.env(parent = emptyenv())
-  acc$pos <- 0L
-  acc$lib_pkgs <- character()
-  acc$lib_pos <- integer()
-  acc$lib_is_attach <- logical()
-  acc$ns_pkgs <- character()
-  acc$ns_keys <- character()
-  acc$unqual_funs <- character()
-  acc$unqual_pos <- integer()
-
-  lib_funs <- c("library", "require", "requireNamespace")
-
-  for (i in seq_along(expr)) {
-    .ast_walk(
-      expr[[i]],
-      acc,
-      ignore_unqualified_functions,
-      lib_funs,
-      allowed_packages
-    )
-  }
-
-  lib_data <- if (length(acc$lib_pkgs)) {
-    data.frame(
-      pos = acc$lib_pos,
-      pkg = acc$lib_pkgs,
-      is_attach = acc$lib_is_attach,
-      stringsAsFactors = FALSE
-    )
-  } else {
-    NULL
-  }
-
-  resolved <- .resolve_candidates(
-    list(funs = acc$unqual_funs, idx = acc$unqual_pos),
-    lib_data,
-    strict,
-    allowed_packages,
-    export_index,
-    origin_map
-  )
-
-  list(
-    pkgs = c(acc$lib_pkgs, acc$ns_pkgs, resolved$pkgs),
-    keys = c(acc$ns_keys, resolved$keys),
-    ambiguous = resolved$ambiguous
-  )
 }
 
 .resolve_candidates <- function(
