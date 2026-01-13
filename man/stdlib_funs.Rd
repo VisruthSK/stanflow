@@ -11,4 +11,5 @@ Character vector of standard-library function names.
 }
 \description{
 This includes exports from: base, stats, utils, graphics, grDevices, methods.
+This is generated in \code{data_raw/sysdata.R} and exported for documentation/transparency.
 }
