@@ -36,6 +36,28 @@ test_that(".scan_tokens handles non-Stan library calls", {
   expect_equal(hits$keys, character())
 })
 
+test_that(".scan_tokens handles use() calls", {
+  code <- c(
+    'use("posterior", "is_rvar")',
+    "use(\"cmdstanr\", c(\"as.CmdStanGQ\", \"cmdstan_model\", 'eng_cmdstan'))",
+    "use('brms', 'brm')"
+  )
+
+  hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
+
+  expect_true(all(c("posterior", "cmdstanr", "brms") %in% hits$pkgs))
+  expect_true(all(
+    c(
+      "posterior::is_rvar",
+      "cmdstanr::as.CmdStanGQ",
+      "cmdstanr::cmdstan_model",
+      "cmdstanr::eng_cmdstan",
+      "brms::brm"
+    ) %in%
+      hits$keys
+  ))
+})
+
 test_that(".scan_tokens resolves attachment order and requireNamespace", {
   code <- c(
     "library(posterior)",
@@ -68,6 +90,22 @@ test_that(".scan_tokens resolves attachment order and requireNamespace", {
   expect_false("cmdstanr::as_draws" %in% hits$keys)
 })
 
+test_that(".scan_tokens respects allowed_packages", {
+  code <- c(
+    "library(posterior)",
+    "library(brms)",
+    "as_draws(1)"
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    stdlib_funs(),
+    allowed_packages = "posterior"
+  )
+
+  expect_true(setequal(hits$pkgs, "posterior"))
+  expect_equal(hits$keys, "posterior::as_draws")
+})
 
 test_that(".scan_tokens falls back when attached packages do not match", {
   candidates <- split(
@@ -871,6 +909,52 @@ test_that(".ast_get_lib_pkg handles empty args and named `package=`", {
   )
 })
 
+test_that(".ast_collect_use_funs and helpers handle edge cases", {
+  ast_collect_use_funs <- getFromNamespace(".ast_collect_use_funs", "stanflow")
+  ast_get_use_pkg <- getFromNamespace(".ast_get_use_pkg", "stanflow")
+  ast_get_use_funs <- getFromNamespace(".ast_get_use_funs", "stanflow")
+
+  expect_identical(ast_collect_use_funs(NULL), character())
+  expect_identical(ast_collect_use_funs(quote(c())), character())
+  expect_identical(
+    ast_collect_use_funs(quote(c("a", list("b", "c"), NULL))),
+    c("a", "b", "c")
+  )
+  expect_identical(
+    ast_collect_use_funs(quote(foo("x"))),
+    character()
+  )
+
+  expect_null(ast_get_use_pkg(quote(use())))
+  expect_identical(ast_get_use_pkg(quote(use(pkg = "posterior"))), "posterior")
+  expect_identical(
+    ast_get_use_pkg(quote(use(package = "cmdstanr"))),
+    "cmdstanr"
+  )
+
+  expect_identical(ast_get_use_funs(quote(use("posterior"))), character())
+  expect_identical(
+    sort(ast_get_use_funs(quote(use("posterior", c("a", "b"))))),
+    c("a", "b")
+  )
+  expect_identical(
+    sort(ast_get_use_funs(quote(use("posterior", list("a", "b"))))),
+    c("a", "b")
+  )
+  expect_identical(
+    sort(ast_get_use_funs(quote(use("posterior", "a", c("b", "c"))))),
+    c("a", "b", "c")
+  )
+  expect_identical(
+    sort(ast_get_use_funs(quote(use(pkg = "posterior", "a")))),
+    "a"
+  )
+  expect_identical(
+    sort(ast_get_use_funs(quote(use(package = "posterior", "a")))),
+    "a"
+  )
+})
+
 test_that(".resolve_candidates returns empty when no Stan candidates exist", {
   resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
   export_index <- getFromNamespace(".stan_export_index", "stanflow")
@@ -891,6 +975,21 @@ test_that(".resolve_candidates returns empty when no Stan candidates exist", {
   )
 
   # triggers the `!any(has_candidates)` early return  :contentReference[oaicite:8]{index=8}
+  expect_identical(out$pkgs, character())
+  expect_identical(out$keys, character())
+  expect_identical(out$ambiguous, character())
+})
+
+test_that(".resolve_candidates returns empty when no packages allowed", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "as_draws", idx = 1L),
+    lib_data = NULL,
+    strict = FALSE,
+    allowed_packages = character()
+  )
+
   expect_identical(out$pkgs, character())
   expect_identical(out$keys, character())
   expect_identical(out$ambiguous, character())
