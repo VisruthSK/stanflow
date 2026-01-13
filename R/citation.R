@@ -1,7 +1,4 @@
-#' Collect citations for Stan usage
-#'
-#' `stan_scan_usage()` is primarily for developers; most users should call
-#' `stan_cite()`.
+#' Collect citations
 #'
 #' @param path A single project directory (searched recursively) or a vector of
 #'   files (.R/.Rmd/.Qmd).
@@ -22,11 +19,14 @@ stan_cite <- function(
   strict = FALSE,
   format = c("bibtex", "bibentry")
 ) {
-  stan_scan_usage(
+  scan_usage(
     path = path,
     ignore_unqualified_functions = ignore_unqualified_functions,
     quiet = quiet,
-    strict = strict
+    strict = strict,
+    allowed_packages = .stan_pkgs,
+    export_index = .stan_export_index,
+    origin_map = .stan_origin_map
   ) |>
     (\(usage) c(usage$packages, usage$functions, "stan", "stanflow"))() |>
     unique() |>
@@ -53,15 +53,25 @@ stan_cite <- function(
     })()
 }
 
-#' Find Stan packages + Stan functions used
+#' Find used functions
+#'
+#' @inheritParams stan_cite
+#' @param allowed_packages Character vector of package namespaces to attribute
+#'   to Stan usage. Defaults to `.stan_pkgs`.
+#' @param export_index Named list mapping function names to packages. Defaults
+#'   to `.stan_export_index`.
+#' @param origin_map Named character vector mapping `pkg::fun` keys to the
+#'   origin package. Defaults to `.stan_origin_map`.
+#' @return A list of packages, resolved functions, and ambiguous function calls.
 #' @export
-#' @return list(packages=character(), functions=character())
-#' @rdname stan_cite
-stan_scan_usage <- function(
+scan_usage <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
   quiet = FALSE,
-  strict = FALSE
+  strict = FALSE,
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map
 ) {
   local_cli_quiet(quiet)
   paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
@@ -104,7 +114,10 @@ stan_scan_usage <- function(
           .extract_code() |>
           .scan_tokens(
             ignore_unqualified_functions = ignore_unqualified_functions,
-            strict = strict
+            strict = strict,
+            allowed_packages = allowed_packages,
+            export_index = export_index,
+            origin_map = origin_map
           )
       }
     )
@@ -143,7 +156,13 @@ stan_scan_usage <- function(
     sort()
 }
 
-.ast_walk <- function(x, acc, ignore_unqualified_functions, lib_funs) {
+.ast_walk <- function(
+  x,
+  acc,
+  ignore_unqualified_functions,
+  lib_funs,
+  allowed_packages = .stan_pkgs
+) {
   if (is.null(x)) {
     return(invisible(NULL))
   } else if (is.call(x)) {
@@ -160,15 +179,24 @@ stan_scan_usage <- function(
         if (
           !is.null(pkg) &&
             !is.null(fun) &&
-            pkg %in% .stan_pkgs
+            pkg %in% allowed_packages
         ) {
           acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
           acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", fun))
         }
       }
+    } else if (!is.null(head_name) && head_name == "use") {
+      pkg <- .ast_get_use_pkg(x)
+      if (!is.null(pkg) && pkg %in% allowed_packages) {
+        acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
+        funs <- .ast_get_use_funs(x)
+        if (length(funs)) {
+          acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", funs))
+        }
+      }
     } else if (!is.null(head_name) && head_name %in% lib_funs) {
       pkg <- .ast_get_lib_pkg(x)
-      if (!is.null(pkg) && pkg %in% .stan_pkgs) {
+      if (!is.null(pkg) && pkg %in% allowed_packages) {
         acc$lib_pkgs <- c(acc$lib_pkgs, pkg)
         acc$lib_pos <- c(acc$lib_pos, acc$pos)
         acc$lib_is_attach <- c(
@@ -184,24 +212,48 @@ stan_scan_usage <- function(
     }
 
     if (is.call(head)) {
-      .ast_walk(head, acc, ignore_unqualified_functions, lib_funs)
+      .ast_walk(
+        head,
+        acc,
+        ignore_unqualified_functions,
+        lib_funs,
+        allowed_packages
+      )
     }
 
     if (length(x) >= 2L) {
       for (i in 2L:length(x)) {
-        .ast_walk(x[[i]], acc, ignore_unqualified_functions, lib_funs)
+        .ast_walk(
+          x[[i]],
+          acc,
+          ignore_unqualified_functions,
+          lib_funs,
+          allowed_packages
+        )
       }
     }
 
     return(invisible(NULL))
   } else if (is.expression(x)) {
     for (i in seq_along(x)) {
-      .ast_walk(x[[i]], acc, ignore_unqualified_functions, lib_funs)
+      .ast_walk(
+        x[[i]],
+        acc,
+        ignore_unqualified_functions,
+        lib_funs,
+        allowed_packages
+      )
     }
     return(invisible(NULL))
   } else if (is.pairlist(x) || is.list(x)) {
     for (i in seq_along(x)) {
-      .ast_walk(x[[i]], acc, ignore_unqualified_functions, lib_funs)
+      .ast_walk(
+        x[[i]],
+        acc,
+        ignore_unqualified_functions,
+        lib_funs,
+        allowed_packages
+      )
     }
     return(invisible(NULL))
   }
@@ -255,7 +307,76 @@ stan_scan_usage <- function(
   .ast_lit_name(arg)
 }
 
-.scan_tokens <- function(code, ignore_unqualified_functions, strict = FALSE) {
+.ast_collect_use_funs <- function(x) {
+  if (is.null(x)) {
+    return(character())
+  }
+  lit <- .ast_lit_name(x)
+  if (!is.null(lit)) {
+    return(lit)
+  }
+  if (is.call(x)) {
+    head <- x[[1L]]
+    head_name <- if (is.symbol(head)) as.character(head) else NULL
+    if (!is.null(head_name) && head_name %in% c("c", "list")) {
+      funs <- character()
+      if (length(x) >= 2L) {
+        for (i in 2L:length(x)) {
+          funs <- c(funs, .ast_collect_use_funs(x[[i]]))
+        }
+      }
+      return(funs)
+    }
+  }
+  character()
+}
+
+.ast_get_use_pkg <- function(call) {
+  args <- as.list(call)[-1L]
+  if (!length(args)) {
+    return(NULL)
+  }
+
+  nms <- names(args)
+  arg <- if (!is.null(nms) && "pkg" %in% nms) {
+    args[[match("pkg", nms)]]
+  } else if (!is.null(nms) && "package" %in% nms) {
+    args[[match("package", nms)]]
+  } else {
+    args[[1L]]
+  }
+
+  .ast_lit_name(arg)
+}
+
+.ast_get_use_funs <- function(call) {
+  args <- as.list(call)[-1L]
+  if (length(args) <= 1L) {
+    return(character())
+  }
+
+  nms <- names(args)
+  pkg_idx <- if (!is.null(nms) && "pkg" %in% nms) {
+    match("pkg", nms)
+  } else if (!is.null(nms) && "package" %in% nms) {
+    match("package", nms)
+  } else {
+    1L
+  }
+
+  fun_args <- args[-pkg_idx]
+  funs <- unlist(lapply(fun_args, .ast_collect_use_funs), use.names = FALSE)
+  funs[nzchar(funs)]
+}
+
+.scan_tokens <- function(
+  code,
+  ignore_unqualified_functions,
+  strict = FALSE,
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map
+) {
   empty <- list(pkgs = character(), keys = character(), ambiguous = character())
   expr <- tryCatch(
     parse(text = code, keep.source = FALSE),
@@ -278,7 +399,13 @@ stan_scan_usage <- function(
   lib_funs <- c("library", "require", "requireNamespace")
 
   for (i in seq_along(expr)) {
-    .ast_walk(expr[[i]], acc, ignore_unqualified_functions, lib_funs)
+    .ast_walk(
+      expr[[i]],
+      acc,
+      ignore_unqualified_functions,
+      lib_funs,
+      allowed_packages
+    )
   }
 
   lib_data <- if (length(acc$lib_pkgs)) {
@@ -295,7 +422,10 @@ stan_scan_usage <- function(
   resolved <- .resolve_candidates(
     list(funs = acc$unqual_funs, idx = acc$unqual_pos),
     lib_data,
-    strict
+    strict,
+    allowed_packages,
+    export_index,
+    origin_map
   )
 
   list(
@@ -305,7 +435,23 @@ stan_scan_usage <- function(
   )
 }
 
-.resolve_candidates <- function(unqual, lib_data, strict) {
+.resolve_candidates <- function(
+  unqual,
+  lib_data,
+  strict,
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map
+) {
+  allowed_packages <- unique(allowed_packages)
+  if (!length(allowed_packages)) {
+    return(list(
+      pkgs = character(),
+      keys = character(),
+      ambiguous = character()
+    ))
+  }
+
   if (!length(unqual$funs)) {
     return(list(
       pkgs = character(),
@@ -314,8 +460,12 @@ stan_scan_usage <- function(
     ))
   }
 
-  candidates_list <- .stan_export_index[unqual$funs]
-  has_candidates <- !vapply(candidates_list, is.null, logical(1))
+  candidates_list <- export_index[unqual$funs]
+  candidates_list <- lapply(
+    candidates_list,
+    function(x) if (is.null(x)) NULL else x[x %in% allowed_packages]
+  )
+  has_candidates <- lengths(candidates_list) > 0
 
   if (!any(has_candidates)) {
     return(list(
@@ -341,10 +491,10 @@ stan_scan_usage <- function(
     funs0 <- funs[!is_ambiguous]
     keys0 <- paste0(best_pkgs0, "::", funs0)
 
-    origin0 <- unname(.stan_origin_map[keys0])
+    origin0 <- unname(origin_map[keys0])
     origin0[is.na(origin0)] <- best_pkgs0
 
-    keep <- origin0 %in% .stan_pkgs
+    keep <- origin0 %in% allowed_packages
     if (any(keep)) {
       pkgs <- c(pkgs, origin0[keep])
       keys <- c(keys, paste0(origin0[keep], "::", funs0[keep]))
