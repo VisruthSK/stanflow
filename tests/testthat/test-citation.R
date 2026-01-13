@@ -861,7 +861,10 @@ test_that("internal helpers cover NULL/expression/list/pairlist branches in .ast
     expression(posterior::as_draws(1)),
     acc,
     ignore,
-    lib_funs
+    lib_funs,
+    .stan_pkgs,
+    c("::", ":::"),
+    c("c", "list")
   ))
   expect_true("posterior::as_draws" %in% acc$ns_keys)
 
@@ -871,7 +874,10 @@ test_that("internal helpers cover NULL/expression/list/pairlist branches in .ast
     list(quote(posterior::as_draws(1))),
     acc,
     ignore,
-    lib_funs
+    lib_funs,
+    .stan_pkgs,
+    c("::", ":::"),
+    c("c", "list")
   ))
   expect_true("posterior::as_draws" %in% acc$ns_keys)
 
@@ -881,7 +887,10 @@ test_that("internal helpers cover NULL/expression/list/pairlist branches in .ast
     pairlist(a = quote(posterior::as_draws(1))),
     acc,
     ignore,
-    lib_funs
+    lib_funs,
+    .stan_pkgs,
+    c("::", ":::"),
+    c("c", "list")
   ))
   expect_true("posterior::as_draws" %in% acc$ns_keys)
 })
@@ -913,37 +922,43 @@ test_that(".ast_get_lib_pkg handles empty args and named `package=`", {
 test_that(".ast_collect_use_funs and helpers handle edge cases", {
   ast_collect_use_funs <- getFromNamespace(".ast_collect_use_funs", "stanflow")
   ast_get_use_funs <- getFromNamespace(".ast_get_use_funs", "stanflow")
-
+  use_heads <- c("c", "list")
   expect_identical(ast_collect_use_funs(NULL), character())
-  expect_identical(ast_collect_use_funs(quote(c())), character())
+  expect_identical(ast_collect_use_funs(quote(c()), use_heads), character())
   expect_identical(
-    ast_collect_use_funs(quote(c("a", list("b", "c"), NULL))),
+    ast_collect_use_funs(quote(c("a", list("b", "c"), NULL)), use_heads),
     c("a", "b", "c")
   )
   expect_identical(
-    ast_collect_use_funs(quote(foo("x"))),
+    ast_collect_use_funs(quote(foo("x")), use_heads),
     character()
   )
 
-  expect_identical(ast_get_use_funs(quote(use("posterior"))), character())
   expect_identical(
-    sort(ast_get_use_funs(quote(use("posterior", c("a", "b"))))),
+    ast_get_use_funs(quote(use("posterior")), use_heads),
+    character()
+  )
+  expect_identical(
+    sort(ast_get_use_funs(quote(use("posterior", c("a", "b"))), use_heads)),
     c("a", "b")
   )
   expect_identical(
-    sort(ast_get_use_funs(quote(use("posterior", list("a", "b"))))),
+    sort(ast_get_use_funs(quote(use("posterior", list("a", "b"))), use_heads)),
     c("a", "b")
   )
   expect_identical(
-    sort(ast_get_use_funs(quote(use("posterior", "a", c("b", "c"))))),
+    sort(ast_get_use_funs(
+      quote(use("posterior", "a", c("b", "c"))),
+      use_heads
+    )),
     c("a", "b", "c")
   )
   expect_identical(
-    sort(ast_get_use_funs(quote(use(pkg = "posterior", "a")))),
+    sort(ast_get_use_funs(quote(use(pkg = "posterior", "a")), use_heads)),
     "a"
   )
   expect_identical(
-    sort(ast_get_use_funs(quote(use(package = "posterior", "a")))),
+    sort(ast_get_use_funs(quote(use(package = "posterior", "a")), use_heads)),
     "a"
   )
 })
