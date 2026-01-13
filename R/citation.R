@@ -164,7 +164,8 @@ scan_usage <- function(
   if (identical(ext, "rmd")) {
     knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
   } else if (identical(ext, "qmd")) {
-    quarto::qmd_to_r_script(file, tmp)
+    # TODO: this is extremely expensive, see if there's a way to bypass this
+    suppressMessages(quarto::qmd_to_r_script(file, tmp))
   }
 
   paste(readLines(tmp, warn = FALSE), collapse = "\n")
