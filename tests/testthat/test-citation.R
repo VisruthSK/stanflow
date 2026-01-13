@@ -457,7 +457,7 @@ test_that("stan_cite returns bibtex or bibentry", {
   expect_true(any(grepl("Posterior", utils::toBibtex(bibentry), fixed = TRUE)))
 })
 
-test_that("stan_scan_usage handles a single file path", {
+test_that("scan_usage handles a single file path", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "single.R"),
@@ -466,13 +466,13 @@ test_that("stan_scan_usage handles a single file path", {
       "as_draws(1)"
     )
   )
-  res <- stan_scan_usage(path)
-  expect_true(inherits(res, "stan_scan_usage"))
+  res <- scan_usage(path)
+  expect_true(inherits(res, "scan_usage"))
   expect_equal(res$packages, "posterior")
   expect_equal(res$functions, "posterior::as_draws")
 })
 
-test_that("stan_scan_usage strict skips ambiguous unqualified calls", {
+test_that("scan_usage strict skips ambiguous unqualified calls", {
   funs <- c("rhat", "ess_bulk")
 
   needs <- vapply(
@@ -508,15 +508,15 @@ test_that("stan_scan_usage strict skips ambiguous unqualified calls", {
     )
   )
 
-  res <- stan_scan_usage(path)
-  res_strict <- stan_scan_usage(path, strict = TRUE)
+  res <- scan_usage(path)
+  res_strict <- scan_usage(path, strict = TRUE)
 
   expect_true(length(res$functions) == 2L)
   expect_equal(res_strict$packages, character())
   expect_equal(res_strict$functions, character())
 })
 
-test_that("stan_scan_usage warns about multiple ambiguous calls in strict mode", {
+test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
   funs <- c("rhat", "ess_bulk")
 
   needs <- vapply(
@@ -558,22 +558,22 @@ test_that("stan_scan_usage warns about multiple ambiguous calls in strict mode",
         cli::cat_line(cli::format_inline(msg, .envir = parent.frame()))
       },
       .package = "cli",
-      stan_scan_usage(path, strict = TRUE)
+      scan_usage(path, strict = TRUE)
     )
   )
 })
 
-test_that("print.stan_scan_usage shows functions with no packages", {
+test_that("print.scan_usage shows functions with no packages", {
   expect_snapshot_output(print(structure(
     list(
       packages = character(),
       functions = c("loo::loo", "posterior::as_draws")
     ),
-    class = "stan_scan_usage"
+    class = "scan_usage"
   )))
 })
 
-test_that("print.stan_scan_usage shows many packages with no functions", {
+test_that("print.scan_usage shows many packages with no functions", {
   expect_snapshot_output(print(structure(
     list(
       packages = c(
@@ -588,11 +588,11 @@ test_that("print.stan_scan_usage shows many packages with no functions", {
       ),
       functions = character()
     ),
-    class = "stan_scan_usage"
+    class = "scan_usage"
   )))
 })
 
-test_that("print.stan_scan_usage shows many functions for one package", {
+test_that("print.scan_usage shows many functions for one package", {
   expect_snapshot_output(print(structure(
     list(
       packages = "posterior",
@@ -604,11 +604,11 @@ test_that("print.stan_scan_usage shows many functions for one package", {
         "posterior::as_draws"
       )
     ),
-    class = "stan_scan_usage"
+    class = "scan_usage"
   )))
 })
 
-test_that("print.stan_scan_usage shows many functions across packages", {
+test_that("print.scan_usage shows many functions across packages", {
   expect_snapshot_output(print(structure(
     list(
       packages = c("bayesplot", "loo", "posterior", "rstan"),
@@ -623,11 +623,11 @@ test_that("print.stan_scan_usage shows many functions across packages", {
         "rstan::stan_model"
       )
     ),
-    class = "stan_scan_usage"
+    class = "scan_usage"
   )))
 })
 
-test_that("stan_scan_usage returns empty results for non-Stan files", {
+test_that("scan_usage returns empty results for non-Stan files", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "plain.R"),
@@ -636,12 +636,12 @@ test_that("stan_scan_usage returns empty results for non-Stan files", {
       "x"
     )
   )
-  res <- stan_scan_usage(path)
+  res <- scan_usage(path)
   expect_equal(res$packages, character())
   expect_equal(res$functions, character())
 })
 
-test_that("stan_scan_usage supports multiple file paths", {
+test_that("scan_usage supports multiple file paths", {
   tmp <- withr::local_tempdir()
   path1 <- write_file(
     file.path(tmp, "one.R"),
@@ -658,7 +658,7 @@ test_that("stan_scan_usage supports multiple file paths", {
     )
   )
 
-  res <- stan_scan_usage(c(path1, path2))
+  res <- scan_usage(c(path1, path2))
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
   expect_true(setequal(
@@ -667,7 +667,7 @@ test_that("stan_scan_usage supports multiple file paths", {
   ))
 })
 
-test_that("stan_scan_usage errors on multiple directories", {
+test_that("scan_usage errors on multiple directories", {
   tmp <- withr::local_tempdir()
   dir1 <- file.path(tmp, "proj1")
   dir2 <- file.path(tmp, "proj2")
@@ -675,12 +675,12 @@ test_that("stan_scan_usage errors on multiple directories", {
   dir.create(dir2)
 
   expect_error(
-    stan_scan_usage(c(dir1, dir2)),
+    scan_usage(c(dir1, dir2)),
     "single directory"
   )
 })
 
-test_that("stan_scan_usage alerts full paths for file vectors", {
+test_that("scan_usage alerts full paths for file vectors", {
   tmp <- withr::local_tempdir()
   path1 <- write_file(
     file.path(tmp, "one.R"),
@@ -705,7 +705,7 @@ test_that("stan_scan_usage alerts full paths for file vectors", {
   res <- with_mocked_bindings(
     cli_alert_info = cli_alert_info,
     .package = "cli",
-    stan_scan_usage(c(path1, path2))
+    scan_usage(c(path1, path2))
   )
 
   expect_true(setequal(res$packages, c("posterior", "brms")))
@@ -721,7 +721,7 @@ test_that("stan_scan_usage alerts full paths for file vectors", {
   expect_true(all(expected %in% seen))
 })
 
-test_that("stan_scan_usage alerts full paths for directories", {
+test_that("scan_usage alerts full paths for directories", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -741,7 +741,7 @@ test_that("stan_scan_usage alerts full paths for directories", {
   res <- with_mocked_bindings(
     cli_alert_info = cli_alert_info,
     .package = "cli",
-    stan_scan_usage(dir_path)
+    scan_usage(dir_path)
   )
 
   expect_true(setequal(res$packages, "brms"))
@@ -750,7 +750,7 @@ test_that("stan_scan_usage alerts full paths for directories", {
   expect_true(expected %in% seen)
 })
 
-test_that("stan_scan_usage errors when mixing directories and files", {
+test_that("scan_usage errors when mixing directories and files", {
   tmp <- withr::local_tempdir()
   dir_path <- file.path(tmp, "proj")
   dir.create(dir_path)
@@ -763,12 +763,12 @@ test_that("stan_scan_usage errors when mixing directories and files", {
   )
 
   expect_error(
-    stan_scan_usage(c(dir_path, file_path)),
+    scan_usage(c(dir_path, file_path)),
     "single directory"
   )
 })
 
-test_that("stan_scan_usage scans directories with mixed inputs", {
+test_that("scan_usage scans directories with mixed inputs", {
   tmp <- withr::local_tempdir()
   write_file(
     file.path(tmp, "script.R"),
@@ -803,7 +803,7 @@ test_that("stan_scan_usage scans directories with mixed inputs", {
     )
   )
 
-  res <- stan_scan_usage(tmp)
+  res <- scan_usage(tmp)
 
   expect_equal(res$packages, sort(res$packages))
   expect_equal(res$functions, sort(res$functions))
@@ -814,15 +814,15 @@ test_that("stan_scan_usage scans directories with mixed inputs", {
   ))
 })
 
-test_that("stan_scan_usage returns empty vectors for empty directories", {
+test_that("scan_usage returns empty vectors for empty directories", {
   tmp <- withr::local_tempdir()
   expect_error(
-    stan_scan_usage(tmp),
+    scan_usage(tmp),
     "No files found"
   )
 })
 
-test_that("stan_scan_usage ignores non-R files in directories", {
+test_that("scan_usage ignores non-R files in directories", {
   tmp <- withr::local_tempdir()
   write_file(
     file.path(tmp, "note.txt"),
@@ -832,7 +832,7 @@ test_that("stan_scan_usage ignores non-R files in directories", {
     )
   )
   expect_error(
-    stan_scan_usage(tmp),
+    scan_usage(tmp),
     "No files found"
   )
 })
@@ -907,11 +907,16 @@ test_that(".ast_get_lib_pkg handles empty args and named `package=`", {
     ast_get_lib_pkg(quote(library(package = "posterior"))),
     "posterior"
   )
+
+  # named pkg= branch
+  expect_identical(
+    ast_get_lib_pkg(quote(use(pkg = "posterior"))),
+    "posterior"
+  )
 })
 
 test_that(".ast_collect_use_funs and helpers handle edge cases", {
   ast_collect_use_funs <- getFromNamespace(".ast_collect_use_funs", "stanflow")
-  ast_get_use_pkg <- getFromNamespace(".ast_get_use_pkg", "stanflow")
   ast_get_use_funs <- getFromNamespace(".ast_get_use_funs", "stanflow")
 
   expect_identical(ast_collect_use_funs(NULL), character())
@@ -923,13 +928,6 @@ test_that(".ast_collect_use_funs and helpers handle edge cases", {
   expect_identical(
     ast_collect_use_funs(quote(foo("x"))),
     character()
-  )
-
-  expect_null(ast_get_use_pkg(quote(use())))
-  expect_identical(ast_get_use_pkg(quote(use(pkg = "posterior"))), "posterior")
-  expect_identical(
-    ast_get_use_pkg(quote(use(package = "cmdstanr"))),
-    "cmdstanr"
   )
 
   expect_identical(ast_get_use_funs(quote(use("posterior"))), character())

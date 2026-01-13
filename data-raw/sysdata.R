@@ -12,7 +12,9 @@
   "stanflow"
 )
 
-message("Use `stanflow_update()` to make sure your packages are up to date.")
+message(
+  "Make sure you use `stanflow_update()` to make sure your packages are up to date."
+)
 
 missing <- .stan_pkgs[
   !vapply(.stan_pkgs, requireNamespace, logical(1), quietly = TRUE)
@@ -76,17 +78,23 @@ get_origin <- function(pkg, name) {
 
 # Indexing: Create inverted index (function -> packages)
 all_funs <- unlist(.stan_exports, use.names = FALSE)
-all_.stan_pkgs <- rep(names(.stan_exports), lengths(.stan_exports))
-.stan_export_index <- split(all_.stan_pkgs, all_funs)
+all_stan_pkgs <- rep(names(.stan_exports), lengths(.stan_exports))
+.stan_export_index <- split(all_stan_pkgs, all_funs)
 
 # Origin Resolution: Map pkg::fun -> origin_pkg
-keys <- paste0(all_.stan_pkgs, "::", all_funs)
-origins <- mapply(get_origin, all_.stan_pkgs, all_funs, USE.NAMES = FALSE)
+keys <- paste0(all_stan_pkgs, "::", all_funs)
+.stan_origin_map <- mapply(
+  get_origin,
+  all_stan_pkgs,
+  all_funs,
+  USE.NAMES = FALSE
+)
 
 # If origin is undetermined (NA), assume it is the provider package
-origins[is.na(origins)] <- all_.stan_pkgs[is.na(origins)]
-names(origins) <- keys
-.stan_origin_map <- origins
+.stan_origin_map[is.na(.stan_origin_map)] <- all_stan_pkgs[is.na(
+  .stan_origin_map
+)]
+names(.stan_origin_map) <- keys
 
 save(
   .stan_exports,
