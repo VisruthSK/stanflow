@@ -13,6 +13,7 @@
 # TODO: add function citations for specific functions (use pkg::function as key)
 # TODO: Move paper citations to sysdata since they don't rely on packageDescription?
 
+# TODO: make sure these are calculated at runtime, not install time
 .stan_citation_pkgs$bayesplot <- packageDescription("bayesplot") |>
   (\(meta) {
     c(
