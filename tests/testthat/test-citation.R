@@ -472,7 +472,7 @@ test_that("scan_usage handles a single file path", {
   expect_equal(res$functions, "posterior::as_draws")
 })
 
-test_that("scan_usage strict skips ambiguous unqualified calls", {
+test_that("scan_usage strict aborts on ambiguous unqualified calls", {
   funs <- c("rhat", "ess_bulk")
 
   needs <- vapply(
@@ -508,12 +508,7 @@ test_that("scan_usage strict skips ambiguous unqualified calls", {
     )
   )
 
-  res <- scan_usage(path)
-  res_strict <- scan_usage(path, strict = TRUE)
-
-  expect_true(length(res$functions) == 2L)
-  expect_equal(res_strict$packages, character())
-  expect_equal(res_strict$functions, character())
+  expect_error(scan_usage(path, strict = TRUE))
 })
 
 test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
@@ -554,7 +549,7 @@ test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
 
   expect_snapshot_output(
     with_mocked_bindings(
-      cli_alert_warning = function(msg, ...) {
+      cli_abort = function(msg, ...) {
         cli::cat_line(cli::format_inline(msg, .envir = parent.frame()))
       },
       .package = "cli",
