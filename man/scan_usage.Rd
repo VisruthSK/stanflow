@@ -7,7 +7,6 @@
 scan_usage(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
-  quiet = FALSE,
   strict = FALSE,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
@@ -22,8 +21,6 @@ files (.R/.Rmd/.Qmd).}
 attributing (unqualified) calls to Stan packages. Defaults to exports from
 base R packages listed in \code{stdlib_funs()}. Calls like \code{rstan::plot()} will NOT
 be ignored even if \code{plot} is in \code{ignore_unqualified_functions}.}
-
-\item{quiet}{Silence informational output.}
 
 \item{strict}{If \code{TRUE}, only count unqualified function calls that resolve
 to a single Stan package.}

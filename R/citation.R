@@ -25,7 +25,7 @@ stan_cite <- function(
     export_index = .stan_export_index,
     origin_map = .stan_origin_map
   ) |>
-    (\(usage) c(usage$packages, usage$functions, "stan", "stanflow"))() |>
+    with(expr = c(packages, functions, "stan", "stanflow")) |>
     unique() |>
     mget(
       envir = .stan_citation_funs,
@@ -121,15 +121,13 @@ scan_usage <- function(
   if (strict && length(ambiguous)) {
     cli::cli_abort(
       ambiguous |>
-        (\(funs) paste0("{.code ", funs, "()}"))() |>
+        paste0("{.code ", x = _, "()}") |>
         paste(collapse = ", ") |>
-        (\(calls) {
-          paste0(
-            "Cannot reliably detect which packages these functions are from: ",
-            calls,
-            ". Please namespace them ({.code pkg::function()}) and re-run stan_cite()."
-          )
-        })()
+        paste0(
+          "Cannot reliably detect which packages these functions are from: ",
+          x = _,
+          ". Please namespace them ({.code pkg::function()}) and re-run stan_cite()."
+        )
     )
   }
 
@@ -422,36 +420,17 @@ scan_usage <- function(
   export_index = .stan_export_index,
   origin_map = .stan_origin_map
 ) {
-  allowed_packages <- unique(allowed_packages)
-  if (!length(allowed_packages)) {
-    return(list(
-      pkgs = character(),
-      keys = character(),
-      ambiguous = character()
-    ))
+  empty <- list(pkgs = character(), keys = character(), ambiguous = character())
+  if (!length(unqual$funs) || !length(allowed_packages)) {
+    return(empty)
   }
 
-  if (!length(unqual$funs)) {
-    return(list(
-      pkgs = character(),
-      keys = character(),
-      ambiguous = character()
-    ))
-  }
-
-  candidates_list <- export_index[unqual$funs]
-  candidates_list <- lapply(
-    candidates_list,
-    function(x) if (is.null(x)) NULL else x[x %in% allowed_packages]
-  )
+  candidates_list <- export_index[unqual$funs] |>
+    lapply(\(x) x[x %in% allowed_packages])
   has_candidates <- lengths(candidates_list) > 0
 
   if (!any(has_candidates)) {
-    return(list(
-      pkgs = character(),
-      keys = character(),
-      ambiguous = character()
-    ))
+    return(empty)
   }
 
   idx <- unqual$idx[has_candidates]
@@ -524,6 +503,7 @@ scan_usage <- function(
 #' Standard-library function names to never attribute to Stan packages
 #'
 #' This includes exports from: base, stats, utils, graphics, grDevices, methods.
+#' This is generated in `data_raw/sysdata.R` and exported for documentation/transparency.
 #'
 #' @return Character vector of standard-library function names.
 #' @export
