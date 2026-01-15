@@ -801,6 +801,154 @@ test_that("scan_usage scans directories with mixed inputs", {
   ))
 })
 
+test_that("scan_usage skips default directories", {
+  tmp <- withr::local_tempdir()
+  skip_path <- file.path(tmp, "renv", "library")
+  dir.create(skip_path, recursive = TRUE)
+  write_file(
+    file.path(skip_path, "script.R"),
+    c(
+      "library(rstan)",
+      "extract(1)"
+    )
+  )
+  write_file(
+    file.path(tmp, "script.R"),
+    "1 + 1"
+  )
+
+  res <- scan_usage(tmp)
+
+  expect_equal(res$packages, character())
+  expect_equal(res$functions, character())
+})
+
+test_that("scan_usage respects custom skip_dirs", {
+  tmp <- withr::local_tempdir()
+  skip_path <- file.path(tmp, "vendor", "lib")
+  dir.create(skip_path, recursive = TRUE)
+  write_file(
+    file.path(skip_path, "script.R"),
+    c(
+      "library(brms)",
+      "fixef(1)"
+    )
+  )
+  write_file(
+    file.path(tmp, "script.R"),
+    "1 + 1"
+  )
+
+  res_default <- scan_usage(tmp)
+  res_custom <- scan_usage(tmp, skip_dirs = "vendor")
+
+  expect_true(setequal(res_default$packages, "brms"))
+  expect_true(setequal(res_default$functions, "brms::fixef"))
+  expect_equal(res_custom$packages, character())
+  expect_equal(res_custom$functions, character())
+})
+
+test_that("scan_usage does not skip similar directory names", {
+  tmp <- withr::local_tempdir()
+  keep_path <- file.path(tmp, "renvish")
+  dir.create(keep_path, recursive = TRUE)
+  write_file(
+    file.path(keep_path, "script.R"),
+    c(
+      "library(rstanarm)",
+      "logit(1)"
+    )
+  )
+
+  res <- scan_usage(tmp)
+
+  expect_true(setequal(res$packages, "rstanarm"))
+  expect_true(setequal(res$functions, "rstanarm::logit"))
+})
+
+test_that("scan_usage skip_dirs match nested directories", {
+  tmp <- withr::local_tempdir()
+  skip_path <- file.path(tmp, "project", ".Rcheck", "logs")
+  dir.create(skip_path, recursive = TRUE)
+  write_file(
+    file.path(skip_path, "script.R"),
+    c(
+      "library(cmdstanr)",
+      "cmdstan_model('x.stan')"
+    )
+  )
+  write_file(
+    file.path(tmp, "script.R"),
+    "1 + 1"
+  )
+
+  res <- scan_usage(tmp)
+
+  expect_equal(res$packages, character())
+  expect_equal(res$functions, character())
+})
+
+test_that("scan_usage keeps exact file inputs regardless of skip_dirs", {
+  tmp <- withr::local_tempdir()
+  skip_path <- file.path(tmp, "renv", "library")
+  dir.create(skip_path, recursive = TRUE)
+  file_path <- write_file(
+    file.path(skip_path, "script.R"),
+    c(
+      "library(posterior)",
+      "as_draws(1)"
+    )
+  )
+
+  res <- scan_usage(file_path)
+
+  expect_true(setequal(res$packages, "posterior"))
+  expect_true(setequal(res$functions, "posterior::as_draws"))
+})
+
+test_that("scan_usage handles empty skip_dirs without filtering", {
+  tmp <- withr::local_tempdir()
+  skip_path <- file.path(tmp, "renv", "library")
+  dir.create(skip_path, recursive = TRUE)
+  write_file(
+    file.path(skip_path, "script.R"),
+    c(
+      "library(rstan)",
+      "extract(1)"
+    )
+  )
+
+  res <- scan_usage(tmp, skip_dirs = character())
+
+  expect_true(setequal(res$packages, "rstan"))
+  expect_true(setequal(res$functions, "rstan::extract"))
+})
+
+test_that("scan_usage skips dotted caches but not filenames", {
+  tmp <- withr::local_tempdir()
+  skip_path <- file.path(tmp, ".cache", "chunks")
+  dir.create(skip_path, recursive = TRUE)
+  write_file(
+    file.path(skip_path, "script.R"),
+    c(
+      "library(brms)",
+      "ranef(1)"
+    )
+  )
+  write_file(
+    file.path(tmp, "cache.R"),
+    c(
+      "library(cmdstanr)",
+      "cmdstan_model('x.stan')"
+    )
+  )
+
+  res <- scan_usage(tmp)
+
+  expect_true(setequal(res$packages, "cmdstanr"))
+  expect_true(setequal(res$functions, "cmdstanr::cmdstan_model"))
+})
+
 test_that("scan_usage returns empty vectors for empty directories", {
   tmp <- withr::local_tempdir()
   expect_error(

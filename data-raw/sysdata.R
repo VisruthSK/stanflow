@@ -47,6 +47,24 @@ if (length(missing) > 0) {
   unique() |>
   sort()
 
+# Default skip directories
+.scan_skip_dirs <- c(
+  "renv",
+  "packrat",
+  "rv",
+  ".Rcheck",
+  "revdep",
+  "_site",
+  "_book",
+  "_bookdown_files",
+  "_freeze",
+  ".quarto",
+  ".quarto_cache",
+  ".knitr_cache",
+  "_cache",
+  ".cache"
+)
+
 # Helper to determine origin
 get_origin <- function(pkg, name) {
   obj <- tryCatch(getExportedValue(pkg, name), error = function(e) NULL)
@@ -103,6 +121,7 @@ save(
   .stan_pkgs,
   .stdlib_funs,
   .stan_pkg_versions,
+  .scan_skip_dirs,
   .date_generated,
   file = "R/sysdata.rda",
   compress = "xz"
