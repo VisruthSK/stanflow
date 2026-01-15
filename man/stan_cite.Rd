@@ -8,6 +8,7 @@ stan_cite(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
   strict = FALSE,
+  skip_dirs = .scan_skip_dirs,
   format = c("bibtex", "bibentry")
 )
 }
@@ -22,6 +23,9 @@ be ignored even if \code{plot} is in \code{ignore_unqualified_functions}.}
 
 \item{strict}{If \code{TRUE}, only count unqualified function calls that resolve
 to a single Stan package.}
+
+\item{skip_dirs}{Character vector of directory names to skip when scanning a
+directory.}
 
 \item{format}{One of "bibtex" or "bibentry".}
 }

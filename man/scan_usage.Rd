@@ -8,6 +8,7 @@ scan_usage(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
   strict = FALSE,
+  skip_dirs = .scan_skip_dirs,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map
@@ -24,6 +25,9 @@ be ignored even if \code{plot} is in \code{ignore_unqualified_functions}.}
 
 \item{strict}{If \code{TRUE}, only count unqualified function calls that resolve
 to a single Stan package.}
+
+\item{skip_dirs}{Character vector of directory names to skip when scanning a
+directory. Defaults to \code{.scan_skip_dirs}.}
 
 \item{allowed_packages}{Character vector of package namespaces to attribute
 to Stan usage. Defaults to \code{.stan_pkgs}.}

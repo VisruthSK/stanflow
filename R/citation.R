@@ -8,6 +8,8 @@
 #'   be ignored even if `plot` is in `ignore_unqualified_functions`.
 #' @param strict If `TRUE`, only count unqualified function calls that resolve
 #'   to a single Stan package.
+#' @param skip_dirs Character vector of directory names to skip when scanning a
+#'   directory.
 #' @param format One of "bibtex" or "bibentry".
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
@@ -15,12 +17,14 @@ stan_cite <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
   strict = FALSE,
+  skip_dirs = .scan_skip_dirs,
   format = c("bibtex", "bibentry")
 ) {
   scan_usage(
     path = path,
     ignore_unqualified_functions = ignore_unqualified_functions,
     strict = strict,
+    skip_dirs = skip_dirs,
     allowed_packages = .stan_pkgs,
     export_index = .stan_export_index,
     origin_map = .stan_origin_map
@@ -35,6 +39,7 @@ stan_cite <- function(
     Filter(Negate(is.null), x = _) |>
     (\(entries) {
       if (!length(entries)) {
+        # TODO: informative message
         character()
       } else {
         entries <- do.call(what = c, args = entries)
@@ -59,12 +64,15 @@ stan_cite <- function(
 #'   to `.stan_export_index`.
 #' @param origin_map Named character vector mapping `pkg::fun` keys to the
 #'   origin package. Defaults to `.stan_origin_map`.
+#' @param skip_dirs Character vector of directory names to skip when scanning a
+#'   directory. Defaults to `.scan_skip_dirs`.
 #' @return A list of packages, resolved functions, and ambiguous function calls.
 #' @export
 scan_usage <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
   strict = FALSE,
+  skip_dirs = .scan_skip_dirs,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map
@@ -81,7 +89,15 @@ scan_usage <- function(
       full.names = TRUE,
       ignore.case = TRUE,
       pattern = "\\.(R|Rmd|Qmd)$"
-    )
+    ) |>
+      normalizePath(winslash = "/", mustWork = FALSE) |>
+      (\(paths) {
+        if (!length(skip_dirs)) {
+          return(paths)
+        }
+        skip_regex <- .scan_skip_regex(skip_dirs)
+        paths[!grepl(skip_regex, paths)]
+      })()
   } else {
     if (any(dir_flags)) {
       cli::cli_abort(
@@ -139,6 +155,15 @@ scan_usage <- function(
     ),
     class = "scan_usage"
   )
+}
+
+.escape_regex <- function(x) {
+  gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x)
+}
+
+.scan_skip_regex <- function(skip_dirs) {
+  escaped <- vapply(skip_dirs, .escape_regex, character(1))
+  paste0("(^|/)(?:", paste(escaped, collapse = "|"), ")(/|$)")
 }
 
 .collect_unique <- function(hits, field) {
@@ -545,4 +570,27 @@ stdlib_funs <- function() {
   #   unique() |>
   #   sort()
   .stdlib_funs
+}
+
+#' Default directory names skipped by scan_usage/stan_cite
+#' @return Character vector of directory names to skip.
+#' @keywords internal
+scan_skip_dirs <- function() {
+  # c(
+  #   "renv",
+  #   "packrat",
+  #   "rv",
+  #   ".Rcheck",
+  #   "revdep",
+  #   "_site",
+  #   "_book",
+  #   "_bookdown_files",
+  #   "_freeze",
+  #   ".quarto",
+  #   ".quarto_cache",
+  #   ".knitr_cache",
+  #   "_cache",
+  #   ".cache"
+  # )
+  .scan_skip_dirs
 }
