@@ -33,5 +33,6 @@ directory.}
 A BibTeX character vector or a bibentry object.
 }
 \description{
-Collect citations
+Unqualified function calls are only attributed when a Stan package is
+attached via \code{library()} or \code{require()} in the same file.
 }
