@@ -1,6 +1,11 @@
 ---
-title: 'Note'
+title: 'Penguins Analysis Notes'
 ---
+
+These are exploratory notes from an end-to-end modeling pass on the penguins
+study. The narrative is intentionally messy to reflect real analysis work.
+
+We started with quick CmdStan checks to validate the toolchain.
 
 ```{r}
 library(cmdstanr)
@@ -8,12 +13,53 @@ library(cmdstanr)
 cmdstan_model("x.stan")
 ```
 
+Initial thought: a quick brms fit is helpful to sanity check predictors.
+The goal here is not model quality, but to stress-test citation scanning across
+code chunks, narrative text, and mixed namespaces.
+
 ```{r}
 requireNamespace("brms")
 
 brms::mixture(0.4)
+brms::brm(
+  bf(y ~ x),
+  data = data.frame(x = 1:3, y = 1:3),
+  chains = 1,
+  iter = 10
+)
 ```
+
+Next, a short posterior snippet using minimal draws for diagnostics.
+Even tiny examples should be detected when they are in a chunk.
 
 ```{r}
 use("posterior", list("as_draws"))
 ```
+
+We also tried a quick note on diagnostics with a few explicit calls.
+This chunk is intentionally simple but includes namespaced usage.
+
+```{r}
+posterior::rhat(1)
+posterior::ess_bulk(1)
+```
+
+Note to self: check whether cmdstanr helpers get detected with use().
+
+```{r}
+use("cmdstanr", list("cmdstan_model", "write_stan_json"))
+```
+
+Narrative-only paragraph to ensure chunk boundaries are respected. Sometimes
+notes include bullets:
+
+- test chunk parsing
+- test namespaced calls
+- test unqualified calls that should be ignored
+
+Below, we write a simple dataset file to simulate real modeling steps.
+
+```{r}
+cmdstanr::write_stan_json(list(N = 3, y = c(1, 2, 3)), "data.json")
+```
+

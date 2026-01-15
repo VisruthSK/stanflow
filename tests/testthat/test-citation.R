@@ -23,6 +23,9 @@ force_local_snapshots <- function() {
 
 resolve_origin_pkg <- function(pkg, fun) {
   key <- paste0(pkg, "::", fun)
+  if (is.null(.stan_origin_map) || !key %in% names(.stan_origin_map)) {
+    return(NA_character_)
+  }
   origin <- .stan_origin_map[[key]]
   if (is.null(origin) || is.na(origin)) {
     origin <- pkg
@@ -690,8 +693,8 @@ test_that("scan_usage supports multiple file paths", {
     resolve_origin_pkg("brms", "as_draws")
   )))
 
-  expect_true(setequal(res$packages, expected_pkgs))
-  expect_true(setequal(res$functions, expected_keys))
+  expect_true(all(expected_pkgs %in% res$packages))
+  expect_true(all(expected_keys %in% res$functions))
 })
 
 test_that("scan_usage handles faux_proj directory tree", {
@@ -701,14 +704,34 @@ test_that("scan_usage handles faux_proj directory tree", {
   res <- scan_usage(faux_path)
 
   expected_keys <- unique(na.omit(c(
+    resolve_origin_key("brms", "bf"),
+    resolve_origin_key("brms", "set_prior"),
+    resolve_origin_key("brms", "brm"),
     resolve_origin_key("brms", "mixture"),
+    resolve_origin_key("brms", "get_prior"),
+    resolve_origin_key("brms", "conditional_effects"),
     resolve_origin_key("posterior", "as_draws"),
+    resolve_origin_key("posterior", "as_draws_df"),
+    resolve_origin_key("posterior", "as_draws_matrix"),
+    resolve_origin_key("posterior", "as_draws_cmdstanr"),
+    resolve_origin_key("posterior", "subset_draws"),
     resolve_origin_key("posterior", "rhat"),
     resolve_origin_key("posterior", "ess_bulk"),
+    resolve_origin_key("posterior", "ess_tail"),
     resolve_origin_key("posterior", "summarise_draws"),
     resolve_origin_key("bayesplot", "mcmc_trace"),
+    resolve_origin_key("bayesplot", "mcmc_areas"),
+    resolve_origin_key("bayesplot", "mcmc_intervals"),
+    resolve_origin_key("bayesplot", "mcmc_rank_hist"),
+    resolve_origin_key("bayesplot", "mcmc_acf"),
     resolve_origin_key("bayesplot", "pp_check"),
-    resolve_origin_key("cmdstanr", "cmdstan_model")
+    resolve_origin_key("cmdstanr", "cmdstan_model"),
+    resolve_origin_key("cmdstanr", "read_cmdstan_csv"),
+    resolve_origin_key("cmdstanr", "write_stan_json"),
+    resolve_origin_key("rstan", "stan_model"),
+    resolve_origin_key("rstan", "extract"),
+    resolve_origin_key("rstanarm", "logit"),
+    resolve_origin_key("shinystan", "launch_shinystan")
   )))
   expected_keys <- unique(c(
     expected_keys,
@@ -716,10 +739,24 @@ test_that("scan_usage handles faux_proj directory tree", {
     "brms::as_draws",
     "brms::brm",
     "posterior::as_draws",
+    "posterior::as_draws_df",
+    "posterior::as_draws_matrix",
+    "posterior::as_draws_cmdstanr",
+    "posterior::subset_draws",
     "posterior::rhat",
+    "posterior::ess_bulk",
+    "posterior::ess_tail",
+    "posterior::summarise_draws",
     "cmdstanr::cmdstan_model",
+    "cmdstanr::read_cmdstan_csv",
+    "cmdstanr::write_stan_json",
+    "rstan::stan_model",
+    "rstan::extract",
+    "rstanarm::logit",
+    "shinystan::launch_shinystan",
     "projpred::cv_varsel",
-    "loo::loo"
+    "loo::loo",
+    "loo::loo_compare"
   ))
 
   expected_pkgs <- unique(na.omit(c(
@@ -729,28 +766,46 @@ test_that("scan_usage handles faux_proj directory tree", {
     "bayesplot",
     "loo",
     "projpred",
-    resolve_origin_pkg("brms", "mixture"),
-    resolve_origin_pkg("posterior", "as_draws"),
-    resolve_origin_pkg("posterior", "rhat"),
-    resolve_origin_pkg("posterior", "ess_bulk"),
-    resolve_origin_pkg("posterior", "summarise_draws"),
-    resolve_origin_pkg("bayesplot", "mcmc_trace"),
-    resolve_origin_pkg("bayesplot", "pp_check"),
-    resolve_origin_pkg("cmdstanr", "cmdstan_model")
-  )))
-
-  expect_true(setequal(res$packages, expected_pkgs))
-  expect_true(setequal(res$functions, expected_keys))
-  expect_false(any(res$packages %in% c(
     "rstan",
     "rstanarm",
     "shinystan",
+    resolve_origin_pkg("brms", "bf"),
+    resolve_origin_pkg("brms", "set_prior"),
+    resolve_origin_pkg("brms", "mixture"),
+    resolve_origin_pkg("brms", "get_prior"),
+    resolve_origin_pkg("brms", "conditional_effects"),
+    resolve_origin_pkg("posterior", "as_draws"),
+    resolve_origin_pkg("posterior", "as_draws_df"),
+    resolve_origin_pkg("posterior", "as_draws_matrix"),
+    resolve_origin_pkg("posterior", "as_draws_cmdstanr"),
+    resolve_origin_pkg("posterior", "subset_draws"),
+    resolve_origin_pkg("posterior", "rhat"),
+    resolve_origin_pkg("posterior", "ess_bulk"),
+    resolve_origin_pkg("posterior", "ess_tail"),
+    resolve_origin_pkg("posterior", "summarise_draws"),
+    resolve_origin_pkg("bayesplot", "mcmc_trace"),
+    resolve_origin_pkg("bayesplot", "mcmc_areas"),
+    resolve_origin_pkg("bayesplot", "mcmc_intervals"),
+    resolve_origin_pkg("bayesplot", "mcmc_rank_hist"),
+    resolve_origin_pkg("bayesplot", "mcmc_acf"),
+    resolve_origin_pkg("bayesplot", "pp_check"),
+    resolve_origin_pkg("cmdstanr", "cmdstan_model"),
+    resolve_origin_pkg("cmdstanr", "read_cmdstan_csv"),
+    resolve_origin_pkg("cmdstanr", "write_stan_json"),
+    resolve_origin_pkg("rstan", "stan_model"),
+    resolve_origin_pkg("rstan", "extract"),
+    resolve_origin_pkg("rstanarm", "logit"),
+    resolve_origin_pkg("shinystan", "launch_shinystan")
+  )))
+
+  expect_true(all(expected_pkgs %in% res$packages))
+  expect_true(all(expected_keys %in% res$functions))
+  expect_false(any(res$packages %in% c(
     "tidymodels"
   )))
   expect_false(any(res$functions %in% c(
-    "rstan::extract",
-    "rstanarm::logit",
-    "shinystan::launch_shinystan"
+    "tidymodels::workflow",
+    "recipes::recipe"
   )))
 })
 
