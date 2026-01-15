@@ -9,14 +9,15 @@ setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
-\item{force}{Logical. If \code{TRUE}, forces installation or upgrade in
-non-interactive sessions.}
+\item{force}{Logical. If \code{TRUE}, allows installation in non-interactive sessions.}
 
 \item{reinstall}{Logical. If \code{TRUE}, forces re-installation.}
 
-\item{check_updates}{Logical. If \code{FALSE}, skips checking for CmdStan updates.}
+\item{check_updates}{Logical. If \code{TRUE}, checks for CmdStan updates.}
 
-\item{cores}{Integer. Number of cores to use when building CmdStan.}
+\item{cores}{Integer. Number of cores to use. Defaults to
+\code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
+\code{cores} explicitly.}
 }
 \value{
 Returns \code{TRUE} invisibly when no install/upgrade is needed.

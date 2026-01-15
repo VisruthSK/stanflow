@@ -12,7 +12,8 @@ setup_interface(
   reinstall = FALSE,
   check_updates = FALSE,
   dev = FALSE,
-  brms_backend = c("cmdstanr", "rstan")
+  brms_backend = c("cmdstanr", "rstan"),
+  rstan_auto_write = TRUE
 )
 }
 \arguments{
@@ -33,12 +34,14 @@ setup_interface(
 \item{dev}{Logical. If \code{FALSE} (default), installs stable releases from
 R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-universe.}
 
-\item{brms_backend}{Character. The \code{brms} backend to use Defaults to
+\item{brms_backend}{Character. The \code{brms} backend to use. Defaults to
 \code{getOption("brms.backend", "cmdstanr")} and must be one of
 \code{c("cmdstanr", "rstan")}.}
+
+\item{rstan_auto_write}{Logical. If \code{TRUE}, sets \verb{rstan::rstan_options(auto_write = TRUE))}}
 }
 \value{
-Returns \code{NULL} invisibly.
+Returns the attached packages invisibly.
 }
 \description{
 This function ensures specific Stan interfaces are installed, configured,

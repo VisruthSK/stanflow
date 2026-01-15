@@ -280,10 +280,10 @@ test_that("setup_rstan configures parallel cores and rstan options", {
     .package = "rstan"
   )
 
-  setup_rstan(quiet = TRUE, cores = 6)
+  setup_rstan(quiet = TRUE, cores = 6, rstan_auto_write = FALSE)
 
   expect_equal(getOption("mc.cores"), 6)
-  expect_true(rstan_args$auto_write)
+  expect_false(rstan_args$auto_write)
 })
 
 test_that("setup_rstan emits configuration message when quiet = FALSE", {
@@ -304,10 +304,11 @@ test_that("setup_rstan emits configuration message when quiet = FALSE", {
     .package = "cli"
   )
 
-  setup_rstan(quiet = FALSE, cores = 3)
+  setup_rstan(quiet = FALSE, cores = 3, rstan_auto_write = FALSE)
 
   expect_match(msg, "Configured")
   expect_match(msg, "rstan")
+  expect_match(msg, "auto_write = FALSE")
 })
 
 test_that("setup_rstanarm emits configuration message when quiet = FALSE", {

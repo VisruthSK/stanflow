@@ -7,7 +7,7 @@
 #' @param interface A character vector. Select at least one of: "brms", "cmdstanr", "rstan", "rstanarm".
 #' @param dev Logical. If `FALSE` (default), installs stable releases from
 #'   R-multiverse or CRAN. If `TRUE`, installs development versions from Stan R-universe.
-#' @param brms_backend Character. The `brms` backend to use Defaults to
+#' @param brms_backend Character. The `brms` backend to use. Defaults to
 #'   `getOption("brms.backend", "cmdstanr")` and must be one of
 #'   `c("cmdstanr", "rstan")`.
 #' @param cores Integer. Number of cores to use. Defaults to
@@ -17,6 +17,7 @@
 #' @param force Logical. If `TRUE`, allows installation in non-interactive sessions.
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
+#' @param rstan_auto_write Logical. If `TRUE`, sets `rstan::rstan_options(auto_write = TRUE))`
 #' @return Returns the attached packages invisibly.
 #' @export
 setup_interface <- function(
@@ -27,7 +28,8 @@ setup_interface <- function(
   reinstall = FALSE,
   check_updates = FALSE,
   dev = FALSE,
-  brms_backend = c("cmdstanr", "rstan")
+  brms_backend = c("cmdstanr", "rstan"),
+  rstan_auto_write = TRUE
 ) {
   local_cli_quiet(quiet)
 
@@ -86,7 +88,7 @@ setup_interface <- function(
         check_updates,
         cores
       ),
-      "rstan" = setup_rstan(quiet, cores),
+      "rstan" = setup_rstan(quiet, cores, rstan_auto_write),
       "brms" = setup_brms(quiet, brms_backend, cores),
       "rstanarm" = setup_rstanarm(quiet, cores)
     )
@@ -150,12 +152,7 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
 #' it performs argument validation and defaults; `setup_cmdstanr()` assumes
 #' inputs are already checked.
 #'
-#' @param quiet Logical. If `TRUE`, suppresses status messages.
-#' @param force Logical. If `TRUE`, forces installation or upgrade in
-#'   non-interactive sessions.
-#' @param reinstall Logical. If `TRUE`, forces re-installation.
-#' @param check_updates Logical. If `FALSE`, skips checking for CmdStan updates.
-#' @param cores Integer. Number of cores to use when building CmdStan.
+#' @inheritParams setup_interface
 #' @return Returns `TRUE` invisibly when no install/upgrade is needed.
 #'   Otherwise, returns `NULL` invisibly after installation.
 #' @export
@@ -303,18 +300,18 @@ setup_cmdstanr <- function(
 #' Prefer `setup_interface()` for user-facing setup since it performs argument
 #' validation and defaults; `setup_rstan()` assumes inputs are already checked.
 #'
-#' @param quiet Logical. If `TRUE`, suppresses status messages.
-#' @param cores Integer. Number of cores to use.
+#' @inheritParams setup_interface
 #' @return Returns `NULL` invisibly.
 #' @export
-setup_rstan <- function(quiet, cores) {
+setup_rstan <- function(quiet, cores, rstan_auto_write) {
   local_cli_quiet(quiet)
   options(mc.cores = cores)
-  rstan::rstan_options(auto_write = TRUE)
+  rstan::rstan_options(auto_write = rstan_auto_write)
 
-  cli::cli_alert_info(
-    "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = TRUE)}"
+  msg <- cli::format_inline(
+    "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = {rstan_auto_write})}"
   )
+  cli::cli_alert_info(msg)
 }
 
 #' Setup brms
@@ -323,10 +320,7 @@ setup_rstan <- function(quiet, cores) {
 #' Prefer `setup_interface()` for user-facing setup since it performs argument
 #' validation and defaults; `setup_brms()` assumes inputs are already checked.
 #'
-#' @param quiet Logical. If `TRUE`, suppresses status messages.
-#' @param brms_backend Character. The `brms` backend to configure. Must be one
-#'   of `c("cmdstanr", "rstan")`.
-#' @param cores Integer. Number of cores to use.
+#' @inheritParams setup_interface
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_brms <- function(quiet, brms_backend, cores) {
@@ -352,8 +346,7 @@ setup_brms <- function(quiet, brms_backend, cores) {
 #' Prefer `setup_interface()` for user-facing setup since it performs argument
 #' validation and defaults; `setup_rstanarm()` assumes inputs are already checked.
 #'
-#' @param quiet Logical. If `TRUE`, suppresses status messages.
-#' @param cores Integer. Number of cores to use.
+#' @inheritParams setup_interface
 #' @return Returns `NULL` invisibly.
 #' @export
 setup_rstanarm <- function(quiet, cores) {

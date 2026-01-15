@@ -4,12 +4,16 @@
 \alias{setup_rstan}
 \title{Setup rstan}
 \usage{
-setup_rstan(quiet, cores)
+setup_rstan(quiet, cores, rstan_auto_write)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
-\item{cores}{Integer. Number of cores to use.}
+\item{cores}{Integer. Number of cores to use. Defaults to
+\code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
+\code{cores} explicitly.}
+
+\item{rstan_auto_write}{Logical. If \code{TRUE}, sets \verb{rstan::rstan_options(auto_write = TRUE))}}
 }
 \value{
 Returns \code{NULL} invisibly.

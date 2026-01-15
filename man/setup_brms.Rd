@@ -9,10 +9,13 @@ setup_brms(quiet, brms_backend, cores)
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 
-\item{brms_backend}{Character. The \code{brms} backend to configure. Must be one
-of \code{c("cmdstanr", "rstan")}.}
+\item{brms_backend}{Character. The \code{brms} backend to use. Defaults to
+\code{getOption("brms.backend", "cmdstanr")} and must be one of
+\code{c("cmdstanr", "rstan")}.}
 
-\item{cores}{Integer. Number of cores to use.}
+\item{cores}{Integer. Number of cores to use. Defaults to
+\code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
+\code{cores} explicitly.}
 }
 \value{
 Returns \code{NULL} invisibly.
