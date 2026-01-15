@@ -19,12 +19,14 @@ setup_brms(quiet, brms_backend, cores)
 
 - brms_backend:
 
-  Character. The `brms` backend to configure. Must be one of
+  Character. The `brms` backend to use. Defaults to
+  `getOption("brms.backend", "cmdstanr")` and must be one of
   `c("cmdstanr", "rstan")`.
 
 - cores:
 
-  Integer. Number of cores to use.
+  Integer. Number of cores to use. Defaults to `getOption("mc.cores")`.
+  You must set `options(mc.cores = ...)` or pass `cores` explicitly.
 
 ## Value
 

@@ -9,7 +9,7 @@ defaults; `setup_rstan()` assumes inputs are already checked.
 ## Usage
 
 ``` r
-setup_rstan(quiet, cores)
+setup_rstan(quiet, cores, rstan_auto_write)
 ```
 
 ## Arguments
@@ -20,7 +20,12 @@ setup_rstan(quiet, cores)
 
 - cores:
 
-  Integer. Number of cores to use.
+  Integer. Number of cores to use. Defaults to `getOption("mc.cores")`.
+  You must set `options(mc.cores = ...)` or pass `cores` explicitly.
+
+- rstan_auto_write:
+
+  Logical. If `TRUE`, sets `rstan::rstan_options(auto_write = TRUE))`
 
 ## Value
 

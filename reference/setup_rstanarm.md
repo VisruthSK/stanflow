@@ -19,7 +19,8 @@ setup_rstanarm(quiet, cores)
 
 - cores:
 
-  Integer. Number of cores to use.
+  Integer. Number of cores to use. Defaults to `getOption("mc.cores")`.
+  You must set `options(mc.cores = ...)` or pass `cores` explicitly.
 
 ## Value
 

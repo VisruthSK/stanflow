@@ -75,7 +75,7 @@ validation and defaults; <code>setup_rstan()</code> assumes inputs are already c
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setup_rstan</span><span class="op">(</span><span class="va">quiet</span>, <span class="va">cores</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setup_rstan</span><span class="op">(</span><span class="va">quiet</span>, <span class="va">cores</span>, <span class="va">rstan_auto_write</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -87,7 +87,13 @@ validation and defaults; <code>setup_rstan()</code> assumes inputs are already c
 
 
 <dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
-<dd><p>Integer. Number of cores to use.</p></dd>
+<dd><p>Integer. Number of cores to use. Defaults to
+<code>getOption("mc.cores")</code>. You must set <code>options(mc.cores = ...)</code> or pass
+<code>cores</code> explicitly.</p></dd>
+
+
+<dt id="arg-rstan-auto-write">rstan_auto_write<a class="anchor" aria-label="anchor" href="#arg-rstan-auto-write"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, sets <code>rstan::rstan_options(auto_write = TRUE))</code></p></dd>
 
 </dl></div>
     <div class="section level2">

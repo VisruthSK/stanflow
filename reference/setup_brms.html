@@ -87,12 +87,15 @@ validation and defaults; <code>setup_brms()</code> assumes inputs are already ch
 
 
 <dt id="arg-brms-backend">brms_backend<a class="anchor" aria-label="anchor" href="#arg-brms-backend"></a></dt>
-<dd><p>Character. The <code>brms</code> backend to configure. Must be one
-of <code>c("cmdstanr", "rstan")</code>.</p></dd>
+<dd><p>Character. The <code>brms</code> backend to use. Defaults to
+<code>getOption("brms.backend", "cmdstanr")</code> and must be one of
+<code>c("cmdstanr", "rstan")</code>.</p></dd>
 
 
 <dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
-<dd><p>Integer. Number of cores to use.</p></dd>
+<dd><p>Integer. Number of cores to use. Defaults to
+<code>getOption("mc.cores")</code>. You must set <code>options(mc.cores = ...)</code> or pass
+<code>cores</code> explicitly.</p></dd>
 
 </dl></div>
     <div class="section level2">

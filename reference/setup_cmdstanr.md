@@ -20,8 +20,7 @@ setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
 
 - force:
 
-  Logical. If `TRUE`, forces installation or upgrade in non-interactive
-  sessions.
+  Logical. If `TRUE`, allows installation in non-interactive sessions.
 
 - reinstall:
 
@@ -29,11 +28,12 @@ setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
 
 - check_updates:
 
-  Logical. If `FALSE`, skips checking for CmdStan updates.
+  Logical. If `TRUE`, checks for CmdStan updates.
 
 - cores:
 
-  Integer. Number of cores to use when building CmdStan.
+  Integer. Number of cores to use. Defaults to `getOption("mc.cores")`.
+  You must set `options(mc.cores = ...)` or pass `cores` explicitly.
 
 ## Value
 

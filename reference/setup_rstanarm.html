@@ -87,7 +87,9 @@ validation and defaults; <code>setup_rstanarm()</code> assumes inputs are alread
 
 
 <dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
-<dd><p>Integer. Number of cores to use.</p></dd>
+<dd><p>Integer. Number of cores to use. Defaults to
+<code>getOption("mc.cores")</code>. You must set <code>options(mc.cores = ...)</code> or pass
+<code>cores</code> explicitly.</p></dd>
 
 </dl></div>
     <div class="section level2">

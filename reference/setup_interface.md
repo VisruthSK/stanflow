@@ -16,7 +16,8 @@ setup_interface(
   reinstall = FALSE,
   check_updates = FALSE,
   dev = FALSE,
-  brms_backend = c("cmdstanr", "rstan")
+  brms_backend = c("cmdstanr", "rstan"),
+  rstan_auto_write = TRUE
 )
 ```
 
@@ -56,10 +57,14 @@ setup_interface(
 
 - brms_backend:
 
-  Character. The `brms` backend to use Defaults to
+  Character. The `brms` backend to use. Defaults to
   `getOption("brms.backend", "cmdstanr")` and must be one of
   `c("cmdstanr", "rstan")`.
 
+- rstan_auto_write:
+
+  Logical. If `TRUE`, sets `rstan::rstan_options(auto_write = TRUE))`
+
 ## Value
 
-Returns `NULL` invisibly.
+Returns the attached packages invisibly.

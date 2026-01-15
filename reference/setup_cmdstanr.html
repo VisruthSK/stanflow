@@ -90,8 +90,7 @@ inputs are already checked.</p>
 
 
 <dt id="arg-force">force<a class="anchor" aria-label="anchor" href="#arg-force"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, forces installation or upgrade in
-non-interactive sessions.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, allows installation in non-interactive sessions.</p></dd>
 
 
 <dt id="arg-reinstall">reinstall<a class="anchor" aria-label="anchor" href="#arg-reinstall"></a></dt>
@@ -99,11 +98,13 @@ non-interactive sessions.</p></dd>
 
 
 <dt id="arg-check-updates">check_updates<a class="anchor" aria-label="anchor" href="#arg-check-updates"></a></dt>
-<dd><p>Logical. If <code>FALSE</code>, skips checking for CmdStan updates.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, checks for CmdStan updates.</p></dd>
 
 
 <dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
-<dd><p>Integer. Number of cores to use when building CmdStan.</p></dd>
+<dd><p>Integer. Number of cores to use. Defaults to
+<code>getOption("mc.cores")</code>. You must set <code>options(mc.cores = ...)</code> or pass
+<code>cores</code> explicitly.</p></dd>
 
 </dl></div>
     <div class="section level2">
