@@ -2,7 +2,7 @@
 
     Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and re-run stan_cite().
     $packages
-    [1] "bayesplot" "brms"      "posterior" "rstan"    
+    [1] "bayesplot" "posterior" "rstan"    
     
     $functions
     character(0)

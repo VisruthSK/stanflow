@@ -7,12 +7,14 @@ library(posterior)
 
 as_draws(1)
 rhat(1)
+ess_bulk(1)
 ```
 
 ```{r}
 loo::loo(1)
+projpred::cv_varsel(1)
 ```
 
 ```{r}
-use("cmdstanr", list("cmdstan_model"))
+use("cmdstanr", list("cmdstan_model", "write_stan_json"))
 ```
