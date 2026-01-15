@@ -1,0 +1,19 @@
+---
+title: 'Note'
+---
+
+```{r}
+library(cmdstanr)
+
+cmdstan_model("x.stan")
+```
+
+```{r}
+requireNamespace("brms")
+
+brms::mixture(0.4)
+```
+
+```{r}
+use("posterior", list("as_draws"))
+```

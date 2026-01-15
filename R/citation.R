@@ -540,6 +540,10 @@ scan_usage <- function(
     ambiguous <- sort(unique(ambig_funs))
 
     if (!strict) {
+      ambiguous <- "package"
+    }
+
+    if (!strict) {
       intervals <- findInterval(ambig_idx, attached_pos)
 
       for (i in seq_along(ambig_idx)) {

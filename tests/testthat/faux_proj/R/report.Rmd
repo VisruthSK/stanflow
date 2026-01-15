@@ -1,0 +1,18 @@
+---
+title: 'Report'
+---
+
+```{r}
+library(posterior)
+
+as_draws(1)
+rhat(1)
+```
+
+```{r}
+loo::loo(1)
+```
+
+```{r}
+use("cmdstanr", list("cmdstan_model"))
+```

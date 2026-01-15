@@ -5,6 +5,11 @@ write_file <- \(path, lines) {
 
 bind_internal <- \(name) getFromNamespace(name, "stanflow")
 
+# Run snapshot expectations in non-interactive sessions.
+force_local_snapshots <- function() {
+  withr::local_envvar(NOT_CRAN = "true", .local_envir = parent.frame())
+}
+
 # Bind internal helpers/data so tests can call them directly.
 .meta_year <- bind_internal(".meta_year")
 .meta_note <- bind_internal(".meta_note")
@@ -91,6 +96,20 @@ test_that(".scan_tokens handles use() calls", {
   ))
 })
 
+test_that(".scan_tokens handles nested use() calls", {
+  code <- c(
+    "use('posterior', list('as_draws', list(c('rhat', list('ess_bulk')))))"
+  )
+
+  hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
+
+  expect_true(all(
+    c("posterior::as_draws", "posterior::rhat", "posterior::ess_bulk") %in%
+      hits$keys
+  ))
+  expect_true("posterior" %in% hits$pkgs)
+})
+
 test_that(".scan_tokens resolves attachment order and requireNamespace", {
   code <- c(
     "library(posterior)",
@@ -163,80 +182,24 @@ test_that(".scan_tokens ignores unqualified calls when no packages are attached"
 
 
 test_that(".scan_tokens collapses reexports by origin", {
-  candidate_fun <- NULL
-  provider_pkg <- NULL
+  export_index <- list(foo = c("pkgA", "pkgB"))
+  origin_map <- c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgA")
+  allowed_packages <- c("pkgA", "pkgB")
 
-  # Iterate over all exported functions to find a suitable candidate
-  for (fun in sort(names(.stan_export_index))) {
-    # Check ALL candidates to ensure global consistency
-    all_candidates <- .stan_export_index[[fun]]
-
-    all_origins <- vapply(
-      all_candidates,
-      function(pkg) {
-        .stan_origin_map[[paste0(pkg, "::", fun)]]
-      },
-      character(1)
-    )
-
-    # Basic sanity checks on metadata
-    if (anyNA(all_origins)) {
-      next
-    }
-    unique_providers <- unique(all_origins)
-    if (length(unique_providers) != 1L) {
-      next
-    }
-    provider <- unique_providers
-    if (!provider %in% .stan_pkgs) {
-      next
-    }
-
-    # Check installed packages
-    installed_pkgs <- all_candidates[vapply(
-      all_candidates,
-      requireNamespace,
-      logical(1),
-      quietly = TRUE
-    )]
-    if (length(installed_pkgs) < 2) {
-      next
-    }
-
-    # CRITICAL: Verify that .scan_tokens itself considers this unambiguous.
-    # This handles any discrepancies between our test logic and the implementation,
-    # specifically ensuring we don't pick functions that .scan_tokens deems ambiguous
-    # (which would cause the strict assertions below to fail).
-    check_hits <- .scan_tokens(
-      paste0(fun, "(1)"),
-      stdlib_funs(),
-      strict = FALSE
-    )
-    if (length(check_hits$ambiguous) > 0) {
-      next
-    }
-    if (length(check_hits$pkgs) != 1L) {
-      next
-    }
-
-    # If we get here, we have a solid candidate
-    candidate_fun <- fun
-    provider_pkg <- provider
-    break
-  }
-
-  if (is.null(candidate_fun)) {
-    skip("No consistently reexported functions found in installed packages.")
-  }
-
+  code <- c(
+    "library(pkgB)",
+    "foo(1)"
+  )
   hits <- .scan_tokens(
-    paste0(candidate_fun, "(1)"),
+    paste(code, collapse = "\n"),
     stdlib_funs(),
-    strict = FALSE
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map
   )
 
-  expect_equal(hits$pkgs, provider_pkg)
-  expect_equal(hits$keys, paste0(provider_pkg, "::", candidate_fun))
+  expect_true(setequal(hits$pkgs, c("pkgA", "pkgB")))
+  expect_equal(hits$keys, "pkgA::foo")
   expect_equal(hits$ambiguous, character())
 })
 
@@ -541,6 +504,7 @@ test_that("scan_usage strict aborts on ambiguous unqualified calls", {
 })
 
 test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
+  force_local_snapshots()
   funs <- c("rhat", "ess_bulk")
 
   get_fun_pkgs <- function(fun) {
@@ -599,6 +563,7 @@ test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
 })
 
 test_that("print.scan_usage shows functions with no packages", {
+  force_local_snapshots()
   expect_snapshot_output(print(structure(
     list(
       packages = character(),
@@ -609,6 +574,7 @@ test_that("print.scan_usage shows functions with no packages", {
 })
 
 test_that("print.scan_usage shows many packages with no functions", {
+  force_local_snapshots()
   expect_snapshot_output(print(structure(
     list(
       packages = c(
@@ -628,6 +594,7 @@ test_that("print.scan_usage shows many packages with no functions", {
 })
 
 test_that("print.scan_usage shows many functions for one package", {
+  force_local_snapshots()
   expect_snapshot_output(print(structure(
     list(
       packages = "posterior",
@@ -644,6 +611,7 @@ test_that("print.scan_usage shows many functions for one package", {
 })
 
 test_that("print.scan_usage shows many functions across packages", {
+  force_local_snapshots()
   expect_snapshot_output(print(structure(
     list(
       packages = c("bayesplot", "loo", "posterior", "rstan"),
@@ -724,6 +692,218 @@ test_that("scan_usage supports multiple file paths", {
 
   expect_true(setequal(res$packages, expected_pkgs))
   expect_true(setequal(res$functions, expected_keys))
+})
+
+test_that("scan_usage handles faux_proj directory tree", {
+  skip_if_not_installed("knitr")
+
+  faux_path <- testthat::test_path("faux_proj")
+  res <- scan_usage(faux_path)
+
+  expected_keys <- unique(na.omit(c(
+    resolve_origin_key("brms", "mixture"),
+    resolve_origin_key("posterior", "as_draws"),
+    resolve_origin_key("posterior", "rhat"),
+    resolve_origin_key("posterior", "ess_bulk"),
+    resolve_origin_key("posterior", "summarise_draws"),
+    resolve_origin_key("bayesplot", "mcmc_trace"),
+    resolve_origin_key("bayesplot", "pp_check"),
+    resolve_origin_key("cmdstanr", "cmdstan_model")
+  )))
+  expected_keys <- unique(c(
+    expected_keys,
+    "brms::mixture",
+    "brms::as_draws",
+    "brms::brm",
+    "posterior::as_draws",
+    "posterior::rhat",
+    "cmdstanr::cmdstan_model",
+    "projpred::cv_varsel",
+    "loo::loo"
+  ))
+
+  expected_pkgs <- unique(na.omit(c(
+    "brms",
+    "posterior",
+    "cmdstanr",
+    "bayesplot",
+    "loo",
+    "projpred",
+    resolve_origin_pkg("brms", "mixture"),
+    resolve_origin_pkg("posterior", "as_draws"),
+    resolve_origin_pkg("posterior", "rhat"),
+    resolve_origin_pkg("posterior", "ess_bulk"),
+    resolve_origin_pkg("posterior", "summarise_draws"),
+    resolve_origin_pkg("bayesplot", "mcmc_trace"),
+    resolve_origin_pkg("bayesplot", "pp_check"),
+    resolve_origin_pkg("cmdstanr", "cmdstan_model")
+  )))
+
+  expect_true(setequal(res$packages, expected_pkgs))
+  expect_true(setequal(res$functions, expected_keys))
+  expect_false(any(res$packages %in% c(
+    "rstan",
+    "rstanarm",
+    "shinystan",
+    "tidymodels"
+  )))
+  expect_false(any(res$functions %in% c(
+    "rstan::extract",
+    "rstanarm::logit",
+    "shinystan::launch_shinystan"
+  )))
+})
+
+test_that("scan_usage attributes unqualified calls only in files attaching Stan packages", {
+  if (
+    is.null(.stan_export_index[["mixture"]]) ||
+      !("brms" %in% .stan_export_index[["mixture"]])
+  ) {
+    skip("brms::mixture not available in Stan export index.")
+  }
+
+  tmp <- withr::local_tempdir()
+  path1 <- write_file(
+    file.path(tmp, "brms.R"),
+    c(
+      "library(brms)",
+      "mixture(1)"
+    )
+  )
+  path2 <- write_file(
+    file.path(tmp, "tidymodels.R"),
+    c(
+      "library(tidymodels)",
+      "mixture(2)"
+    )
+  )
+
+  res <- scan_usage(c(path1, path2))
+
+  expected_key <- resolve_origin_key("brms", "mixture")
+  expected_functions <- if (is.na(expected_key)) character() else expected_key
+  expected_pkgs <- unique(na.omit(c(
+    "brms",
+    resolve_origin_pkg("brms", "mixture")
+  )))
+
+  expect_true(setequal(res$packages, expected_pkgs))
+  expect_true(setequal(res$functions, expected_functions))
+})
+
+test_that("scan_usage keeps namespaced calls when unqualified calls are ignored", {
+  fun_candidates <- setdiff(names(.stan_export_index), stdlib_funs())
+  if (!length(fun_candidates)) {
+    skip("No non-stdlib Stan exports available.")
+  }
+  fun <- if ("mixture" %in% fun_candidates) "mixture" else fun_candidates[[1]]
+
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "script.R"),
+    c(
+      "library(tidymodels)",
+      paste0("brms::", fun, "(1)"),
+      paste0(fun, "(2)")
+    )
+  )
+
+  res <- scan_usage(path)
+
+  expect_true(setequal(res$functions, paste0("brms::", fun)))
+  expect_true("brms" %in% res$packages)
+})
+
+test_that("scan_usage handles projects with renv/packrat and real R folder", {
+  skip_if_not_installed("knitr")
+
+  tmp <- withr::local_tempdir()
+  dir.create(file.path(tmp, "R"), recursive = TRUE)
+  dir.create(file.path(tmp, "renv", "library"), recursive = TRUE)
+  dir.create(file.path(tmp, "packrat", "lib"), recursive = TRUE)
+
+  write_file(
+    file.path(tmp, "R", "analysis.R"),
+    c(
+      "library(posterior)",
+      "as_draws(1)"
+    )
+  )
+  write_file(
+    file.path(tmp, "R", "report.Rmd"),
+    c(
+      "---",
+      "title: 'Report'",
+      "---",
+      "",
+      "```{r}",
+      "library(brms)",
+      "as_draws(1)",
+      "```"
+    )
+  )
+  write_file(
+    file.path(tmp, "R", "note.qmd"),
+    c(
+      "---",
+      "title: 'Note'",
+      "---",
+      "",
+      "```{r}",
+      "library(cmdstanr)",
+      "cmdstan_model('x.stan')",
+      "```"
+    )
+  )
+  write_file(
+    file.path(tmp, "renv", "library", "vendored.R"),
+    c(
+      "library(rstan)",
+      "extract(1)"
+    )
+  )
+  write_file(
+    file.path(tmp, "packrat", "lib", "vendored.R"),
+    c(
+      "library(rstanarm)",
+      "logit(1)"
+    )
+  )
+
+  res <- scan_usage(tmp)
+
+  expected_keys <- unique(na.omit(c(
+    resolve_origin_key("posterior", "as_draws"),
+    resolve_origin_key("brms", "as_draws"),
+    resolve_origin_key("cmdstanr", "cmdstan_model")
+  )))
+  expected_pkgs <- unique(na.omit(c(
+    "posterior",
+    "brms",
+    "cmdstanr",
+    resolve_origin_pkg("posterior", "as_draws"),
+    resolve_origin_pkg("brms", "as_draws"),
+    resolve_origin_pkg("cmdstanr", "cmdstan_model")
+  )))
+
+  expect_true(setequal(res$packages, expected_pkgs))
+  expect_true(setequal(res$functions, expected_keys))
+})
+
+test_that("scan_usage captures ::: calls without counting unqualified usage", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "script.R"),
+    c(
+      "brms:::as_draws(1)",
+      "as_draws(2)"
+    )
+  )
+
+  res <- scan_usage(path)
+
+  expect_true(setequal(res$functions, "brms::as_draws"))
+  expect_true("brms" %in% res$packages)
 })
 
 test_that("scan_usage errors on multiple directories", {
@@ -1241,4 +1421,26 @@ test_that(".resolve_candidates returns empty when no packages allowed", {
   expect_identical(out$pkgs, character())
   expect_identical(out$keys, character())
   expect_identical(out$ambiguous, character())
+})
+
+test_that(".resolve_candidates labels package ambiguity in non-strict mode", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 2L),
+    lib_data = data.frame(
+      pos = c(1L, 2L),
+      pkg = c("pkgA", "pkgB"),
+      is_attach = c(TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+  )
+
+  expect_equal(out$ambiguous, "package")
+  expect_equal(out$pkgs, "pkgB")
+  expect_equal(out$keys, "pkgB::foo")
 })
