@@ -345,7 +345,7 @@ test_that(".extract_code extracts Rmd chunks", {
 })
 
 test_that(".extract_code extracts Qmd chunks", {
-  skip_if_not_installed("quarto")
+  skip_if_not_installed("knitr")
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "doc.qmd"),
@@ -359,15 +359,7 @@ test_that(".extract_code extracts Qmd chunks", {
       "```"
     )
   )
-  qmd_to_r_script <- function(input, output, ...) {
-    writeLines("as_draws(1)", output, useBytes = TRUE)
-  }
-  extract_code <- getFromNamespace(".extract_code", "stanflow")
-  out <- with_mocked_bindings(
-    qmd_to_r_script = qmd_to_r_script,
-    .package = "quarto",
-    extract_code(path)
-  )
+  out <- .extract_code(path)
   expect_match(out, "as_draws\\(")
 })
 

@@ -4,7 +4,6 @@
 ## usethis namespace: start
 #' @importFrom fastmatch fmatch
 #' @importFrom knitr purl
-#' @importFrom quarto qmd_to_r_script
 #' @importFrom utils getParseData glob2rx toBibtex
 ## usethis namespace: end
 
