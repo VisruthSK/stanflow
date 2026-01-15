@@ -161,11 +161,8 @@ scan_usage <- function(
   tmp <- tempfile(fileext = ".R")
   on.exit(unlink(tmp), add = TRUE)
 
-  if (identical(ext, "rmd")) {
+  if (identical(ext, "rmd") || identical(ext, "qmd")) {
     knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
-  } else if (identical(ext, "qmd")) {
-    # TODO: this is extremely expensive, see if there's a way to bypass this
-    suppressMessages(quarto::qmd_to_r_script(file, tmp))
   }
 
   paste(readLines(tmp, warn = FALSE), collapse = "\n")
