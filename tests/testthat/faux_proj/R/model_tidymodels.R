@@ -17,14 +17,18 @@ sp <- initial_split(penguins_tbl, strata = species)
 train_tbl <- training(sp)
 
 rec <- recipe(
-  body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + island,
+  body_mass_g ~ bill_length_mm +
+    bill_depth_mm +
+    flipper_length_mm +
+    sex +
+    island,
   data = train_tbl
 ) |>
   step_impute_mean(all_numeric_predictors()) |>
   step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
-  step_interact(terms = ~ starts_with("bill") : starts_with("flipper"))
+  step_interact(terms = ~ starts_with("bill"):starts_with("flipper"))
 
 rf_spec <- rand_forest(mtry = 3, trees = 200) |>
   set_engine("ranger") |>

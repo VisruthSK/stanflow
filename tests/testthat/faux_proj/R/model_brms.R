@@ -35,12 +35,18 @@ long_tbl <- summary_tbl |>
     values_to = "value"
   )
 
-p <- ggplot(penguins_clean, aes(bill_length_mm, bill_depth_mm, color = species)) +
+p <- ggplot(
+  penguins_clean,
+  aes(bill_length_mm, bill_depth_mm, color = species)
+) +
   geom_point(alpha = 0.6) +
-  facet_wrap(~ island)
+  facet_wrap(~island)
 
 bf_mass <- bf(
-  log_mass ~ bill_length_mm * bill_depth_mm + sex + (1 + bill_length_mm | island)
+  log_mass ~ bill_length_mm *
+    bill_depth_mm +
+    sex +
+    (1 + bill_length_mm | island)
 )
 
 bf_flen <- bf(flipper_length_mm ~ bill_length_mm + species + (1 | island))
