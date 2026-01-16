@@ -800,13 +800,19 @@ test_that("scan_usage handles faux_proj directory tree", {
 
   expect_true(all(expected_pkgs %in% res$packages))
   expect_true(all(expected_keys %in% res$functions))
-  expect_false(any(res$packages %in% c(
-    "tidymodels"
-  )))
-  expect_false(any(res$functions %in% c(
-    "tidymodels::workflow",
-    "recipes::recipe"
-  )))
+  expect_false(any(
+    res$packages %in%
+      c(
+        "tidymodels"
+      )
+  ))
+  expect_false(any(
+    res$functions %in%
+      c(
+        "tidymodels::workflow",
+        "recipes::recipe"
+      )
+  ))
 })
 
 test_that("scan_usage attributes unqualified calls only in files attaching Stan packages", {
