@@ -1552,5 +1552,8 @@ test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
 
 test_that("scan_skip_dirs returns configured defaults", {
   scan_skip_dirs <- getFromNamespace("scan_skip_dirs", "stanflow")
-  expect_equal(scan_skip_dirs(), getFromNamespace(".scan_skip_dirs", "stanflow"))
+  expect_equal(
+    scan_skip_dirs(),
+    getFromNamespace(".scan_skip_dirs", "stanflow")
+  )
 })
