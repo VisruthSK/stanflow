@@ -288,8 +288,8 @@ scan_usage <- function(
     head <- x[[1L]]
     head_name <- if (is.symbol(head)) as.character(head) else NULL
 
-    if (!is.null(head_name) && !is.na(fastmatch::fmatch(head_name, ns_ops))) {
-      if (length(x) >= 3L) {
+    if (!is.null(head_name)) {
+      if (!is.na(fastmatch::fmatch(head_name, ns_ops)) && length(x) >= 3L) {
         pkg <- .ast_lit_name(x[[2L]])
         fun <- .ast_lit_name(x[[3L]])
         if (
@@ -300,28 +300,28 @@ scan_usage <- function(
           acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
           acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", fun))
         }
-      }
-    } else if (!is.null(head_name) && identical(head_name, "use")) {
-      pkg <- .ast_get_lib_pkg(x)
-      if (!is.null(pkg) && !is.na(fastmatch::fmatch(pkg, allowed_packages))) {
-        acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
-        funs <- .ast_get_use_funs(x, use_heads)
-        if (length(funs)) acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", funs))
-      }
-    } else if (
-      !is.null(head_name) && !is.na(fastmatch::fmatch(head_name, lib_funs))
-    ) {
-      pkg <- .ast_get_lib_pkg(x)
-      if (!is.null(pkg) && !is.na(fastmatch::fmatch(pkg, allowed_packages))) {
-        acc$lib_pkgs <- c(acc$lib_pkgs, pkg)
-        acc$lib_pos <- c(acc$lib_pos, acc$pos)
-        acc$lib_is_attach <- c(
-          acc$lib_is_attach,
-          !identical(head_name, "requireNamespace")
-        )
-      }
-    } else if (!is.null(head_name)) {
-      if (is.na(fastmatch::fmatch(head_name, ignore_unqualified_functions))) {
+      } else if (identical(head_name, "use")) {
+        pkg <- .ast_get_lib_pkg(x)
+        if (!is.null(pkg) && !is.na(fastmatch::fmatch(pkg, allowed_packages))) {
+          acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
+          funs <- .ast_get_use_funs(x, use_heads)
+          if (length(funs)) {
+            acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", funs))
+          }
+        }
+      } else if (!is.na(fastmatch::fmatch(head_name, lib_funs))) {
+        pkg <- .ast_get_lib_pkg(x)
+        if (!is.null(pkg) && !is.na(fastmatch::fmatch(pkg, allowed_packages))) {
+          acc$lib_pkgs <- c(acc$lib_pkgs, pkg)
+          acc$lib_pos <- c(acc$lib_pos, acc$pos)
+          acc$lib_is_attach <- c(
+            acc$lib_is_attach,
+            !identical(head_name, "requireNamespace")
+          )
+        }
+      } else if (
+        is.na(fastmatch::fmatch(head_name, ignore_unqualified_functions))
+      ) {
         acc$unqual_funs <- c(acc$unqual_funs, head_name)
         acc$unqual_pos <- c(acc$unqual_pos, acc$pos)
       }
@@ -338,8 +338,9 @@ scan_usage <- function(
         use_heads
       )
     }
-    if (length(x) >= 2L) {
-      for (i in 2L:length(x)) {
+    n <- length(x)
+    if (n >= 2L) {
+      for (i in 2L:n) {
         .ast_walk(
           x[[i]],
           acc,
@@ -540,11 +541,8 @@ scan_usage <- function(
     ambiguous <- sort(unique(ambig_funs))
 
     if (!strict) {
-      ambiguous <- "package"
-    }
-
-    if (!strict) {
       intervals <- findInterval(ambig_idx, attached_pos)
+      resolved <- logical(length(ambig_idx))
 
       for (i in seq_along(ambig_idx)) {
         k <- intervals[i]
@@ -552,18 +550,25 @@ scan_usage <- function(
 
         if (k == 0) {
           pkg <- cands[1]
+          resolved[i] <- FALSE
         } else {
           attached_before <- attached_pkgs[seq_len(k)]
           matches <- fastmatch::fmatch(cands, attached_before)
           if (all(is.na(matches))) {
             pkg <- cands[1]
+            resolved[i] <- FALSE
           } else {
             pkg <- cands[which.max(ifelse(is.na(matches), -1L, matches))]
+            resolved[i] <- TRUE
           }
         }
 
         pkgs <- c(pkgs, pkg)
         keys <- c(keys, paste0(pkg, "::", ambig_funs[i]))
+      }
+
+      if (length(ambiguous)) {
+        ambiguous <- setdiff(ambiguous, unique(ambig_funs[resolved]))
       }
     }
   }
