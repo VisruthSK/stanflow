@@ -1,14 +1,9 @@
 test_that("scan_usage performance on faux_proj is within budget", {
-  skip_if_not_installed("knitr")
-
-  if (!isTRUE(getOption("stanflow.run_perf", FALSE))) {
+  if (!getOption("stanflow.run_perf", FALSE)) {
     skip("Enable with options(stanflow.run_perf = TRUE).")
   }
 
-  budget <- getOption("stanflow.perf_budget_ms", 15000)
-  if (!is.numeric(budget) || length(budget) != 1L || !is.finite(budget)) {
-    testthat::fail("stanflow.perf_budget_ms must be a finite number.")
-  }
+  budget <- 15000
 
   faux_path <- testthat::test_path("faux_proj")
 
