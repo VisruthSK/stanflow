@@ -1501,7 +1501,56 @@ test_that(".resolve_candidates labels package ambiguity in non-strict mode", {
     origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
   )
 
-  expect_equal(out$ambiguous, "package")
+  expect_identical(out$ambiguous, character())
   expect_equal(out$pkgs, "pkgB")
   expect_equal(out$keys, "pkgB::foo")
+})
+
+test_that(".resolve_candidates keeps ambiguity when no attach position precedes call", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 1L),
+    lib_data = data.frame(
+      pos = c(5L, 10L),
+      pkg = c("pkgA", "pkgB"),
+      is_attach = c(TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+  )
+
+  expect_equal(out$ambiguous, "foo")
+  expect_equal(out$pkgs, "pkgA")
+  expect_equal(out$keys, "pkgA::foo")
+})
+
+test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 7L),
+    lib_data = data.frame(
+      pos = c(5L, 10L, 20L),
+      pkg = c("pkgA", "pkgB", "pkgC"),
+      is_attach = c(TRUE, TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB", "pkgC"),
+    export_index = list(foo = c("pkgB", "pkgC")),
+    origin_map = c("pkgB::foo" = "pkgB", "pkgC::foo" = "pkgC")
+  )
+
+  expect_equal(out$ambiguous, "foo")
+  expect_equal(out$pkgs, "pkgB")
+  expect_equal(out$keys, "pkgB::foo")
+})
+
+test_that("scan_skip_dirs returns configured defaults", {
+  scan_skip_dirs <- getFromNamespace("scan_skip_dirs", "stanflow")
+  expect_equal(scan_skip_dirs(), getFromNamespace(".scan_skip_dirs", "stanflow"))
 })
