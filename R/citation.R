@@ -19,7 +19,7 @@
 stan_cite <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
-  strict = FALSE,
+  strict = TRUE,
   skip_dirs = .scan_skip_dirs,
   format = c("bibtex", "bibentry")
 ) {
@@ -140,9 +140,8 @@ scan_usage <- function(
     )
 
   ambiguous <- .collect_unique(hits, "ambiguous")
-  if (strict && length(ambiguous)) {
-    cli::cli_abort(
-      ambiguous |>
+  if (length(ambiguous)) {
+    msg <- ambiguous |>
         paste0("{.code ", x = _, "()}") |>
         paste(collapse = ", ") |>
         paste0(
@@ -150,7 +149,11 @@ scan_usage <- function(
           x = _,
           ". Please namespace them ({.code pkg::function()}) and re-run stan_cite()."
         )
-    )
+    if (strict) {
+      cli::cli_abort(msg)
+    } else {
+      cli::cli_warn(msg)
+    }
   }
 
   structure(
