@@ -30,6 +30,7 @@ Imports:
 Suggests:
     brms,
     cmdstanr,
+    quarto,
     rstan,
     rstanarm,
     testthat (>= 3.0.0),
