@@ -1,17 +1,14 @@
+# scan_usage strict aborts on ambiguous unqualified calls
+
+    Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and rerun the function.
+
 # scan_usage warns about multiple ambiguous calls in strict mode
 
-    Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and re-run stan_cite().
-    $packages
-    [1] "bayesplot" "brms"      "posterior" "rstan"    
-    
-    $functions
-    character(0)
-    
-    $ambiguous
-    [1] "ess_bulk" "rhat"    
-    
-    attr(,"class")
-    [1] "scan_usage"
+    Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and rerun the function.
+
+# scan_usage warns on ambiguous calls in non-strict mode
+
+    Cannot reliably detect which packages these functions are from: `foo()`. Please namespace them (`pkg::function()`) and rerun the function.
 
 # print.scan_usage shows functions with no packages
 
@@ -62,4 +59,20 @@
     
     attr(,"class")
     [1] "scan_usage"
+
+# scan_usage errors on multiple directories
+
+    `path` must be a single directory or a vector of files.
+
+# scan_usage alerts full paths for file vectors
+
+    
+
+# scan_usage alerts full paths for directories
+
+    
+
+# scan_usage errors when mixing directories and files
+
+    `path` must be a single directory or a vector of files.
 

@@ -147,7 +147,7 @@ scan_usage <- function(
       paste0(
         "Cannot reliably detect which packages these functions are from: ",
         x = _,
-        ". Please namespace them ({.code pkg::function()}) and re-run stan_cite()."
+        ". Please namespace them ({.code pkg::function()}) and rerun the function."
       )
     if (strict) {
       cli::cli_abort(msg)
