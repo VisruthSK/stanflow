@@ -508,7 +508,7 @@ test_that("scan_usage strict aborts on ambiguous unqualified calls", {
     )
   )
 
-  expect_error(scan_usage(path, strict = TRUE))
+  expect_snapshot_error(scan_usage(path, strict = TRUE))
 })
 
 test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
@@ -559,15 +559,7 @@ test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
     )
   )
 
-  expect_snapshot_output(
-    with_mocked_bindings(
-      cli_abort = function(msg, ...) {
-        cli::cat_line(cli::format_inline(msg, .envir = parent.frame()))
-      },
-      .package = "cli",
-      scan_usage(path, strict = TRUE)
-    )
-  )
+  expect_snapshot_error(scan_usage(path, strict = TRUE))
 })
 
 test_that("scan_usage warns on ambiguous calls in non-strict mode", {
@@ -581,26 +573,16 @@ test_that("scan_usage warns on ambiguous calls in non-strict mode", {
     )
   )
 
-  warnings <- character()
-  res <- with_mocked_bindings(
-    cli_warn = function(msg, ...) {
-      warnings <<- c(
-        warnings,
-        cli::format_inline(msg, .envir = parent.frame())
-      )
-    },
-    .package = "cli",
-    scan_usage(
+  res <- NULL
+  expect_snapshot_warning({
+    res <- scan_usage(
       path,
       strict = FALSE,
       allowed_packages = c("pkgA", "pkgB"),
       export_index = list(foo = c("pkgA", "pkgB")),
       origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
     )
-  )
-
-  expect_true(length(warnings) == 1L)
-  expect_match(warnings[[1]], "Cannot reliably detect")
+  })
   expect_true(all(c("pkgA", "pkgB") %in% res$packages))
   expect_identical(res$functions, "pkgA::foo")
   expect_equal(res$ambiguous, "foo")
@@ -1015,10 +997,7 @@ test_that("scan_usage errors on multiple directories", {
   dir.create(dir1)
   dir.create(dir2)
 
-  expect_error(
-    scan_usage(c(dir1, dir2)),
-    "single directory"
-  )
+  expect_snapshot_error(scan_usage(c(dir1, dir2)))
 })
 
 test_that("scan_usage alerts full paths for file vectors", {
@@ -1038,16 +1017,10 @@ test_that("scan_usage alerts full paths for file vectors", {
     )
   )
 
-  seen <- character()
-  cli_alert_info <- function(msg, ...) {
-    seen <<- c(seen, cli::format_inline(msg, .envir = parent.frame()))
-  }
-
-  res <- with_mocked_bindings(
-    cli_alert_info = cli_alert_info,
-    .package = "cli",
-    scan_usage(c(path1, path2))
-  )
+  res <- NULL
+  expect_snapshot_output({
+    res <- scan_usage(c(path1, path2))
+  })
 
   expected_pkgs <- unique(na.omit(c(
     "posterior",
@@ -1057,16 +1030,6 @@ test_that("scan_usage alerts full paths for file vectors", {
   )))
 
   expect_true(setequal(res$packages, expected_pkgs))
-  expected <- normalizePath(
-    c(path1, path2),
-    winslash = "/",
-    mustWork = FALSE
-  ) |>
-    vapply(
-      function(path) cli::format_inline("Searching {.path {path}}"),
-      character(1)
-    )
-  expect_true(all(expected %in% seen))
 })
 
 test_that("scan_usage alerts full paths for directories", {
@@ -1081,16 +1044,10 @@ test_that("scan_usage alerts full paths for directories", {
     )
   )
 
-  seen <- character()
-  cli_alert_info <- function(msg, ...) {
-    seen <<- c(seen, cli::format_inline(msg, .envir = parent.frame()))
-  }
-
-  res <- with_mocked_bindings(
-    cli_alert_info = cli_alert_info,
-    .package = "cli",
-    scan_usage(dir_path)
-  )
+  res <- NULL
+  expect_snapshot_output({
+    res <- scan_usage(dir_path)
+  })
 
   expected_pkgs <- unique(na.omit(c(
     "brms",
@@ -1098,9 +1055,6 @@ test_that("scan_usage alerts full paths for directories", {
   )))
 
   expect_true(setequal(res$packages, expected_pkgs))
-  expected <- normalizePath(dir_path, winslash = "/", mustWork = FALSE) |>
-    (\(path) cli::format_inline("Searching directory {.path {path}}"))()
-  expect_true(expected %in% seen)
 })
 
 test_that("scan_usage errors when mixing directories and files", {
@@ -1115,10 +1069,7 @@ test_that("scan_usage errors when mixing directories and files", {
     )
   )
 
-  expect_error(
-    scan_usage(c(dir_path, file_path)),
-    "single directory"
-  )
+  expect_snapshot_error(scan_usage(c(dir_path, file_path)))
 })
 
 test_that("scan_usage scans directories with mixed inputs", {
