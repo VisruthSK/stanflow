@@ -142,13 +142,13 @@ scan_usage <- function(
   ambiguous <- .collect_unique(hits, "ambiguous")
   if (length(ambiguous)) {
     msg <- ambiguous |>
-        paste0("{.code ", x = _, "()}") |>
-        paste(collapse = ", ") |>
-        paste0(
-          "Cannot reliably detect which packages these functions are from: ",
-          x = _,
-          ". Please namespace them ({.code pkg::function()}) and re-run stan_cite()."
-        )
+      paste0("{.code ", x = _, "()}") |>
+      paste(collapse = ", ") |>
+      paste0(
+        "Cannot reliably detect which packages these functions are from: ",
+        x = _,
+        ". Please namespace them ({.code pkg::function()}) and re-run stan_cite()."
+      )
     if (strict) {
       cli::cli_abort(msg)
     } else {
@@ -565,9 +565,16 @@ scan_usage <- function(
             resolved[i] <- TRUE
           }
         }
+        key <- paste0(pkg, "::", ambig_funs[i])
+        origin <- unname(origin_map[key])
+        if (
+          is.na(origin) || is.na(fastmatch::fmatch(origin, allowed_packages))
+        ) {
+          origin <- pkg
+        }
 
-        pkgs <- c(pkgs, pkg)
-        keys <- c(keys, paste0(pkg, "::", ambig_funs[i]))
+        pkgs <- c(pkgs, origin)
+        keys <- c(keys, paste0(origin, "::", ambig_funs[i]))
       }
 
       if (length(ambiguous)) {

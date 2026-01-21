@@ -128,7 +128,12 @@ test_that(".scan_tokens resolves attachment order and requireNamespace", {
 
   expect_true(all(c("posterior", "cmdstanr", "brms") %in% hits$pkgs))
 
-  expect_true("brms::as_draws" %in% hits$keys)
+  expected_key <- resolve_origin_key("brms", "as_draws")
+  if (is.na(expected_key)) {
+    expect_false(any(grepl("::as_draws$", hits$keys)))
+  } else {
+    expect_true(expected_key %in% hits$keys)
+  }
 
   # as_draws is in posterior too, but brms was attached later (last) so it should win?
 
@@ -563,6 +568,42 @@ test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
       scan_usage(path, strict = TRUE)
     )
   )
+})
+
+test_that("scan_usage warns on ambiguous calls in non-strict mode", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "non-strict.R"),
+    c(
+      "foo(1)",
+      "library(pkgA)",
+      "library(pkgB)"
+    )
+  )
+
+  warnings <- character()
+  res <- with_mocked_bindings(
+    cli_warn = function(msg, ...) {
+      warnings <<- c(
+        warnings,
+        cli::format_inline(msg, .envir = parent.frame())
+      )
+    },
+    .package = "cli",
+    scan_usage(
+      path,
+      strict = FALSE,
+      allowed_packages = c("pkgA", "pkgB"),
+      export_index = list(foo = c("pkgA", "pkgB")),
+      origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+    )
+  )
+
+  expect_true(length(warnings) == 1L)
+  expect_match(warnings[[1]], "Cannot reliably detect")
+  expect_true(all(c("pkgA", "pkgB") %in% res$packages))
+  expect_identical(res$functions, "pkgA::foo")
+  expect_equal(res$ambiguous, "foo")
 })
 
 test_that("print.scan_usage shows functions with no packages", {
@@ -1506,6 +1547,28 @@ test_that(".resolve_candidates labels package ambiguity in non-strict mode", {
   expect_equal(out$keys, "pkgB::foo")
 })
 
+test_that(".resolve_candidates applies origin_map for resolved ambiguity", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 3L),
+    lib_data = data.frame(
+      pos = c(1L, 2L),
+      pkg = c("pkgA", "pkgB"),
+      is_attach = c(TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgA")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_equal(out$pkgs, "pkgA")
+  expect_equal(out$keys, "pkgA::foo")
+})
+
 test_that(".resolve_candidates keeps ambiguity when no attach position precedes call", {
   resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
 
@@ -1524,8 +1587,8 @@ test_that(".resolve_candidates keeps ambiguity when no attach position precedes 
   )
 
   expect_equal(out$ambiguous, "foo")
-  expect_equal(out$pkgs, "pkgA")
-  expect_equal(out$keys, "pkgA::foo")
+  expect_identical(out$pkgs, "pkgA")
+  expect_identical(out$keys, "pkgA::foo")
 })
 
 test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
@@ -1546,8 +1609,30 @@ test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
   )
 
   expect_equal(out$ambiguous, "foo")
-  expect_equal(out$pkgs, "pkgB")
-  expect_equal(out$keys, "pkgB::foo")
+  expect_identical(out$pkgs, "pkgB")
+  expect_identical(out$keys, "pkgB::foo")
+})
+
+test_that(".resolve_candidates clears ambiguity when one call is resolved", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = c("foo", "foo"), idx = c(1L, 3L)),
+    lib_data = data.frame(
+      pos = c(2L, 4L),
+      pkg = c("pkgA", "pkgB"),
+      is_attach = c(TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+  )
+
+  expect_equal(out$ambiguous, character())
+  expect_equal(out$pkgs, c("pkgA", "pkgA"))
+  expect_equal(out$keys, c("pkgA::foo", "pkgA::foo"))
 })
 
 test_that("scan_skip_dirs returns configured defaults", {
@@ -1556,4 +1641,57 @@ test_that("scan_skip_dirs returns configured defaults", {
     scan_skip_dirs(),
     getFromNamespace(".scan_skip_dirs", "stanflow")
   )
+})
+
+test_that("origin_map is applied even when an ambiguous call is position-resolved", {
+  resolve <- getFromNamespace(
+    ".resolve_candidates",
+    "stanflow"
+  )
+
+  allowed_packages <- c("origin", "reexporter", "other")
+
+  export_index <- list(foo = c("reexporter", "other"))
+
+  origin_map <- c("reexporter::foo" = "origin")
+
+  unqual1 <- list(funs = "foo", idx = 2L)
+  lib1 <- data.frame(
+    pos = 1L,
+    pkg = "reexporter",
+    is_attach = TRUE,
+    stringsAsFactors = FALSE
+  )
+
+  r1 <- resolve(
+    unqual = unqual1,
+    lib_data = lib1,
+    strict = FALSE,
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map
+  )
+
+  expect_identical(r1$keys, "origin::foo")
+  expect_identical(r1$pkgs, "origin")
+
+  unqual2 <- list(funs = "foo", idx = 3L)
+  lib2 <- data.frame(
+    pos = c(1L, 2L),
+    pkg = c("other", "reexporter"),
+    is_attach = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+
+  r2 <- resolve(
+    unqual = unqual2,
+    lib_data = lib2,
+    strict = FALSE,
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map
+  )
+
+  expect_identical(r2$keys, "origin::foo")
+  expect_identical(r2$pkgs, "origin")
 })
