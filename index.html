@@ -93,6 +93,7 @@
 </h1></div>
 <!-- badges: start -->
 
+<p><code>stanflow</code> is currently under active development–breaking changes may be made without warning, until a proper release.</p>
 <p><code>stanflow</code> offers an integrated, mildly opinionated access to a Stan-based <a href="https://arxiv.org/abs/2011.01808" class="external-link">Bayesian Workflow</a> (Gelman et al. 2020). Much like the famous <a href="https://github.com/tidyverse/tidyverse" class="external-link">tidyverse package</a>, <code>stanflow</code> is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling. <code>stanflow</code> draws heavy inspiration from <code>tidyverse</code>, and reuses portions of its codebase–however, <code>stanflow</code> eschews <code>tidyverse</code> packages (i.e., <code>purrr</code>, <code>dplyr</code>, etc.) for base R whenever necessary.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -108,6 +109,16 @@
 <p>Here, we load <code>stanflow</code> and decide to use <code>cmdstanr</code> as the backend for <code>brms</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://visruthsk.github.io/stanflow/">stanflow</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──</span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.15.0.9000     ✔ projpred  2.10.0     </span></span>
+<span><span class="co">#&gt; ✔ loo       2.9.0           ✔ shinystan 2.7.0      </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.6.1</span></span>
+<span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
+<span><span class="co">#&gt; • brms     2.23.0     • rstan    2.32.7</span></span>
+<span><span class="co">#&gt; • cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
+<span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
 <span><span class="fu"><a href="reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="st">"brms"</span>,</span>
 <span>  dev <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -123,16 +134,18 @@
 <span><span class="co">#&gt; ℹ Attaching cmdstanr...</span></span>
 <span><span class="co">#&gt; The C++ toolchain required for CmdStan is setup properly!</span></span>
 <span><span class="co">#&gt; ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'</span></span>
-<span><span class="co">#&gt; ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.</span></span>
+<span><span class="co">#&gt; ! Update available: v2.37.0 -&gt; v2.38.0</span></span>
+<span><span class="co">#&gt; ℹ Skipping update in non-interactive mode (set `force = TRUE` to upgrade).</span></span>
+<span><span class="co">#&gt; ✔ Setup complete. brms, cmdstanr  packages are attached; you do not need to run `library()`.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/flow_check.html">flow_check</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0         ✔ projpred  2.10.0    </span></span>
-<span><span class="co">#&gt; ✔ loo       2.8.0.9000     ✔ shinystan 2.7.0     </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1          </span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.15.0.9000     ✔ projpred  2.10.0     </span></span>
+<span><span class="co">#&gt; ✔ loo       2.9.0           ✔ shinystan 2.7.0      </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.6.1           </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
-<span><span class="co">#&gt; ✔ brms     2.22.0          • rstan    2.36.0.9000</span></span>
-<span><span class="co">#&gt; ✔ cmdstanr 0.9.0           • rstanarm 2.32.2     </span></span>
+<span><span class="co">#&gt; ✔ brms     2.23.0     • rstan    2.32.7</span></span>
+<span><span class="co">#&gt; ✔ cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
 <span><span class="co">#&gt; ✖ brms::ar()      masks stats::ar()</span></span>
 <span><span class="co">#&gt; ✖ brms::do_call() masks projpred::do_call()</span></span>
@@ -163,16 +176,16 @@
 <span>  refresh <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Start sampling</span></span>
-<span><span class="co">#&gt; Running MCMC with 4 chains, at most 20 in parallel...</span></span>
+<span><span class="co">#&gt; Running MCMC with 4 chains, at most 2 in parallel...</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chain 1 finished in 8.1 seconds.</span></span>
-<span><span class="co">#&gt; Chain 2 finished in 8.1 seconds.</span></span>
-<span><span class="co">#&gt; Chain 3 finished in 8.1 seconds.</span></span>
-<span><span class="co">#&gt; Chain 4 finished in 8.5 seconds.</span></span>
+<span><span class="co">#&gt; Chain 2 finished in 7.0 seconds.</span></span>
+<span><span class="co">#&gt; Chain 1 finished in 7.0 seconds.</span></span>
+<span><span class="co">#&gt; Chain 3 finished in 7.0 seconds.</span></span>
+<span><span class="co">#&gt; Chain 4 finished in 7.4 seconds.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; All 4 chains finished successfully.</span></span>
-<span><span class="co">#&gt; Mean chain execution time: 8.2 seconds.</span></span>
-<span><span class="co">#&gt; Total execution time: 8.6 seconds.</span></span>
+<span><span class="co">#&gt; Mean chain execution time: 7.1 seconds.</span></span>
+<span><span class="co">#&gt; Total execution time: 14.7 seconds.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Family: poisson </span></span>
 <span><span class="co">#&gt;   Links: mu = log </span></span>
@@ -210,16 +223,16 @@
 <span>  refresh <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Start sampling</span></span>
-<span><span class="co">#&gt; Running MCMC with 4 chains, at most 20 in parallel...</span></span>
+<span><span class="co">#&gt; Running MCMC with 4 chains, at most 2 in parallel...</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chain 1 finished in 10.9 seconds.</span></span>
-<span><span class="co">#&gt; Chain 4 finished in 10.9 seconds.</span></span>
-<span><span class="co">#&gt; Chain 2 finished in 11.0 seconds.</span></span>
-<span><span class="co">#&gt; Chain 3 finished in 11.5 seconds.</span></span>
+<span><span class="co">#&gt; Chain 1 finished in 11.3 seconds.</span></span>
+<span><span class="co">#&gt; Chain 2 finished in 11.5 seconds.</span></span>
+<span><span class="co">#&gt; Chain 4 finished in 13.6 seconds.</span></span>
+<span><span class="co">#&gt; Chain 3 finished in 14.8 seconds.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; All 4 chains finished successfully.</span></span>
-<span><span class="co">#&gt; Mean chain execution time: 11.1 seconds.</span></span>
-<span><span class="co">#&gt; Total execution time: 11.7 seconds.</span></span>
+<span><span class="co">#&gt; Mean chain execution time: 12.8 seconds.</span></span>
+<span><span class="co">#&gt; Total execution time: 26.3 seconds.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Family: poisson </span></span>
 <span><span class="co">#&gt;   Links: mu = log </span></span>
