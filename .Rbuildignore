@@ -10,8 +10,10 @@
 ^codecov\.yml$
 ^README\.qmd$
 ^README_cache$
+^\.git$
+^tests/testthat/faux_proj/\.knitr_cache$
+^tests/testthat/faux_proj/\.quarto_cache$
 ^vignettes/\.quarto$
 ^vignettes/*_files$
 ^\.covrignore$
 ^data-raw$
-^tests\testthat\faux_proj$

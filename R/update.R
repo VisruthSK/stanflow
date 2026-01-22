@@ -20,7 +20,7 @@ stanflow_deps <- function(
       withCallingHandlers(
         utils::available.packages(repos = stan_repos(dev)),
         warning = function(w) {
-          stop(conditionMessage(w), call. = FALSE)
+          cli::cli_abort(conditionMessage(w), call = NULL)
         }
       ),
       error = function(e) {
