@@ -360,6 +360,16 @@ test_that(".extract_code extracts Qmd chunks", {
   expect_match(out, "as_draws\\(")
 })
 
+
+test_that(".extract_code errors on unsupported extensions", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(file.path(tmp, "note.txt"), "x <- 1")
+  expect_error(
+    .extract_code(path),
+    "Unsupported file extension: txt"
+  )
+})
+
 test_that("stan_cite returns empty when no citations match", {
   tmp <- withr::local_tempdir()
   path <- write_file(
@@ -1073,6 +1083,7 @@ test_that("scan_usage errors when mixing directories and files", {
 })
 
 test_that("scan_usage scans directories with mixed inputs", {
+  skip_if_not_installed("knitr")
   tmp <- withr::local_tempdir()
   write_file(
     file.path(tmp, "script.R"),

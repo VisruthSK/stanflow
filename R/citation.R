@@ -192,6 +192,12 @@ scan_usage <- function(
     sub(".*\\.", "", x = _) |>
     tolower()
 
+  if (!ext %in% c("r", "rmd", "qmd")) {
+    cli::cli_abort(
+      "Unsupported file extension: {ext}. Use {.file .R}, {.file .Rmd}, or {.file .qmd}."
+    )
+  }
+
   if (identical(ext, "r")) {
     return(paste(readLines(file, warn = FALSE), collapse = "\n"))
   }
@@ -200,6 +206,11 @@ scan_usage <- function(
   on.exit(unlink(tmp), add = TRUE)
 
   if (identical(ext, "rmd") || identical(ext, "qmd")) {
+    if (!requireNamespace("knitr", quietly = TRUE)) {
+      cli::cli_abort(
+        "Install {.pkg knitr} to parse R Markdown ({.file .Rmd}) or Quarto ({.file .Qmd}) files."
+      )
+    }
     knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
   }
 
