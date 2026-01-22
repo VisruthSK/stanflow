@@ -3,7 +3,7 @@ test_that("scan_usage performance on faux_proj is within budget", {
     skip("Enable with options(stanflow.run_perf = TRUE).")
   }
 
-  budget <- 15000
+  budget <- 100
 
   faux_path <- testthat::test_path("faux_proj")
 
@@ -15,6 +15,7 @@ test_that("scan_usage performance on faux_proj is within budget", {
 
   median_ms <- stats::median(timings)
   message(sprintf("scan_usage median: %.1f ms", median_ms))
+  message(sprintf("scan_usage IQR: %.1f ms", IQR(timings)))
   expect_true(is.finite(median_ms))
   if (is.na(median_ms) || median_ms >= budget) {
     testthat::fail(
