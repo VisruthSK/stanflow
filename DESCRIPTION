@@ -22,7 +22,6 @@ Imports:
     bayesplot (>= 1.15.0),
     cli (>= 3.6.5),
     fastmatch,
-    knitr,
     loo (>= 2.8.0),
     posterior (>= 1.6.0),
     projpred (>= 2.10.0),
@@ -30,6 +29,7 @@ Imports:
 Suggests:
     brms,
     cmdstanr,
+    knitr,
     quarto,
     rstan,
     rstanarm,
