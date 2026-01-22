@@ -1,5 +1,6 @@
 .stan_citation_pkgs <- new.env(parent = emptyenv())
 .stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
+.stan_citation_builders <- new.env(parent = emptyenv())
 .meta_year <- function(meta) sub("-.*", "", meta[["Date"]])
 .meta_note <- function(meta) sprintf("R package version %s", meta[["Version"]])
 .meta_authors <- function(meta) {
@@ -9,43 +10,68 @@
     Filter(\(person) any(person$role %in% c("aut", "cre")), x = _)
 }
 
+# Helper to create lazy-cached citation bindings.
+.lazy_cite <- function(pkg, builder, env = .stan_citation_pkgs) {
+  force(pkg)
+  force(builder)
+  force(env)
+  assign(pkg, builder, envir = .stan_citation_builders)
+  makeActiveBinding(
+    pkg,
+    local({
+      cache_set <- FALSE
+      cache <- NULL
+      function() {
+        if (!cache_set) {
+          cache <<- builder()
+          cache_set <<- TRUE
+        }
+        cache
+      }
+    }),
+    env
+  )
+}
+
+
 # TODO: add citations for R and for stanflow.
 # TODO: add function citations for specific functions (use pkg::function as key)
 # TODO: Move paper citations to sysdata since they don't rely on packageDescription?
 
-# TODO: make sure these are calculated at runtime, not install time
-.stan_citation_pkgs$bayesplot <- packageDescription("bayesplot") |>
-  (\(meta) {
-    c(
-      bibentry(
-        bibtype = "Misc",
-        key = "bayesplot",
-        title = "bayesplot: Plotting for Bayesian Models",
-        author = .meta_authors(meta),
-        year = .meta_year(meta),
-        note = .meta_note(meta),
-        url = "https://mc-stan.org/bayesplot/"
-      ),
-      bibentry(
-        bibtype = "Article",
-        key = "bayesplot-2019",
-        title = "Visualization in Bayesian workflow",
-        author = c(
-          person("Jonah", "Gabry"),
-          person("Daniel", "Simpson"),
-          person("Aki", "Vehtari"),
-          person("Michael", "Betancourt"),
-          person("Andrew", "Gelman")
+.lazy_cite("bayesplot", function() {
+  packageDescription("bayesplot") |>
+    (\(meta) {
+      c(
+        bibentry(
+          bibtype = "Misc",
+          key = "bayesplot",
+          title = "bayesplot: Plotting for Bayesian Models",
+          author = .meta_authors(meta),
+          year = .meta_year(meta),
+          note = .meta_note(meta),
+          url = "https://mc-stan.org/bayesplot/"
         ),
-        year = "2019",
-        journal = "J. R. Stat. Soc. A",
-        volume = 182,
-        issue = 2,
-        pages = "389-402",
-        doi = "10.1111/rssa.12378"
+        bibentry(
+          bibtype = "Article",
+          key = "bayesplot-2019",
+          title = "Visualization in Bayesian workflow",
+          author = c(
+            person("Jonah", "Gabry"),
+            person("Daniel", "Simpson"),
+            person("Aki", "Vehtari"),
+            person("Michael", "Betancourt"),
+            person("Andrew", "Gelman")
+          ),
+          year = "2019",
+          journal = "J. R. Stat. Soc. A",
+          volume = 182,
+          issue = 2,
+          pages = "389-402",
+          doi = "10.1111/rssa.12378"
+        )
       )
-    )
-  })()
+    })()
+})
 
 .stan_citation_pkgs$brms <- c(
   bibentry(
@@ -104,8 +130,11 @@
   )
 )
 
-if (requireNamespace("cmdstanr", quietly = TRUE)) {
-  .stan_citation_pkgs$cmdstanr <- packageDescription("cmdstanr") |>
+.lazy_cite("cmdstanr", function() {
+  if (!requireNamespace("cmdstanr", quietly = TRUE)) {
+    return(NULL)
+  }
+  packageDescription("cmdstanr") |>
     (\(meta) {
       bibentry(
         bibtype = "Manual",
@@ -120,68 +149,77 @@ if (requireNamespace("cmdstanr", quietly = TRUE)) {
         url = "https://mc-stan.org/cmdstanr/"
       )
     })()
-}
+})
 
-.stan_citation_pkgs$loo <- packageDescription("loo") |>
-  (\(meta) {
-    bibentry(
-      bibtype = "Misc",
-      key = "loo",
-      title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
-      author = .meta_authors(meta),
-      note = .meta_note(meta),
-      year = .meta_year(meta),
-      url = "https://mc-stan.org/loo/"
-    )
-  })()
-
-.stan_citation_pkgs$posterior <- packageDescription("posterior") |>
-  (\(meta) {
-    c(
+.lazy_cite("loo", function() {
+  packageDescription("loo") |>
+    (\(meta) {
       bibentry(
         bibtype = "Misc",
-        key = "posterior",
-        title = "posterior: Tools for Working with Posterior Distributions",
+        key = "loo",
+        title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
+        author = .meta_authors(meta),
+        note = .meta_note(meta),
+        year = .meta_year(meta),
+        url = "https://mc-stan.org/loo/"
+      )
+    })()
+})
+
+.lazy_cite("posterior", function() {
+  packageDescription("posterior") |>
+    (\(meta) {
+      c(
+        bibentry(
+          bibtype = "Misc",
+          key = "posterior",
+          title = "posterior: Tools for Working with Posterior Distributions",
+          author = .meta_authors(meta),
+          year = .meta_year(meta),
+          note = .meta_note(meta),
+          url = "https://mc-stan.org/posterior/"
+        ),
+        bibentry(
+          bibtype = "Article",
+          key = "rhat-2021",
+          title = "Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)",
+          author = c(
+            person("Aki", "Vehtari"),
+            person("Andrew", "Gelman"),
+            person("Daniel", "Simpson"),
+            person("Bob", "Carpenter"),
+            person("Paul-Christian", "B\\\"urkner")
+          ),
+          journal = "Bayesian Analysis",
+          year = "2021",
+          volume = "16",
+          number = "2",
+          pages = "667-718"
+        )
+      )
+    })()
+})
+
+.lazy_cite("projpred", function() {
+  packageDescription("projpred") |>
+    (\(meta) {
+      bibentry(
+        bibtype = "Misc",
+        key = "projpred",
+        title = "{{projpred}}: {{Projection}} Predictive Feature Selection",
         author = .meta_authors(meta),
         year = .meta_year(meta),
         note = .meta_note(meta),
-        url = "https://mc-stan.org/posterior/"
-      ),
-      bibentry(
-        bibtype = "Article",
-        key = "rhat-2021",
-        title = "Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)",
-        author = c(
-          person("Aki", "Vehtari"),
-          person("Andrew", "Gelman"),
-          person("Daniel", "Simpson"),
-          person("Bob", "Carpenter"),
-          person("Paul-Christian", "B\\\"urkner")
-        ),
-        journal = "Bayesian Analysis",
-        year = "2021",
-        volume = "16",
-        number = "2",
-        pages = "667-718"
+        url = "https://mc-stan.org/projpred/"
       )
-    )
-  })()
+    })()
+})
 
-.stan_citation_pkgs$projpred <- packageDescription("projpred") |>
-  (\(meta) {
-    bibentry(
-      bibtype = "Misc",
-      key = "projpred",
-      title = "{{projpred}}: {{Projection}} Predictive Feature Selection",
-      author = .meta_authors(meta),
-      year = .meta_year(meta),
-      note = .meta_note(meta),
-      url = "https://mc-stan.org/projpred/"
-    )
-  })()
-
-if (requireNamespace("rstan", quietly = TRUE)) {
-  .stan_citation_pkgs$rstan <- packageDescription("rstan") |>
+.lazy_cite("rstan", function() {
+  if (!requireNamespace("rstan", quietly = TRUE)) {
+    return(NULL)
+  }
+  packageDescription("rstan") |>
     (\(meta) {
       bibentry(
         bibtype = "Misc",
@@ -192,10 +230,13 @@ if (requireNamespace("rstan", quietly = TRUE)) {
         url = "https://mc-stan.org/"
       )
     })()
-}
+})
 
-if (requireNamespace("rstanarm", quietly = TRUE)) {
-  .stan_citation_pkgs$rstanarm <- packageDescription("rstanarm") |>
+.lazy_cite("rstanarm", function() {
+  if (!requireNamespace("rstanarm", quietly = TRUE)) {
+    return(NULL)
+  }
+  packageDescription("rstanarm") |>
     (\(meta) {
       bibentry(
         bibtype = "Misc",
@@ -212,17 +253,19 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
         url = "https://mc-stan.org/rstanarm/"
       )
     })()
-}
+})
 
-.stan_citation_pkgs$shinystan <- packageDescription("shinystan") |>
-  (\(meta) {
-    bibentry(
-      bibtype = "Manual",
-      key = "shinystan",
-      title = "shinystan: Interactive Visual and Numerical Diagnostics and Posterior Analysis for Bayesian Models",
-      author = .meta_authors(meta),
-      year = .meta_year(meta),
-      note = .meta_note(meta),
-      url = "https://mc-stan.org/shinystan/"
-    )
-  })()
+.lazy_cite("shinystan", function() {
+  packageDescription("shinystan") |>
+    (\(meta) {
+      bibentry(
+        bibtype = "Manual",
+        key = "shinystan",
+        title = "shinystan: Interactive Visual and Numerical Diagnostics and Posterior Analysis for Bayesian Models",
+        author = .meta_authors(meta),
+        year = .meta_year(meta),
+        note = .meta_note(meta),
+        url = "https://mc-stan.org/shinystan/"
+      )
+    })()
+})

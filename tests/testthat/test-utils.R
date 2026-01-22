@@ -4,12 +4,12 @@ test_that("stan_repos respects dev flag", {
 
   expect_equal(
     stan_repos(dev = FALSE),
-    c("https://community.r-multiverse.org", custom_repos)
+    c(Multiverse = "https://community.r-multiverse.org", custom_repos)
   )
 
   expect_equal(
     stan_repos(dev = TRUE),
-    c("https://stan-dev.r-universe.dev", custom_repos)
+    c(StanRUniverse = "https://stan-dev.r-universe.dev", custom_repos)
   )
 })
 
