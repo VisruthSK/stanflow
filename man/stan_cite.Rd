@@ -7,7 +7,7 @@
 stan_cite(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
-  strict = FALSE,
+  strict = TRUE,
   skip_dirs = .scan_skip_dirs,
   format = c("bibtex", "bibentry")
 )
@@ -34,5 +34,7 @@ A BibTeX character vector or a bibentry object.
 }
 \description{
 Unqualified function calls are only attributed when a Stan package is
-attached via \code{library()} or \code{require()} in the same file.
+attached via \code{library()} or \code{require()} in the same file. Known reexports
+are remapped to their origin packages; missing mappings fall back to the
+resolved package.
 }

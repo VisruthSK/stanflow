@@ -14,3 +14,4 @@
 ^vignettes/*_files$
 ^\.covrignore$
 ^data-raw$
+^tests\testthat\faux_proj$

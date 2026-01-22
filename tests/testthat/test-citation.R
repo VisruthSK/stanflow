@@ -1520,6 +1520,32 @@ test_that(".resolve_candidates applies origin_map for resolved ambiguity", {
   expect_equal(out$keys, "pkgA::foo")
 })
 
+test_that(".resolve_candidates fills missing origin_map entries positionally", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = c("fa", "fb", "fc"), idx = c(1L, 2L, 3L)),
+    lib_data = data.frame(
+      pos = c(1L, 2L, 3L),
+      pkg = c("pkgA", "pkgB", "pkgC"),
+      is_attach = c(TRUE, TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB", "pkgC"),
+    export_index = list(
+      fa = "pkgA",
+      fb = "pkgB",
+      fc = "pkgC"
+    ),
+    origin_map = c("pkgA::fa" = "pkgA", "pkgC::fc" = "pkgC")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, c("pkgA", "pkgB", "pkgC"))
+  expect_identical(out$keys, c("pkgA::fa", "pkgB::fb", "pkgC::fc"))
+})
+
 test_that(".resolve_candidates keeps ambiguity when no attach position precedes call", {
   resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
 
@@ -1584,6 +1610,28 @@ test_that(".resolve_candidates clears ambiguity when one call is resolved", {
   expect_equal(out$ambiguous, character())
   expect_equal(out$pkgs, c("pkgA", "pkgA"))
   expect_equal(out$keys, c("pkgA::foo", "pkgA::foo"))
+})
+
+test_that(".resolve_candidates falls back when origin_map points to disallowed package", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 2L),
+    lib_data = data.frame(
+      pos = c(1L, 2L),
+      pkg = c("pkgA", "pkgB"),
+      is_attach = c(TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgB::foo" = "pkgX")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, "pkgB")
+  expect_identical(out$keys, "pkgB::foo")
 })
 
 test_that("scan_skip_dirs returns configured defaults", {
