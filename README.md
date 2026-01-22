@@ -7,6 +7,9 @@
 [![pkgdown](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
+`stanflow` is currently under active development–breaking changes may be
+made without warning, until a proper release.
+
 `stanflow` offers an integrated, mildly opinionated access to a
 Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman
 et al. 2020). Much like the famous [tidyverse
@@ -34,6 +37,16 @@ Here, we load `stanflow` and decide to use `cmdstanr` as the backend for
 
 ``` r
 library(stanflow)
+#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ✔ bayesplot 1.15.0.9000     ✔ projpred  2.10.0     
+#> ✔ loo       2.9.0           ✔ shinystan 2.7.0      
+#> ✔ posterior 1.6.1
+#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
+#> • brms     2.23.0     • rstan    2.32.7
+#> • cmdstanr 0.9.0      • rstanarm 2.32.2
+#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
+#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 setup_interface(
   interface = "brms",
   dev = FALSE,
@@ -49,16 +62,18 @@ setup_interface(
 #> ℹ Attaching cmdstanr...
 #> The C++ toolchain required for CmdStan is setup properly!
 #> ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'
-#> ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.
+#> ! Update available: v2.37.0 -> v2.38.0
+#> ℹ Skipping update in non-interactive mode (set `force = TRUE` to upgrade).
+#> ✔ Setup complete. brms, cmdstanr  packages are attached; you do not need to run `library()`.
 set.seed(0)
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
-#> ✔ bayesplot 1.15.0         ✔ projpred  2.10.0    
-#> ✔ loo       2.8.0.9000     ✔ shinystan 2.7.0     
-#> ✔ posterior 1.6.1          
+#> ✔ bayesplot 1.15.0.9000     ✔ projpred  2.10.0     
+#> ✔ loo       2.9.0           ✔ shinystan 2.7.0      
+#> ✔ posterior 1.6.1           
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
-#> ✔ brms     2.22.0          • rstan    2.36.0.9000
-#> ✔ cmdstanr 0.9.0           • rstanarm 2.32.2     
+#> ✔ brms     2.23.0     • rstan    2.32.7
+#> ✔ cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
 #> ✖ brms::ar()      masks stats::ar()
 #> ✖ brms::do_call() masks projpred::do_call()
@@ -99,16 +114,16 @@ fit1 <- brm(
   refresh = 0
 )
 #> Start sampling
-#> Running MCMC with 4 chains, at most 20 in parallel...
+#> Running MCMC with 4 chains, at most 2 in parallel...
 #> 
-#> Chain 1 finished in 8.1 seconds.
-#> Chain 2 finished in 8.1 seconds.
-#> Chain 3 finished in 8.1 seconds.
-#> Chain 4 finished in 8.5 seconds.
+#> Chain 2 finished in 7.0 seconds.
+#> Chain 1 finished in 7.0 seconds.
+#> Chain 3 finished in 7.0 seconds.
+#> Chain 4 finished in 7.4 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 8.2 seconds.
-#> Total execution time: 8.6 seconds.
+#> Mean chain execution time: 7.1 seconds.
+#> Total execution time: 14.7 seconds.
 summary(fit1)
 #>  Family: poisson 
 #>   Links: mu = log 
@@ -150,16 +165,16 @@ fit2 <- brm(
   refresh = 0
 )
 #> Start sampling
-#> Running MCMC with 4 chains, at most 20 in parallel...
+#> Running MCMC with 4 chains, at most 2 in parallel...
 #> 
-#> Chain 1 finished in 10.9 seconds.
-#> Chain 4 finished in 10.9 seconds.
-#> Chain 2 finished in 11.0 seconds.
-#> Chain 3 finished in 11.5 seconds.
+#> Chain 1 finished in 11.3 seconds.
+#> Chain 2 finished in 11.5 seconds.
+#> Chain 4 finished in 13.6 seconds.
+#> Chain 3 finished in 14.8 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 11.1 seconds.
-#> Total execution time: 11.7 seconds.
+#> Mean chain execution time: 12.8 seconds.
+#> Total execution time: 26.3 seconds.
 summary(fit2)
 #>  Family: poisson 
 #>   Links: mu = log 

@@ -15,6 +15,8 @@ cache: true
 [![pkgdown](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
+`stanflow` is currently under active development--breaking changes may be made without warning, until a proper release.
+
 `stanflow` offers an integrated, mildly opinionated access to a Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [tidyverse package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration from `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R whenever necessary.
 
 ## Installation
