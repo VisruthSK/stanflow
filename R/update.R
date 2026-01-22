@@ -19,16 +19,13 @@ stanflow_deps <- function(
     pkgs <- tryCatch(
       withCallingHandlers(
         utils::available.packages(repos = stan_repos(dev)),
-        warning = function(w) {
-          cli::cli_abort(conditionMessage(w), call = NULL)
-        }
+        warning = \(w) stop()
       ),
       error = function(e) {
         cli::cli_abort(
           c(
             "Unable to reach repositories to check for updates.",
-            "x" = "Package metadata could not be downloaded.",
-            "i" = "Set {.code check_updates = FALSE} to skip update checks."
+            "x" = "Package metadata could not be downloaded."
           )
         )
       }
@@ -216,6 +213,8 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
       }
     }
   )
+
+  .reset_citation_cache(behind$package)
 
   if (length(pkgs_to_report) > 0) {
     pkgs_to_report <- unique(pkgs_to_report)

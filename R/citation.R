@@ -235,14 +235,14 @@ scan_usage <- function(
   }
 
   acc <- new.env(parent = emptyenv())
-  acc$pos <- 0L
+  acc$visit_idx <- 0L
   acc$lib_pkgs <- character()
-  acc$lib_pos <- integer()
+  acc$lib_visit_idx <- integer()
   acc$lib_is_attach <- logical()
   acc$ns_pkgs <- character()
   acc$ns_keys <- character()
   acc$unqual_funs <- character()
-  acc$unqual_pos <- integer()
+  acc$unqual_visit_idx <- integer()
 
   lib_funs <- c("library", "require", "requireNamespace")
   ns_ops <- c("::", ":::")
@@ -262,7 +262,7 @@ scan_usage <- function(
 
   lib_data <- if (length(acc$lib_pkgs)) {
     data.frame(
-      pos = acc$lib_pos,
+      visit_idx = acc$lib_visit_idx,
       pkg = acc$lib_pkgs,
       is_attach = acc$lib_is_attach,
       stringsAsFactors = FALSE
@@ -272,7 +272,7 @@ scan_usage <- function(
   }
 
   resolved <- .resolve_candidates(
-    list(funs = acc$unqual_funs, idx = acc$unqual_pos),
+    list(funs = acc$unqual_funs, idx = acc$unqual_visit_idx),
     lib_data,
     strict,
     allowed_packages,
@@ -301,7 +301,7 @@ scan_usage <- function(
   }
 
   if (is.call(x)) {
-    acc$pos <- acc$pos + 1L
+    acc$visit_idx <- acc$visit_idx + 1L
 
     head <- x[[1L]]
     head_name <- if (is.symbol(head)) as.character(head) else NULL
@@ -331,7 +331,7 @@ scan_usage <- function(
         pkg <- .ast_get_lib_pkg(x)
         if (!is.null(pkg) && !is.na(fastmatch::fmatch(pkg, allowed_packages))) {
           acc$lib_pkgs <- c(acc$lib_pkgs, pkg)
-          acc$lib_pos <- c(acc$lib_pos, acc$pos)
+          acc$lib_visit_idx <- c(acc$lib_visit_idx, acc$visit_idx)
           acc$lib_is_attach <- c(
             acc$lib_is_attach,
             !identical(head_name, "requireNamespace")
@@ -341,7 +341,7 @@ scan_usage <- function(
         is.na(fastmatch::fmatch(head_name, ignore_unqualified_functions))
       ) {
         acc$unqual_funs <- c(acc$unqual_funs, head_name)
-        acc$unqual_pos <- c(acc$unqual_pos, acc$pos)
+        acc$unqual_visit_idx <- c(acc$unqual_visit_idx, acc$visit_idx)
       }
     }
 
@@ -506,10 +506,10 @@ scan_usage <- function(
   }
 
   attached_pkgs <- character()
-  attached_pos <- integer()
+  attached_visit_idx <- integer()
   if (!is.null(lib_data) && any(lib_data$is_attach)) {
     attached_pkgs <- lib_data$pkg[lib_data$is_attach]
-    attached_pos <- lib_data$pos[lib_data$is_attach]
+    attached_visit_idx <- lib_data$visit_idx[lib_data$is_attach]
   }
   if (!length(attached_pkgs)) {
     return(empty)
@@ -559,7 +559,7 @@ scan_usage <- function(
     ambiguous <- sort(unique(ambig_funs))
 
     if (!strict) {
-      intervals <- findInterval(ambig_idx, attached_pos)
+      intervals <- findInterval(ambig_idx, attached_visit_idx)
       resolved <- logical(length(ambig_idx))
 
       for (i in seq_along(ambig_idx)) {

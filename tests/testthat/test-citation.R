@@ -1493,7 +1493,7 @@ test_that(".resolve_candidates labels package ambiguity in non-strict mode", {
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 2L),
     lib_data = data.frame(
-      pos = c(1L, 2L),
+      visit_idx = c(1L, 2L),
       pkg = c("pkgA", "pkgB"),
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
@@ -1515,7 +1515,7 @@ test_that(".resolve_candidates applies origin_map for resolved ambiguity", {
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 3L),
     lib_data = data.frame(
-      pos = c(1L, 2L),
+      visit_idx = c(1L, 2L),
       pkg = c("pkgA", "pkgB"),
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
@@ -1537,7 +1537,7 @@ test_that(".resolve_candidates fills missing origin_map entries positionally", {
   out <- resolve_candidates(
     unqual = list(funs = c("fa", "fb", "fc"), idx = c(1L, 2L, 3L)),
     lib_data = data.frame(
-      pos = c(1L, 2L, 3L),
+      visit_idx = c(1L, 2L, 3L),
       pkg = c("pkgA", "pkgB", "pkgC"),
       is_attach = c(TRUE, TRUE, TRUE),
       stringsAsFactors = FALSE
@@ -1563,7 +1563,7 @@ test_that(".resolve_candidates keeps ambiguity when no attach position precedes 
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 1L),
     lib_data = data.frame(
-      pos = c(5L, 10L),
+      visit_idx = c(5L, 10L),
       pkg = c("pkgA", "pkgB"),
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
@@ -1585,7 +1585,7 @@ test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 7L),
     lib_data = data.frame(
-      pos = c(5L, 10L, 20L),
+      visit_idx = c(5L, 10L, 20L),
       pkg = c("pkgA", "pkgB", "pkgC"),
       is_attach = c(TRUE, TRUE, TRUE),
       stringsAsFactors = FALSE
@@ -1607,7 +1607,7 @@ test_that(".resolve_candidates clears ambiguity when one call is resolved", {
   out <- resolve_candidates(
     unqual = list(funs = c("foo", "foo"), idx = c(1L, 3L)),
     lib_data = data.frame(
-      pos = c(2L, 4L),
+      visit_idx = c(2L, 4L),
       pkg = c("pkgA", "pkgB"),
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
@@ -1629,7 +1629,7 @@ test_that(".resolve_candidates falls back when origin_map points to disallowed p
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 2L),
     lib_data = data.frame(
-      pos = c(1L, 2L),
+      visit_idx = c(1L, 2L),
       pkg = c("pkgA", "pkgB"),
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
@@ -1667,7 +1667,7 @@ test_that("origin_map is applied even when an ambiguous call is position-resolve
 
   unqual1 <- list(funs = "foo", idx = 2L)
   lib1 <- data.frame(
-    pos = 1L,
+    visit_idx = 1L,
     pkg = "reexporter",
     is_attach = TRUE,
     stringsAsFactors = FALSE
@@ -1687,7 +1687,7 @@ test_that("origin_map is applied even when an ambiguous call is position-resolve
 
   unqual2 <- list(funs = "foo", idx = 3L)
   lib2 <- data.frame(
-    pos = c(1L, 2L),
+    visit_idx = c(1L, 2L),
     pkg = c("other", "reexporter"),
     is_attach = c(TRUE, TRUE),
     stringsAsFactors = FALSE

@@ -34,9 +34,9 @@ same_library <- function(pkg) {
 #' @export
 stan_repos <- function(dev = FALSE) {
   if (dev) {
-    c("https://stan-dev.r-universe.dev", getOption("repos"))
+    c(StanRUniverse = "https://stan-dev.r-universe.dev", getOption("repos"))
   } else {
-    c("https://community.r-multiverse.org", getOption("repos"))
+    c(Multiverse = "https://community.r-multiverse.org", getOption("repos"))
   }
 }
 
@@ -72,4 +72,27 @@ local_cli_quiet <- function(quiet, env = parent.frame()) {
   eval(call("on.exit", restore_expr, add = TRUE), envir = env)
 
   invisible(NULL)
+}
+
+.reset_citation_cache <- function(pkgs = NULL, env = .stan_citation_pkgs) {
+  force(env)
+  if (is.null(pkgs)) {
+    pkgs <- ls(.stan_citation_builders, all.names = TRUE)
+  }
+  if (!length(pkgs)) {
+    return(invisible(FALSE))
+  }
+  pkgs <- intersect(pkgs, ls(.stan_citation_builders, all.names = TRUE))
+  if (!length(pkgs)) {
+    return(invisible(FALSE))
+  }
+  for (pkg in pkgs) {
+    if (exists(pkg, envir = env, inherits = FALSE)) {
+      rm(list = pkg, envir = env)
+    }
+    pkg |>
+      get(envir = .stan_citation_builders, inherits = FALSE) |>
+      .lazy_cite(pkg, builder = _, env = env)
+  }
+  invisible(TRUE)
 }
