@@ -34,7 +34,7 @@ stan_cite <- function(
     export_index = .stan_export_index,
     origin_map = .stan_origin_map
   ) |>
-    with(expr = c(packages, functions, "stan", "stanflow")) |>
+    with(expr = c(packages, functions, "stan", "stanflow", "R")) |>
     unique() |>
     mget(
       envir = .stan_citation_funs,
