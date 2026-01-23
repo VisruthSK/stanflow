@@ -16,6 +16,24 @@ BDA <- bibentry(
   edition = "3"
 )
 
+gabry2019_vis <- bibentry(
+  bibtype = "Article",
+  key = "gabry-2019-vis",
+  title = "Visualization in Bayesian workflow",
+  author = c(
+    person("Jonah", "Gabry"),
+    person("Daniel", "Simpson"),
+    person("Aki", "Vehtari"),
+    person("Michael", "Betancourt"),
+    person("Andrew", "Gelman")
+  ),
+  journal = "J. R. Stat. Soc. A",
+  year = "2019",
+  volume = "182",
+  pages = "389--402",
+  doi = "10.1111/rssa.12378"
+)
+
 kaplan <- bibentry(
   bibtype = "Article",
   key = "kaplan",
@@ -312,6 +330,229 @@ rstan_2017 <- bibentry(
   url = "https://mc-stan.org/"
 )
 
+gelman_hill_2007 <- bibentry(
+  bibtype = "Book",
+  key = "gelman-hill-2007",
+  title = "Data Analysis Using Regression and Multilevel/Hierarchical Models",
+  author = c(person("Andrew", "Gelman"), person("Jennifer", "Hill")),
+  year = "2007",
+  publisher = "Cambridge University Press",
+  address = "Cambridge, UK"
+)
+
+gelman_carlin_2014 <- bibentry(
+  bibtype = "Article",
+  key = "gelman-carlin-2014",
+  title = "Beyond power calculations: assessing Type S (sign) and Type M (magnitude) errors",
+  author = c(person("Andrew", "Gelman"), person("John", "Carlin")),
+  journal = "Perspectives on Psychological Science",
+  year = "2014",
+  volume = "9",
+  number = "6",
+  pages = "641--651"
+)
+
+morey2016_ci <- bibentry(
+  bibtype = "Article",
+  key = "morey-2016-ci",
+  title = "The fallacy of placing confidence in confidence intervals",
+  author = c(
+    person("Richard", "Morey"),
+    person("Rink", "Hoekstra"),
+    person("Jeff", "Rouder"),
+    person("Michael", "Lee"),
+    person("Eric-Jan", "Wagenmakers")
+  ),
+  journal = "Psychonomic Bulletin & Review",
+  year = "2016",
+  volume = "23",
+  number = "1",
+  pages = "103--123"
+)
+
+muth2018 <- bibentry(
+  bibtype = "Article",
+  key = "muth-2018-rstanarm-shinystan",
+  title = "User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinystan",
+  author = c(
+    person("Carolin", "Muth"),
+    person("Zita", "Oravecz"),
+    person("Jonah", "Gabry")
+  ),
+  journal = "The Quantitative Methods for Psychology",
+  year = "2018",
+  volume = "14",
+  number = "2",
+  pages = "99--119",
+  url = "https://www.tqmp.org/RegularArticles/vol14-2/p099/p099.pdf"
+)
+
+piironen2017_horseshoe <- bibentry(
+  bibtype = "Misc",
+  key = "piironen-2017-horseshoe",
+  title = "Sparsity information and regularization in the horseshoe and other shrinkage priors",
+  author = c(person("Juho", "Piironen"), person("Aki", "Vehtari")),
+  year = "2017",
+  note = "arXiv preprint: https://arxiv.org/abs/1707.01694"
+)
+
+gelman2019_bayes_r2 <- bibentry(
+  bibtype = "Article",
+  key = "gelman-2019-bayes-r2",
+  title = "R-squared for Bayesian regression models",
+  author = c(
+    person("Andrew", "Gelman"),
+    person("Ben", "Goodrich"),
+    person("Jonah", "Gabry"),
+    person("Aki", "Vehtari")
+  ),
+  journal = "The American Statistician",
+  year = "2019",
+  doi = "10.1080/00031305.2018.1549100"
+)
+
+rizopoulos2011 <- bibentry(
+  bibtype = "Article",
+  key = "rizopoulos-2011",
+  title = "Dynamic predictions and prospective accuracy in joint models for longitudinal and time-to-event data",
+  author = person("Dimitris", "Rizopoulos"),
+  journal = "Biometrics",
+  year = "2011",
+  volume = "67",
+  pages = "819--829"
+)
+
+cook2006 <- bibentry(
+  bibtype = "Article",
+  key = "cook-2006",
+  title = "Validation of software for Bayesian models using posterior quantiles",
+  author = c(person("S.", "Cook"), person("Andrew", "Gelman"), person("Donald", "Rubin")),
+  journal = "Journal of Computational and Graphical Statistics",
+  year = "2006",
+  volume = "15",
+  number = "3",
+  pages = "675--692"
+)
+
+ferrari2004 <- bibentry(
+  bibtype = "Article",
+  key = "ferrari-2004-betareg",
+  title = "Beta regression for modeling rates and proportions",
+  author = c(person("Silvia", "Ferrari"), person("Francisco", "Cribari-Neto")),
+  journal = "Journal of Applied Statistics",
+  year = "2004",
+  volume = "31",
+  number = "7",
+  pages = "799--815"
+)
+
+crainiceanu2005 <- bibentry(
+  bibtype = "Article",
+  key = "crainiceanu-2005",
+  title = "Bayesian analysis for penalized spline regression using WinBUGS",
+  author = c(
+    person("Ciprian", "Crainiceanu"),
+    person("David", "Ruppert"),
+    person("Matthew", "Wand")
+  ),
+  journal = "Journal of Statistical Software",
+  year = "2005",
+  volume = "14",
+  number = "14",
+  pages = "1--22",
+  url = "https://www.jstatsoft.org/article/view/v014i14"
+)
+
+lewandowski2009 <- bibentry(
+  bibtype = "Article",
+  key = "lewandowski-2009",
+  title = "Generating random correlation matrices based on vines and extended onion method",
+  author = c(
+    person("Daniel", "Lewandowski"),
+    person("Dorota", "Kurowicka"),
+    person("Harry", "Joe")
+  ),
+  journal = "Journal of Multivariate Analysis",
+  year = "2009",
+  volume = "100",
+  number = "9",
+  pages = "1989--2001"
+)
+
+nagler1994 <- bibentry(
+  bibtype = "Article",
+  key = "nagler-1994",
+  title = "Scobit: An Alternative Estimator to Logit and Probit",
+  author = person("Jonathan", "Nagler"),
+  journal = "American Journal of Political Science",
+  year = "1994",
+  volume = "38",
+  pages = "230--255"
+)
+
+gelman2008_prior <- bibentry(
+  bibtype = "Article",
+  key = "gelman-2008-prior",
+  title = "A weakly informative default prior distribution for logistic and other regression models",
+  author = c(
+    person("Andrew", "Gelman"),
+    person("Aleks", "Jakulin"),
+    person("Maria", "Pittau"),
+    person("Yu-Sung", "Su")
+  ),
+  journal = "Annals of Applied Statistics",
+  year = "2008",
+  volume = "2",
+  number = "4",
+  pages = "1360--1383"
+)
+
+gelman_hill_2006 <- bibentry(
+  bibtype = "Book",
+  key = "gelman-hill-2006",
+  title = "Data Analysis Using Regression and Multilevel/Hierarchical Models",
+  author = c(person("Andrew", "Gelman"), person("Jennifer", "Hill")),
+  year = "2006",
+  publisher = "Cambridge University Press",
+  address = "Cambridge, UK",
+  doi = "10.1017/CBO9780511790942"
+)
+
+piironen2020_projpred <- bibentry(
+  bibtype = "Article",
+  key = "piironen-2020-projpred",
+  title = "Projective Inference in High-Dimensional Problems: Prediction and Feature Selection",
+  author = c(
+    person("Juho", "Piironen"),
+    person("Markus", "Paasiniemi"),
+    person("Aki", "Vehtari")
+  ),
+  journal = "Electronic Journal of Statistics",
+  year = "2020",
+  volume = "14",
+  number = "1",
+  pages = "2155--2197",
+  doi = "10.1214/20-EJS1711"
+)
+
+mclatchie2025_projpred <- bibentry(
+  bibtype = "Article",
+  key = "mclatchie-2025-projpred",
+  title = "Advances in Projection Predictive Inference",
+  author = c(
+    person("Yann", "McLatchie"),
+    person("Solvi", "Rognvaldsson"),
+    person("Frank", "Weber"),
+    person("Aki", "Vehtari")
+  ),
+  journal = "Statistical Science",
+  year = "2025",
+  volume = "40",
+  number = "1",
+  pages = "128--147",
+  doi = "10.1214/24-STS949"
+)
+
 yao2018_vi <- bibentry(
   bibtype = "InProceedings",
   key = "yao-2018-vi",
@@ -327,4 +568,101 @@ yao2018_vi <- bibentry(
   volume = "80",
   pages = "5581--5590",
   note = "PMLR"
+)
+
+tastle2007_dissent <- bibentry(
+  bibtype = "Article",
+  key = "tastle-2007-dissent",
+  title = "Consensus and dissention: A measure of ordinal dispersion",
+  author = c(person("William", "Tastle"), person("Mark", "Wierman")),
+  journal = "International Journal of Approximate Reasoning",
+  year = "2007",
+  volume = "45",
+  number = "3",
+  pages = "531--545",
+  doi = "10.1016/j.ijar.2006.06.024"
+)
+
+wilcox1967_variation <- bibentry(
+  bibtype = "TechReport",
+  key = "wilcox-1967-variation",
+  title = "Indices of Qualitative Variation",
+  author = person("Allen", "Wilcox"),
+  year = "1967",
+  institution = "Oak Ridge National Laboratory",
+  number = "ORNL-TM-1919",
+  address = "Oak Ridge, TN"
+)
+
+vehtari2021_ess_comparison <- bibentry(
+  bibtype = "Misc",
+  key = "vehtari-2021-ess-comparison",
+  title = "Comparison of MCMC effective sample size estimators",
+  author = person("Aki", "Vehtari"),
+  year = "2021",
+  url = "https://avehtari.github.io/rhat_ess/ess_comparison.html"
+)
+
+kenney1951_stats <- bibentry(
+  bibtype = "Book",
+  key = "kenney-1951-statistics",
+  title = "Mathematics of Statistics",
+  author = c(person("J. F.", "Kenney"), person("E. S.", "Keeping")),
+  year = "1951",
+  volume = "2",
+  publisher = "D. Van Nostrand Company",
+  address = "New York"
+)
+
+kitagawa1996_mc_filter <- bibentry(
+  bibtype = "Article",
+  key = "kitagawa-1996-mc-filter",
+  title = "Monte Carlo Filter and Smoother for Non-Gaussian Nonlinear State Space Models",
+  author = person("G.", "Kitagawa"),
+  journal = "Journal of Computational and Graphical Statistics",
+  year = "1996",
+  volume = "5",
+  number = "1",
+  pages = "1--25"
+)
+
+margossian2023_nested_rhat <- bibentry(
+  bibtype = "Misc",
+  key = "margossian-2023-nested-rhat",
+  title = "Nested R-hat: Assessing the convergence of Markov chain Monte Carlo when running many short chains",
+  author = c(
+    person("Charles", "Margossian"),
+    person("Matthew", "Hoffman"),
+    person("Pavel", "Sountsov"),
+    person("Lionel", "Riou-Durand"),
+    person("Aki", "Vehtari"),
+    person("Andrew", "Gelman")
+  ),
+  year = "2023",
+  note = "arXiv preprint: https://arxiv.org/abs/2110.13017v4"
+)
+
+lambert2020_rstar <- bibentry(
+  bibtype = "Misc",
+  key = "lambert-2020-rstar",
+  title = "R*: A robust MCMC convergence diagnostic with uncertainty using gradient-boosted machines",
+  author = c(person("Ben", "Lambert"), person("Aki", "Vehtari")),
+  year = "2020",
+  note = "arXiv preprint: https://arxiv.org/abs/2003.07900"
+)
+
+sailynoja2022_uniformity <- bibentry(
+  bibtype = "Article",
+  key = "sailynoja-2022-uniformity",
+  title = "Graphical test for discrete uniformity and its applications in goodness-of-fit evaluation and multiple sample comparison",
+  author = c(
+    person("Teemu", "Sailynoja"),
+    person(given = "Paul-Christian", family = "B\\u00fcrkner"),
+    person("Aki", "Vehtari")
+  ),
+  journal = "Statistics and Computing",
+  year = "2022",
+  volume = "32",
+  pages = "32",
+  doi = "10.1007/s11222-022-10090-6"
 )

@@ -127,6 +127,11 @@ source("data-raw/papers.R")
 source("data-raw/bayesplot-citations.R")
 source("data-raw/cmdstanr-citations.R")
 source("data-raw/loo-citations.R")
+source("data-raw/posterior-citations.R")
+source("data-raw/rstan-citations.R")
+source("data-raw/rstanarm-citations.R")
+source("data-raw/shinystan-citations.R")
+source("data-raw/projpred-citations.R")
 
 # Helper to determine origin
 get_origin <- function(pkg, name) {
