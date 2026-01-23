@@ -7,14 +7,12 @@
     Filter(\(person) any(person$role %in% c("aut", "cre")), x = _)
 }
 
-# TODO: add citations for R and for stanflow.
 # TODO: add function citations for specific functions (use pkg::function as key)
-# TODO: Move paper citations to sysdata since they don't rely on packageDescription?
 
 # Base R citation.
-.stan_citation_funs$R <- utils::citation("base")
+.stan_citation_pkgs$R <- utils::citation("base")
 
-# TODO: calculated at stan_cite() runtime, not install time
+# TODO: calculate at stan_cite() runtime, not install time
 .stan_citation_pkgs$stanflow <- packageDescription("stanflow") |>
   (\(meta) {
     bibentry(
