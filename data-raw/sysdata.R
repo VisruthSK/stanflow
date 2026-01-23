@@ -13,11 +13,12 @@
 )
 
 message(
-  "Make sure you use `stanflow_update()` to make sure your packages are up to date."
+  "Make sure you use `stanflow_update()` to make sure your packages are up to date before generating the sysdata file."
 )
 
 .stan_citation_pkgs <- new.env(parent = emptyenv())
 .stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
+
 .stan_citation_pkgs$brms <- c(
   bibentry(
     bibtype = "Article",
@@ -94,8 +95,6 @@ if (length(missing) > 0) {
 .stan_pkg_versions <- .stan_pkgs |>
   lapply(\(pkg) packageVersion(pkg) |> as.character()) |>
   setNames(.stan_pkgs)
-
-.date_generated <- Sys.Date()
 
 # Precompute standard library functions
 .stdlib_funs <- lapply(
@@ -177,6 +176,8 @@ keys <- paste0(all_stan_pkgs, "::", all_funs)
   .stan_origin_map
 )]
 names(.stan_origin_map) <- keys
+
+.date_generated <- Sys.Date()
 
 save(
   .stan_exports,
