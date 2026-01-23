@@ -65,9 +65,6 @@ if (length(missing) > 0) {
   ".cache"
 )
 
-.stan_citation_pkgs <- new.env(parent = emptyenv())
-.stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
-.stan_citation_builders <- new.env(parent = emptyenv())
 source("data-raw/paper-citations.R")
 
 # Helper to determine origin
@@ -124,9 +121,6 @@ save(
   .stan_export_index,
   .stan_origin_map,
   .stan_pkgs,
-  .stan_citation_pkgs,
-  .stan_citation_funs,
-  .stan_citation_builders,
   .stdlib_funs,
   .stan_pkg_versions,
   .scan_skip_dirs,

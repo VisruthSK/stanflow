@@ -44,7 +44,7 @@ stan_cite <- function(
     Filter(Negate(is.null), x = _) |>
     (\(entries) {
       if (!length(entries)) {
-        # TODO: informative message
+        cli::cli_alert_info("No citations found.")
         character()
       } else {
         entries <- do.call(what = c, args = entries)

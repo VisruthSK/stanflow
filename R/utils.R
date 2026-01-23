@@ -74,25 +74,3 @@ local_cli_quiet <- function(quiet, env = parent.frame()) {
   invisible(NULL)
 }
 
-.reset_citation_cache <- function(pkgs = NULL, env = .stan_citation_pkgs) {
-  force(env)
-  if (is.null(pkgs)) {
-    pkgs <- ls(.stan_citation_builders, all.names = TRUE)
-  }
-  if (!length(pkgs)) {
-    return(invisible(FALSE))
-  }
-  pkgs <- intersect(pkgs, ls(.stan_citation_builders, all.names = TRUE))
-  if (!length(pkgs)) {
-    return(invisible(FALSE))
-  }
-  for (pkg in pkgs) {
-    if (exists(pkg, envir = env, inherits = FALSE)) {
-      rm(list = pkg, envir = env)
-    }
-    pkg |>
-      get(envir = .stan_citation_builders, inherits = FALSE) |>
-      .lazy_cite(pkg, builder = _, env = env)
-  }
-  invisible(TRUE)
-}

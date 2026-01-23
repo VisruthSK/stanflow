@@ -1,3 +1,5 @@
 core <- c("bayesplot", "loo", "posterior", "projpred", "shinystan")
 backends <- c("brms", "cmdstanr", "rstan", "rstanarm")
 stanflow_pkgs <- c(core, backends)
+.stan_citation_pkgs <- new.env(parent = emptyenv())
+.stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
