@@ -12,7 +12,17 @@
 # TODO: add function citations for specific functions (use pkg::function as key)
 
 # Base R citation.
+if (!exists(".stan_citation_pkgs", inherits = FALSE)) {
+  .stan_citation_pkgs <- new.env(parent = emptyenv())
+}
+if (!exists(".stan_citation_funs", inherits = FALSE)) {
+  .stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
+}
+if (!identical(parent.env(.stan_citation_funs), .stan_citation_pkgs)) {
+  parent.env(.stan_citation_funs) <- .stan_citation_pkgs
+}
 .stan_citation_pkgs$R <- citation("base")
+.stan_citation_funs$R <- .stan_citation_pkgs$R
 
 # TODO: calculate at stan_cite() runtime, not install time
 .stan_citation_pkgs$stanflow <- packageDescription("stanflow") |>
