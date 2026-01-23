@@ -17,6 +17,7 @@ message(
 )
 
 .stan_citation_pkgs <- new.env(parent = emptyenv())
+.stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
 .stan_citation_pkgs$brms <- c(
   bibentry(
     bibtype = "Article",
@@ -123,7 +124,7 @@ if (length(missing) > 0) {
   ".cache"
 )
 
-source("data-raw/paper-citations.R")
+source("data-raw/papers.R")
 source("data-raw/bayesplot-citations.R")
 
 # Helper to determine origin
@@ -179,6 +180,8 @@ save(
   .stan_exports,
   .stan_export_index,
   .stan_origin_map,
+  .stan_citation_pkgs,
+  .stan_citation_funs,
   .stan_pkgs,
   .stdlib_funs,
   .stan_pkg_versions,

@@ -87,7 +87,18 @@ assign_bayesplot(
     "ppc_ribbon",
     "ppc_ribbon_grouped",
     "ppc_intervals_data",
-    "ppc_ribbon_data"
+    "ppc_ribbon_data",
+    "ppc_scatter",
+    "ppc_scatter_avg",
+    "ppc_scatter_avg_grouped",
+    "ppc_scatter_data",
+    "ppc_scatter_avg_data",
+    "ppc_stat",
+    "ppc_stat_grouped",
+    "ppc_stat_freqpoly",
+    "ppc_stat_freqpoly_grouped",
+    "ppc_stat_2d",
+    "ppc_stat_data"
   ),
   BDA
 )
@@ -103,21 +114,4 @@ assign_bayesplot(
     "ppc_loo_ribbon"
   ),
   c(BDA, vehtari2017_loo)
-)
-
-assign_bayesplot(
-  c(
-    "ppc_scatter",
-    "ppc_scatter_avg",
-    "ppc_scatter_avg_grouped",
-    "ppc_scatter_data",
-    "ppc_scatter_avg_data",
-    "ppc_stat",
-    "ppc_stat_grouped",
-    "ppc_stat_freqpoly",
-    "ppc_stat_freqpoly_grouped",
-    "ppc_stat_2d",
-    "ppc_stat_data"
-  ),
-  BDA
 )
