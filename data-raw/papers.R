@@ -126,6 +126,192 @@ kleiber2016_rootogram <- bibentry(
   note = "arXiv preprint: https://arxiv.org/abs/1605.01311"
 )
 
+vehtari2024_psis <- bibentry(
+  bibtype = "Article",
+  key = "vehtari-2024-psis",
+  title = "Pareto smoothed importance sampling",
+  author = c(
+    person("Aki", "Vehtari"),
+    person("Daniel", "Simpson"),
+    person("Andrew", "Gelman"),
+    person("Yuling", "Yao"),
+    person("Jonah", "Gabry")
+  ),
+  journal = "Journal of Machine Learning Research",
+  year = "2024",
+  volume = "25",
+  number = "72",
+  pages = "1--58",
+  url = "https://jmlr.org/papers/v25/19-556.html"
+)
+
+sivula2022_uncertainty <- bibentry(
+  bibtype = "Misc",
+  key = "sivula-2022-uncertainty",
+  title = "Uncertainty in Bayesian leave-one-out cross-validation based model comparison",
+  author = c(
+    person("Tuomas", "Sivula"),
+    person("Mans", "Magnusson"),
+    person("Adrian", "Matamoros"),
+    person("Aki", "Vehtari")
+  ),
+  year = "2022",
+  note = "arXiv preprint: https://arxiv.org/abs/2008.10296v3"
+)
+
+mclatchie2023_bias <- bibentry(
+  bibtype = "Misc",
+  key = "mclatchie-2023-bias",
+  title = "Efficient estimation and correction of selection-induced bias with order statistics",
+  author = c(person("Yao", "McLatchie"), person("Aki", "Vehtari")),
+  year = "2023",
+  note = "arXiv preprint: https://arxiv.org/abs/2309.03742"
+)
+
+magnusson2019_large_data <- bibentry(
+  bibtype = "InProceedings",
+  key = "magnusson-2019-loo-large-data",
+  title = "Leave-One-Out Cross-Validation for Large Data",
+  author = c(
+    person("Mans", "Magnusson"),
+    person("Mikael", "Riis Andersen"),
+    person("Johan", "Jonasson"),
+    person("Aki", "Vehtari")
+  ),
+  booktitle = "Thirty-sixth International Conference on Machine Learning",
+  year = "2019",
+  volume = "97",
+  pages = "4244--4253",
+  note = "PMLR"
+)
+
+magnusson2020_large_data <- bibentry(
+  bibtype = "InProceedings",
+  key = "magnusson-2020-loo-large-data",
+  title = "Leave-One-Out Cross-Validation for Model Comparison in Large Data",
+  author = c(
+    person("Mans", "Magnusson"),
+    person("Mikael", "Riis Andersen"),
+    person("Johan", "Jonasson"),
+    person("Aki", "Vehtari")
+  ),
+  booktitle = "Proceedings of the 23rd International Conference on Artificial Intelligence and Statistics (AISTATS)",
+  year = "2020",
+  volume = "108",
+  pages = "341--351",
+  note = "PMLR"
+)
+
+yao2018_stacking <- bibentry(
+  bibtype = "Article",
+  key = "yao-2018-stacking",
+  title = "Using stacking to average Bayesian predictive distributions",
+  author = c(
+    person("Yuling", "Yao"),
+    person("Aki", "Vehtari"),
+    person("Daniel", "Simpson"),
+    person("Andrew", "Gelman")
+  ),
+  journal = "Bayesian Analysis",
+  year = "2018",
+  doi = "10.1214/17-BA1091",
+  url = "https://projecteuclid.org/euclid.ba/1516093227"
+)
+
+paananen2021_moment_matching <- bibentry(
+  bibtype = "Article",
+  key = "paananen-2021-moment-matching",
+  title = "Implicitly adaptive importance sampling",
+  author = c(
+    person("Topi", "Paananen"),
+    person("Juho", "Piironen"),
+    person("Paul-Christian", "Buerkner"),
+    person("Aki", "Vehtari")
+  ),
+  journal = "Statistics and Computing",
+  year = "2021",
+  volume = "31",
+  pages = "16",
+  doi = "10.1007/s11222-020-09982-2",
+  note = "arXiv preprint: https://arxiv.org/abs/1906.08850"
+)
+
+ionides2008_tis <- bibentry(
+  bibtype = "Article",
+  key = "ionides-2008-tis",
+  title = "Truncated importance sampling",
+  author = person("Edward", "Ionides"),
+  journal = "Journal of Computational and Graphical Statistics",
+  year = "2008",
+  volume = "17",
+  number = "2",
+  pages = "295--311"
+)
+
+watanabe2010_waic <- bibentry(
+  bibtype = "Article",
+  key = "watanabe-2010-waic",
+  title = "Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory",
+  author = person("Sumio", "Watanabe"),
+  journal = "Journal of Machine Learning Research",
+  year = "2010",
+  volume = "11",
+  pages = "3571--3594"
+)
+
+zhang2009_gpd <- bibentry(
+  bibtype = "Article",
+  key = "zhang-2009-gpd",
+  title = "A new and efficient estimation method for the generalized Pareto distribution",
+  author = c(person("Jian", "Zhang"), person("Michael", "Stephens")),
+  journal = "Technometrics",
+  year = "2009",
+  volume = "51",
+  pages = "316--325"
+)
+
+bolin2023_scoring <- bibentry(
+  bibtype = "Article",
+  key = "bolin-2023-scoring",
+  title = "Local scale invariance and robustness of proper scoring rules",
+  author = c(person("David", "Bolin"), person("Jonas", "Wallin")),
+  journal = "Statistical Science",
+  year = "2023",
+  volume = "38",
+  number = "1",
+  pages = "140--159"
+)
+
+gneiting2007_scoring <- bibentry(
+  bibtype = "Article",
+  key = "gneiting-2007-scoring",
+  title = "Strictly Proper Scoring Rules, Prediction, and Estimation",
+  author = c(person("Tilmann", "Gneiting"), person("Adrian", "Raftery")),
+  journal = "Journal of the American Statistical Association",
+  year = "2007",
+  volume = "102",
+  number = "477",
+  pages = "359--378"
+)
+
+stan_cpp_2017 <- bibentry(
+  bibtype = "Misc",
+  key = "stan-cpp-2017",
+  title = "The Stan C++ Library, Version 2.16.0",
+  author = person("Stan Development Team"),
+  year = "2017",
+  url = "https://mc-stan.org/"
+)
+
+rstan_2017 <- bibentry(
+  bibtype = "Misc",
+  key = "rstan-2017",
+  title = "RStan: the R interface to Stan, Version 2.16.1",
+  author = person("Stan Development Team"),
+  year = "2017",
+  url = "https://mc-stan.org/"
+)
+
 yao2018_vi <- bibentry(
   bibtype = "InProceedings",
   key = "yao-2018-vi",
