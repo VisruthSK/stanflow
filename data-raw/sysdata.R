@@ -127,6 +127,7 @@ if (length(missing) > 0) {
 source("data-raw/papers.R")
 source("data-raw/bayesplot-citations.R")
 source("data-raw/cmdstanr-citations.R")
+source("data-raw/loo-citations.R")
 
 # Helper to determine origin
 get_origin <- function(pkg, name) {
