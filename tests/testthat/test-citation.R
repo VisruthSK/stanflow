@@ -48,7 +48,7 @@ test_that("citation metadata helpers parse fields", {
   meta <- list(
     Date = "2023-02-01",
     Version = "1.2.3",
-    `Authors@R` = "c(person('A', 'B', role = c('aut', 'cre')))"
+    `Authors@R` = "A B [aut, cre]"
   )
 
   expect_equal(.meta_year(meta), "2023")
@@ -510,7 +510,11 @@ test_that("stan_cite always includes an R citation", {
 
   bibtex <- stan_cite(path, format = "bibtex")
 
-  expect_true(any(grepl("R Core Team", bibtex, fixed = TRUE)))
+  expect_true(any(grepl(
+    "R: A Language and Environment for Statistical Computing",
+    bibtex,
+    fixed = TRUE
+  )))
 })
 
 test_that("scan_usage handles a single file path", {

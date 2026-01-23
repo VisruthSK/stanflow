@@ -2,15 +2,17 @@
 .meta_note <- function(meta) sprintf("R package version %s", meta[["Version"]])
 .meta_authors <- function(meta) {
   meta[["Authors@R"]] |>
-    str2expression() |>
-    eval() |>
-    Filter(\(person) any(person$role %in% c("aut", "cre")), x = _)
+    as.person() |>
+    Filter(
+      \(person) any(person$role %in% c("aut", "cre")),
+      x = _
+    )
 }
 
 # TODO: add function citations for specific functions (use pkg::function as key)
 
 # Base R citation.
-.stan_citation_pkgs$R <- utils::citation("base")
+.stan_citation_pkgs$R <- citation("base")
 
 # TODO: calculate at stan_cite() runtime, not install time
 .stan_citation_pkgs$stanflow <- packageDescription("stanflow") |>
