@@ -138,7 +138,8 @@ scan_usage <- function(
             strict = strict,
             allowed_packages = allowed_packages,
             export_index = export_index,
-            origin_map = origin_map
+            origin_map = origin_map,
+            file_path = file
           )
       }
     )
@@ -223,7 +224,8 @@ scan_usage <- function(
   strict = FALSE,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
-  origin_map = .stan_origin_map
+  origin_map = .stan_origin_map,
+  file_path = NULL
 ) {
   empty <- list(pkgs = character(), keys = character(), ambiguous = character())
   expr <- tryCatch(
@@ -231,6 +233,16 @@ scan_usage <- function(
     error = function(e) NULL
   )
   if (is.null(expr)) {
+    path_label <- if (!is.null(file_path) && nzchar(file_path)) {
+      file_path
+    } else {
+      "<unknown file>"
+    }
+    if (strict) {
+      cli::cli_abort("Failed to parse {.path {path_label}}.")
+    } else {
+      cli::cli_warn("Failed to parse {.path {path_label}}.")
+    }
     return(empty)
   }
 
@@ -247,6 +259,44 @@ scan_usage <- function(
   lib_funs <- c("library", "require", "requireNamespace")
   ns_ops <- c("::", ":::")
   use_heads <- c("c", "list")
+  ignore_heads <- c(
+    "if",
+    "for",
+    "while",
+    "repeat",
+    "function",
+    "return",
+    "next",
+    "break",
+    "{",
+    "(",
+    "<-",
+    "<<-",
+    "->",
+    "->>",
+    "=",
+    "+",
+    "-",
+    "*",
+    "/",
+    "^",
+    "%%",
+    "%/%",
+    "%*%",
+    "%>%",
+    ":",
+    "|",
+    "&",
+    "||",
+    "&&",
+    "!",
+    "~",
+    "|>",
+    "$",
+    "@",
+    "[",
+    "[["
+  )
 
   for (i in seq_along(expr)) {
     .ast_walk(
@@ -256,7 +306,8 @@ scan_usage <- function(
       lib_funs,
       allowed_packages,
       ns_ops,
-      use_heads
+      use_heads,
+      ignore_heads
     )
   }
 
@@ -294,7 +345,8 @@ scan_usage <- function(
   lib_funs,
   allowed_packages,
   ns_ops,
-  use_heads
+  use_heads,
+  ignore_heads
 ) {
   if (is.null(x)) {
     return(invisible(NULL))
@@ -337,6 +389,8 @@ scan_usage <- function(
             !identical(head_name, "requireNamespace")
           )
         }
+      } else if (!is.na(fastmatch::fmatch(head_name, ignore_heads))) {
+        # Skip language keywords, operators, and subsetting.
       } else if (
         is.na(fastmatch::fmatch(head_name, ignore_unqualified_functions))
       ) {
@@ -353,7 +407,8 @@ scan_usage <- function(
         lib_funs,
         allowed_packages,
         ns_ops,
-        use_heads
+        use_heads,
+        ignore_heads
       )
     }
     n <- length(x)
@@ -366,7 +421,8 @@ scan_usage <- function(
           lib_funs,
           allowed_packages,
           ns_ops,
-          use_heads
+          use_heads,
+          ignore_heads
         )
       }
     }
@@ -382,7 +438,8 @@ scan_usage <- function(
         lib_funs,
         allowed_packages,
         ns_ops,
-        use_heads
+        use_heads,
+        ignore_heads
       )
     }
     return(invisible(NULL))
@@ -397,7 +454,8 @@ scan_usage <- function(
         lib_funs,
         allowed_packages,
         ns_ops,
-        use_heads
+        use_heads,
+        ignore_heads
       )
     }
     return(invisible(NULL))
@@ -567,29 +625,30 @@ scan_usage <- function(
         cands <- ambig_cands[[i]]
 
         if (k == 0) {
-          pkg <- cands[1]
           resolved[i] <- FALSE
         } else {
           attached_before <- attached_pkgs[seq_len(k)]
           matches <- fastmatch::fmatch(cands, attached_before)
           if (all(is.na(matches))) {
-            pkg <- cands[1]
             resolved[i] <- FALSE
           } else {
             pkg <- cands[which.max(ifelse(is.na(matches), -1L, matches))]
             resolved[i] <- TRUE
           }
         }
-        key <- paste0(pkg, "::", ambig_funs[i])
-        origin <- unname(origin_map[key])
-        if (
-          is.na(origin) || is.na(fastmatch::fmatch(origin, allowed_packages))
-        ) {
-          origin <- pkg
-        }
 
-        pkgs <- c(pkgs, origin)
-        keys <- c(keys, paste0(origin, "::", ambig_funs[i]))
+        if (resolved[i]) {
+          key <- paste0(pkg, "::", ambig_funs[i])
+          origin <- unname(origin_map[key])
+          if (
+            is.na(origin) || is.na(fastmatch::fmatch(origin, allowed_packages))
+          ) {
+            origin <- pkg
+          }
+
+          pkgs <- c(pkgs, origin)
+          keys <- c(keys, paste0(origin, "::", ambig_funs[i]))
+        }
       }
 
       if (length(ambiguous)) {
