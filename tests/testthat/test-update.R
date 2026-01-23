@@ -364,4 +364,3 @@ test_that("stanflow_update uses Stan universe when dev = TRUE", {
 
   expect_identical(result, behind)
 })
-
