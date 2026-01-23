@@ -22,7 +22,6 @@ if (!identical(parent.env(.stan_citation_funs), .stan_citation_pkgs)) {
   parent.env(.stan_citation_funs) <- .stan_citation_pkgs
 }
 .stan_citation_pkgs$R <- citation("base")
-.stan_citation_funs$R <- .stan_citation_pkgs$R
 
 # TODO: calculate at stan_cite() runtime, not install time
 .stan_citation_pkgs$stanflow <- packageDescription("stanflow") |>
