@@ -16,6 +16,8 @@ message(
   "Make sure you use `stanflow_update()` to make sure your packages are up to date."
 )
 
+.stan_citation_pkgs <- new.env(parent = emptyenv())
+
 missing <- .stan_pkgs[
   !vapply(.stan_pkgs, requireNamespace, logical(1), quietly = TRUE)
 ]

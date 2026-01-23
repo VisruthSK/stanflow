@@ -188,6 +188,53 @@ test_that(".scan_tokens ignores unqualified calls when no packages are attached"
   expect_equal(hits$pkgs, character())
 })
 
+test_that(".scan_tokens ignores language keywords and operators", {
+  export_index <- list(
+    foo = "pkgA",
+    `if` = "pkgA",
+    `<-` = "pkgA",
+    `+` = "pkgA",
+    `[` = "pkgA",
+    `[[` = "pkgA",
+    `$` = "pkgA",
+    `@` = "pkgA"
+  )
+  origin_map <- c(
+    "pkgA::foo" = "pkgA",
+    "pkgA::if" = "pkgA",
+    "pkgA::<-" = "pkgA",
+    "pkgA::+" = "pkgA",
+    "pkgA::[" = "pkgA",
+    "pkgA::[[" = "pkgA",
+    "pkgA::$" = "pkgA",
+    "pkgA::@" = "pkgA"
+  )
+  allowed_packages <- "pkgA"
+
+  code <- c(
+    "library(pkgA)",
+    "if (TRUE) foo(1)",
+    "x <- foo(1)",
+    "x + 1",
+    "x[1]",
+    "x[[1]]",
+    "x$y",
+    "x@y"
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    stdlib_funs(),
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map
+  )
+
+  expect_true("pkgA" %in% hits$pkgs)
+  expect_equal(hits$keys, c("pkgA::foo", "pkgA::foo"))
+  expect_equal(hits$ambiguous, character())
+})
+
 
 test_that(".scan_tokens collapses reexports by origin", {
   export_index <- list(foo = c("pkgA", "pkgB"))
@@ -481,6 +528,21 @@ test_that("scan_usage handles a single file path", {
   expect_equal(res$functions, "posterior::as_draws")
 })
 
+test_that("scan_usage aborts on parse errors in strict mode", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "bad.R"),
+    c(
+      "function("
+    )
+  )
+
+  expect_error(
+    scan_usage(path, strict = TRUE),
+    "Failed to parse"
+  )
+})
+
 test_that("scan_usage strict aborts on ambiguous unqualified calls", {
   funs <- c("rhat", "ess_bulk")
 
@@ -604,7 +666,7 @@ test_that("scan_usage warns on ambiguous calls in non-strict mode", {
     )
   })
   expect_true(all(c("pkgA", "pkgB") %in% res$packages))
-  expect_identical(res$functions, "pkgA::foo")
+  expect_identical(res$functions, character())
   expect_equal(res$ambiguous, "foo")
 })
 
@@ -973,7 +1035,6 @@ test_that("scan_usage handles projects with renv/packrat and real R folder", {
       "logit(1)"
     )
   )
-
   res <- scan_usage(tmp)
 
   expected_keys <- unique(na.omit(c(
@@ -1127,8 +1188,11 @@ test_that("scan_usage scans directories with mixed inputs", {
       "function("
     )
   )
-
-  res <- scan_usage(tmp)
+  res <- NULL
+  expect_warning(
+    res <- scan_usage(tmp),
+    "Failed to parse"
+  )
 
   expect_equal(res$packages, sort(res$packages))
   expect_equal(res$functions, sort(res$functions))
@@ -1585,8 +1649,8 @@ test_that(".resolve_candidates keeps ambiguity when no attach position precedes 
   )
 
   expect_equal(out$ambiguous, "foo")
-  expect_identical(out$pkgs, "pkgA")
-  expect_identical(out$keys, "pkgA::foo")
+  expect_identical(out$pkgs, character())
+  expect_identical(out$keys, character())
 })
 
 test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
@@ -1607,8 +1671,8 @@ test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
   )
 
   expect_equal(out$ambiguous, "foo")
-  expect_identical(out$pkgs, "pkgB")
-  expect_identical(out$keys, "pkgB::foo")
+  expect_identical(out$pkgs, character())
+  expect_identical(out$keys, character())
 })
 
 test_that(".resolve_candidates clears ambiguity when one call is resolved", {
@@ -1629,8 +1693,8 @@ test_that(".resolve_candidates clears ambiguity when one call is resolved", {
   )
 
   expect_equal(out$ambiguous, character())
-  expect_equal(out$pkgs, c("pkgA", "pkgA"))
-  expect_equal(out$keys, c("pkgA::foo", "pkgA::foo"))
+  expect_equal(out$pkgs, "pkgA")
+  expect_equal(out$keys, "pkgA::foo")
 })
 
 test_that(".resolve_candidates falls back when origin_map points to disallowed package", {

@@ -20,7 +20,7 @@
     bibentry(
       bibtype = "Manual",
       key = "stanflow",
-      title = "stanflow: Stan Bayesian workflow",
+      title = "stanflow: Stan Bayesian Workflow",
       author = .meta_authors(meta),
       year = .meta_year(meta),
       note = sprintf(
