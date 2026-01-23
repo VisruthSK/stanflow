@@ -73,4 +73,3 @@ local_cli_quiet <- function(quiet, env = parent.frame()) {
 
   invisible(NULL)
 }
-
