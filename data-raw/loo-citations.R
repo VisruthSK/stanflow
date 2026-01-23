@@ -27,7 +27,12 @@ assign_loo(
 
 assign_loo(
   c("loo_compare"),
-  c(vehtari2017_loo, vehtari2024_psis, sivula2022_uncertainty, mclatchie2023_bias)
+  c(
+    vehtari2017_loo,
+    vehtari2024_psis,
+    sivula2022_uncertainty,
+    mclatchie2023_bias
+  )
 )
 
 assign_loo(
