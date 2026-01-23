@@ -125,3 +125,20 @@ kleiber2016_rootogram <- bibentry(
   pages = "296--303",
   note = "arXiv preprint: https://arxiv.org/abs/1605.01311"
 )
+
+yao2018_vi <- bibentry(
+  bibtype = "InProceedings",
+  key = "yao-2018-vi",
+  title = "Yes, but did it work?: Evaluating variational inference",
+  author = c(
+    person("Yuling", "Yao"),
+    person("Aki", "Vehtari"),
+    person("Daniel", "Simpson"),
+    person("Andrew", "Gelman")
+  ),
+  booktitle = "Proceedings of the 35th International Conference on Machine Learning",
+  year = "2018",
+  volume = "80",
+  pages = "5581--5590",
+  note = "PMLR"
+)
