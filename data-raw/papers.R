@@ -426,7 +426,11 @@ cook2006 <- bibentry(
   bibtype = "Article",
   key = "cook-2006",
   title = "Validation of software for Bayesian models using posterior quantiles",
-  author = c(person("S.", "Cook"), person("Andrew", "Gelman"), person("Donald", "Rubin")),
+  author = c(
+    person("S.", "Cook"),
+    person("Andrew", "Gelman"),
+    person("Donald", "Rubin")
+  ),
   journal = "Journal of Computational and Graphical Statistics",
   year = "2006",
   volume = "15",
