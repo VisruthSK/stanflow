@@ -214,8 +214,6 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
     }
   )
 
-  .reset_citation_cache(behind$package)
-
   if (length(pkgs_to_report) > 0) {
     pkgs_to_report <- unique(pkgs_to_report)
     pkg_call <- paste0('c("', paste(pkgs_to_report, collapse = '", "'), '")')
