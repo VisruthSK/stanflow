@@ -15,6 +15,22 @@
 .stan_citation_funs$R <- utils::citation("base")
 
 # TODO: calculated at stan_cite() runtime, not install time
+.stan_citation_pkgs$stanflow <- packageDescription("stanflow") |>
+  (\(meta) {
+    bibentry(
+      bibtype = "Manual",
+      key = "stanflow",
+      title = "stanflow: Stan Bayesian workflow",
+      author = .meta_authors(meta),
+      year = .meta_year(meta),
+      note = sprintf(
+        "R package version %s, https://discourse.mc-stan.org",
+        meta$Version
+      ),
+      url = "https://visruthsk.github.io/stanflow/"
+    )
+  })()
+
 .stan_citation_pkgs$bayesplot <- packageDescription("bayesplot") |>
   (\(meta) {
     c(
