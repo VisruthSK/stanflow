@@ -17,10 +17,7 @@ stanflow_deps <- function(
   pkgs <- NULL
   if (check_updates) {
     pkgs <- tryCatch(
-      withCallingHandlers(
-        utils::available.packages(repos = stan_repos(dev)),
-        warning = \(w) stop()
-      ),
+      utils::available.packages(repos = stan_repos(dev)),
       error = function(e) {
         cli::cli_abort(
           c(
@@ -45,23 +42,19 @@ stanflow_deps <- function(
       unlist(use.names = FALSE) |>
       gsub("\\s*\\(.*?\\)", "", x = _) |>
       trimws() |>
-      Filter(function(x) x != "" && x != "R", x = _)
-
-    if (recursive) {
-      installed_db <- utils::installed.packages()
-      recursive_deps <- tools::package_dependencies(
-        pkg_deps,
-        installed_db,
-        recursive = TRUE
-      )
-      pkg_deps <- c(pkg_deps, unlist(recursive_deps, use.names = FALSE))
-    }
+      Filter(function(x) x != "" && x != "R", x = _) |>
+      (\(deps) {
+        if (!recursive) return(deps)
+        tools::package_dependencies(deps, utils::installed.packages(), recursive = TRUE) |>
+          unlist(use.names = FALSE) |>
+          c(deps)
+      })()
   }
 
   if (
     length(pkg_deps) == 0 ||
       all(lengths(pkg_deps) == 0) ||
-      all(is.na(pkg_deps))
+      all(is.na(unlist(pkg_deps)))
   ) {
     # TODO: Remove once stanflow is published to a repo used by available.packages()
     pkg_deps <- utils::packageDescription("stanflow") |>
@@ -71,10 +64,12 @@ stanflow_deps <- function(
       gsub("\\s*\\(.*?\\)", "", x = _) |>
       trimws() |>
       Filter(function(x) x != "" && x != "R", x = _) |>
-      tools::package_dependencies(
-        pkgs,
-        recursive = recursive
-      )
+      (\(deps) {
+        if (!recursive) return(deps)
+        tools::package_dependencies(deps, pkgs, recursive = TRUE) |>
+          unlist(use.names = FALSE) |>
+          c(deps)
+      })()
   }
 
   pkg_deps <- pkg_deps |>

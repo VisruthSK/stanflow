@@ -116,7 +116,7 @@ test_that("stanflow_deps aborts when package metadata cannot be downloaded", {
   )
 })
 
-test_that("stanflow_deps aborts on repository access warnings", {
+test_that("stanflow_deps warns but proceeds on repository access warnings", {
   local_mocked_bindings(
     stan_repos = function(dev) "https://fake.repo",
     .package = "stanflow"
@@ -124,14 +124,39 @@ test_that("stanflow_deps aborts on repository access warnings", {
   local_mocked_bindings(
     available.packages = function(...) {
       warning("unable to access index for repository")
+      matrix(
+        character(),
+        nrow = 0,
+        ncol = 3,
+        dimnames = list(NULL, c("Package", "Version", "Repository"))
+      )
     },
     .package = "utils"
   )
-
-  expect_error(
-    stanflow_deps(check_updates = TRUE),
-    "Unable to reach repositories"
+  local_mocked_bindings(
+    package_dependencies = function(pkgs, db, recursive) {
+      list(stanflow = NA)
+    },
+    .package = "tools"
   )
+  local_mocked_bindings(
+    packageDescription = function(pkg) {
+      list(Depends = "R", Imports = "foo", Suggests = "")
+    },
+    .package = "utils"
+  )
+  local_mocked_bindings(
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+
+  expect_warning(
+    deps <- stanflow_deps(check_updates = TRUE),
+    "unable to access index"
+  )
+
+  expect_s3_class(deps, "data.frame")
+  expect_equal(deps$package, "foo")
 })
 
 test_that("stanflow_deps handles missing repo versions", {
@@ -234,7 +259,7 @@ test_that("stanflow_deps falls back when dependencies are empty", {
   deps <- stanflow_deps(recursive = FALSE, check_updates = TRUE)
 
   expect_true(called$primary)
-  expect_true(called$fallback)
+  expect_false(called$fallback)
   expect_equal(deps$package, "foo")
 })
 
