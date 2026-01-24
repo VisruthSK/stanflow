@@ -44,8 +44,14 @@ stanflow_deps <- function(
       trimws() |>
       Filter(function(x) x != "" && x != "R", x = _) |>
       (\(deps) {
-        if (!recursive) return(deps)
-        tools::package_dependencies(deps, utils::installed.packages(), recursive = TRUE) |>
+        if (!recursive) {
+          return(deps)
+        }
+        tools::package_dependencies(
+          deps,
+          utils::installed.packages(),
+          recursive = TRUE
+        ) |>
           unlist(use.names = FALSE) |>
           c(deps)
       })()
