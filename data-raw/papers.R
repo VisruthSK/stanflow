@@ -670,3 +670,20 @@ sailynoja2022_uniformity <- bibentry(
   pages = "32",
   doi = "10.1007/s11222-022-10090-6"
 )
+
+czado2009_pit <- bibentry(
+  bibtype = "Article",
+  key = "czado-2009-pit",
+  title = "Predictive Model Assessment for Count Data",
+  author = c(
+    person("Claudia", "Czado"),
+    person("Tilmann", "Gneiting"),
+    person("Leonhard", "Held")
+  ),
+  journal = "Biometrics",
+  year = "2009",
+  volume = "65",
+  number = "4",
+  pages = "1254--1261",
+  doi = "10.1111/j.1541-0420.2009.01191.x"
+)
