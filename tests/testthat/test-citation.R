@@ -503,6 +503,24 @@ test_that("stan_cite returns bibtex or bibentry", {
   expect_true(any(grepl("Posterior", utils::toBibtex(bibentry), fixed = TRUE)))
 })
 
+test_that("stan_cite always cites stanflow and R", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
+
+  citations <- stan_cite(path, format = "bibtex")
+
+  expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
+  expect_true(
+    any(
+      grepl(
+        "R: A Language and Environment for Statistical Computing",
+        citations,
+        fixed = TRUE
+      )
+    )
+  )
+})
+
 test_that("scan_usage handles a single file path", {
   tmp <- withr::local_tempdir()
   path <- write_file(
