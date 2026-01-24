@@ -521,6 +521,20 @@ test_that("stan_cite always cites stanflow and R", {
   )
 })
 
+test_that("all package citations exist", {
+  pkg_env <- getFromNamespace(".stan_citation_pkgs", "stanflow")
+  expected <- unique(c(getFromNamespace(".stan_pkgs", "stanflow"), "R"))
+
+  missing <- setdiff(expected, ls(pkg_env, all.names = TRUE))
+  expect_equal(missing, character())
+
+  for (pkg in expected) {
+    entries <- pkg_env[[pkg]]
+    expect_true(length(entries) > 0)
+    expect_true(inherits(entries[[1]], "bibentry"))
+  }
+})
+
 test_that("scan_usage handles a single file path", {
   tmp <- withr::local_tempdir()
   path <- write_file(
