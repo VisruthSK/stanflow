@@ -191,6 +191,10 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
     })()
 }
 
+if (requireNamespace("rstantools", quietly = TRUE)) {
+  .stan_citation_pkgs$rstantools <- citation("rstantools")
+}
+
 .stan_citation_pkgs$shinystan <- packageDescription("shinystan") |>
   (\(meta) {
     bibentry(

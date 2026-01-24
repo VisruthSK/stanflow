@@ -11,9 +11,16 @@ force_local_snapshots <- function() {
 }
 
 # Bind internal helpers/data so tests can call them directly.
-.meta_year <- bind_internal(".meta_year")
-.meta_note <- bind_internal(".meta_note")
-.meta_authors <- bind_internal(".meta_authors")
+.meta_year <- function(meta) sub("-.*", "", meta[["Date"]])
+.meta_note <- function(meta) sprintf("R package version %s", meta[["Version"]])
+.meta_authors <- function(meta) {
+  meta[["Authors@R"]] |>
+    as.person() |>
+    Filter(
+      \(person) any(person$role %in% c("aut", "cre")),
+      x = _
+    )
+}
 .scan_tokens <- bind_internal(".scan_tokens")
 .extract_code <- bind_internal(".extract_code")
 .stan_exports <- bind_internal(".stan_exports")
