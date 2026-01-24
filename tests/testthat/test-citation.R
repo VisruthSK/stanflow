@@ -536,6 +536,31 @@ test_that("scan_usage handles a single file path", {
   expect_equal(res$functions, "posterior::as_draws")
 })
 
+test_that("scan_usage handles modern syntax and Windows line endings", {
+  expected_key <- resolve_origin_key("posterior", "as_draws")
+
+  tmp <- withr::local_tempdir()
+  path <- file.path(tmp, "syntax.R")
+  writeLines(
+    c(
+      "library(posterior)",
+      "note <- 'as_draws(1)'",
+      "# as_draws(2)",
+      "`as_draws`(3)",
+      "1 |> as_draws()",
+      "(\\(x) as_draws(x))(1)",
+      "text <- \"caf\\u00e9\""
+    ),
+    path,
+    sep = "\r\n",
+    useBytes = TRUE
+  )
+
+  res <- scan_usage(path)
+  expect_true("posterior" %in% res$packages)
+  expect_equal(res$functions, expected_key)
+})
+
 test_that("scan_usage aborts on parse errors in strict mode", {
   tmp <- withr::local_tempdir()
   path <- write_file(
