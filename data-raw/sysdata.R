@@ -192,7 +192,18 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
 }
 
 if (requireNamespace("rstantools", quietly = TRUE)) {
-  .stan_citation_pkgs$rstantools <- citation("rstantools")
+  .stan_citation_pkgs$rstantools <- packageDescription("rstantools") |>
+    (\(meta) {
+      bibentry(
+        bibtype = "Manual",
+        key = "rstantools",
+        title = "{rstantools: Tools for Developing R Packages Interfacing with 'Stan'",
+        author = .meta_authors(meta),
+        year = .meta_year(meta),
+        note = .meta_note(meta),
+        url = "https://mc-stan.org/rstantools/"
+      )
+    })()
 }
 
 .stan_citation_pkgs$shinystan <- packageDescription("shinystan") |>
