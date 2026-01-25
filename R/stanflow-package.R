@@ -2,8 +2,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom fastmatch fmatch
-#' @importFrom utils as.person citation getParseData glob2rx toBibtex
+#' @importFrom utils citation toBibtex person packageDescription
 ## usethis namespace: end
 
 ## mockable bindings: start

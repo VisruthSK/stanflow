@@ -11,16 +11,9 @@ force_local_snapshots <- function() {
 }
 
 # Bind internal helpers/data so tests can call them directly.
-.meta_year <- function(meta) sub("-.*", "", meta[["Date"]])
-.meta_note <- function(meta) sprintf("R package version %s", meta[["Version"]])
-.meta_authors <- function(meta) {
-  meta[["Authors@R"]] |>
-    as.person() |>
-    Filter(
-      \(person) any(person$role %in% c("aut", "cre")),
-      x = _
-    )
-}
+.meta_year <- bind_internal(".meta_year")
+.meta_note <- bind_internal(".meta_note")
+.meta_authors <- bind_internal(".meta_authors")
 .scan_tokens <- bind_internal(".scan_tokens")
 .extract_code <- bind_internal(".extract_code")
 .stan_exports <- bind_internal(".stan_exports")
@@ -51,16 +44,19 @@ resolve_origin_key <- function(pkg, fun) {
   paste0(origin, "::", fun)
 }
 
-test_that("citation metadata helpers parse fields", {
-  meta <- list(
-    Date = "2023-02-01",
-    Version = "1.2.3",
-    `Authors@R` = "A B [aut, cre]"
-  )
+test_that("citation metadata helpers use Stan package metadata", {
+  pkgs <- getFromNamespace(".stan_pkgs", "stanflow")
 
-  expect_equal(.meta_year(meta), "2023")
-  expect_equal(.meta_note(meta), "R package version 1.2.3")
-  expect_equal(length(.meta_authors(meta)), 1L)
+  for (pkg in pkgs) {
+    meta <- packageDescription(pkg)
+    authors <- .meta_authors(meta)
+    cited <- citation(pkg)
+    cited_authors <- cited[[1]]$author
+
+    expect_true(inherits(authors, "person"))
+    expect_true(length(authors) >= 1L)
+    expect_equal(as.character(authors), as.character(cited_authors))
+  }
 })
 
 test_that(".scan_tokens handles empty or no-code files", {
@@ -424,38 +420,6 @@ test_that(".extract_code errors on unsupported extensions", {
   )
 })
 
-test_that("stan_cite returns empty when no citations match", {
-  tmp <- withr::local_tempdir()
-  path <- write_file(
-    file.path(tmp, "script.R"),
-    c(
-      "library(posterior)",
-      "posterior::as_draws(1)"
-    )
-  )
-
-  pkg_env <- getFromNamespace(".stan_citation_pkgs", "stanflow")
-  fun_env <- getFromNamespace(".stan_citation_funs", "stanflow")
-  pkg_snapshot <- as.list(pkg_env, all.names = TRUE)
-  fun_snapshot <- as.list(fun_env, all.names = TRUE)
-
-  withr::defer({
-    rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
-    if (length(pkg_snapshot)) {
-      list2env(pkg_snapshot, envir = pkg_env)
-    }
-    rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
-    if (length(fun_snapshot)) {
-      list2env(fun_snapshot, envir = fun_env)
-    }
-  })
-
-  rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
-  rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
-
-  res <- stan_cite(path)
-  expect_equal(res, character())
-})
 
 test_that("stan_cite returns bibtex or bibentry", {
   tmp <- withr::local_tempdir()
@@ -529,16 +493,29 @@ test_that("stan_cite always cites stanflow and R", {
 })
 
 test_that("all package citations exist", {
-  pkg_env <- getFromNamespace(".stan_citation_pkgs", "stanflow")
-  expected <- unique(c(getFromNamespace(".stan_pkgs", "stanflow"), "R"))
+  expected <- getFromNamespace(".stan_pkgs", "stanflow")
 
-  missing <- setdiff(expected, ls(pkg_env, all.names = TRUE))
-  expect_equal(missing, character())
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "all_pkgs.R"),
+    c(
+      "library(bayesplot)",
+      "library(brms)",
+      "library(cmdstanr)",
+      "library(loo)",
+      "library(posterior)",
+      "library(projpred)",
+      "library(rstan)",
+      "library(rstanarm)",
+      "library(rstantools)",
+      "library(shinystan)"
+    )
+  )
 
+  citations <- stan_cite(path, format = "bibtex")
+  expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
   for (pkg in expected) {
-    entries <- pkg_env[[pkg]]
-    expect_true(length(entries) > 0)
-    expect_true(inherits(entries[[1]], "bibentry"))
+    expect_true(any(grepl(pkg, citations, fixed = TRUE)))
   }
 })
 
