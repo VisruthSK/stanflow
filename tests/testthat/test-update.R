@@ -221,6 +221,19 @@ test_that("stanflow_deps builds from description when check_updates = FALSE", {
   expect_true(all(c("foo", "bar", "baz", "qux") %in% deps$package))
 })
 
+test_that("stanflow_deps returns direct deps when check_updates = FALSE and non-recursive", {
+  local_mocked_bindings(
+    packageDescription = function(pkg) {
+      list(Depends = "R", Imports = "foo, bar (>= 1.0)", Suggests = "baz")
+    },
+    .package = "utils"
+  )
+
+  deps <- stanflow_deps(recursive = FALSE, check_updates = FALSE)
+  expect_true(all(c("foo", "bar", "baz") %in% deps$package))
+  expect_false(any(grepl("qux", deps$package)))
+})
+
 test_that("stanflow_deps falls back when dependencies are empty", {
   fake_available <- matrix(
     c("1.0.0"),
@@ -261,6 +274,48 @@ test_that("stanflow_deps falls back when dependencies are empty", {
   expect_true(called$primary)
   expect_false(called$fallback)
   expect_equal(deps$package, "foo")
+})
+
+test_that("stanflow_deps uses recursive fallback dependencies", {
+  fake_available <- matrix(
+    c("1.0.0", "1.0.0"),
+    nrow = 2,
+    dimnames = list(c("foo", "bar"), "Version")
+  )
+  called <- list(primary = FALSE, fallback = FALSE)
+
+  local_mocked_bindings(
+    stan_repos = function(dev) "https://fake.repo",
+    .package = "stanflow"
+  )
+  local_mocked_bindings(
+    available.packages = function(repos) fake_available,
+    packageDescription = function(pkg) {
+      list(Depends = "R", Imports = "foo", Suggests = "")
+    },
+    .package = "utils"
+  )
+  local_mocked_bindings(
+    package_dependencies = function(pkgs, db, recursive) {
+      if (identical(pkgs, "stanflow")) {
+        called$primary <<- TRUE
+        return(list(stanflow = character()))
+      }
+      called$fallback <<- TRUE
+      list(foo = "bar")
+    },
+    .package = "tools"
+  )
+  local_mocked_bindings(
+    is_installed = function(pkg) FALSE,
+    .package = "stanflow"
+  )
+
+  deps <- stanflow_deps(recursive = TRUE, check_updates = TRUE)
+
+  expect_true(called$primary)
+  expect_true(called$fallback)
+  expect_true(all(c("foo", "bar") %in% deps$package))
 })
 
 test_that("stanflow_update aborts in non-interactive sessions", {

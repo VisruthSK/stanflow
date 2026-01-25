@@ -1,6 +1,7 @@
 Package: stanflow
-Title: An integrated Stan-based Bayesian Workflow
+Title: A Mildly Opinionated Stan Bayesian Workflow
 Version: 0.0.0.9000
+Date: 2026-01-24
 Authors@R: c(
     person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0005-9097-0688")),
@@ -9,9 +10,9 @@ Authors@R: c(
            comment = "Some code adapted from tidyverse package (MIT). See LICENSE.note")
   )
 Description: Streamlines access to the Stan ecosystem by attaching core
-    workflow packages, surfacing conflicts, and providing helpers to set
-    up Stan interfaces with sensible defaults. Facilitates the Bayesian
-    Workflow as described in Gelman et al. (2020)
+    workflow packages, surfacing conflicts, and providing helpers to
+    set up Stan interfaces with sensible defaults. Facilitates the
+    Bayesian Workflow as described in Gelman et al. (2020)
     <https://arxiv.org/abs/2011.01808>.
 License: BSD_3_clause + file LICENSE
 URL: https://visruthsk.github.io/stanflow/
@@ -25,7 +26,7 @@ Imports:
     loo (>= 2.8.0),
     posterior (>= 1.6.0),
     projpred (>= 2.10.0),
-    shinystan (>= 2.7.0)
+    shinystan (>= 2.7.0),
 Suggests:
     brms,
     cmdstanr,

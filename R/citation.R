@@ -36,18 +36,26 @@ stan_cite <- function(
   ) |>
     with(expr = c(packages, functions, "stanflow", "R")) |>
     unique() |>
-    mget(
-      envir = .stan_citation_funs,
-      inherits = TRUE,
-      ifnotfound = list(NULL)
-    ) |>
-    Filter(Negate(is.null), x = _) |>
+    (\(keys) {
+      entries <- mget(
+        keys,
+        envir = .stan_citation_funs,
+        inherits = FALSE,
+        ifnotfound = list(NULL)
+      )
+      Map(
+        \(key, entry) if (is.null(entry)) .build_pkg_citation(key) else entry,
+        keys,
+        entries
+      ) |>
+        Filter(Negate(is.null), x = _)
+    })() |>
     (\(entries) {
       if (!length(entries)) {
         cli::cli_alert_info("No citations found.")
         character()
       } else {
-        entries <- do.call(what = c, args = entries)
+        entries <- do.call(c, entries)
         if (identical(match.arg(format, c("bibtex", "bibentry")), "bibentry")) {
           entries
         } else {
@@ -55,6 +63,159 @@ stan_cite <- function(
         }
       }
     })()
+}
+
+.meta_year <- function(meta) sub("-.*", "", meta[["Date"]])
+.meta_note <- function(meta) sprintf("R package version %s", meta[["Version"]])
+.meta_authors <- function(meta) citation(meta[["Package"]])[[1]]$author
+
+.build_pkg_citation <- function(pkg) {
+  meta <- if (pkg %in% c("R", "brms")) NULL else packageDescription(pkg)
+  switch(
+    pkg,
+    R = citation("base"),
+    brms = .stan_citation_pkgs$brms,
+    stanflow = utils::bibentry(
+      bibtype = "Manual",
+      key = "stanflow",
+      title = "stanflow: Stan Bayesian Workflow",
+      author = .meta_authors(meta),
+      year = .meta_year(meta),
+      note = sprintf(
+        "R package version %s, https://discourse.mc-stan.org",
+        meta$Version
+      ),
+      url = "https://visruthsk.github.io/stanflow/"
+    ),
+    bayesplot = c(
+      utils::bibentry(
+        bibtype = "Misc",
+        key = "bayesplot",
+        title = "bayesplot: Plotting for Bayesian Models",
+        author = .meta_authors(meta),
+        year = .meta_year(meta),
+        note = .meta_note(meta),
+        url = "https://mc-stan.org/bayesplot/"
+      ),
+      utils::bibentry(
+        bibtype = "Article",
+        key = "bayesplot-2019",
+        title = "Visualization in Bayesian workflow",
+        author = c(
+          person("Jonah", "Gabry"),
+          person("Daniel", "Simpson"),
+          person("Aki", "Vehtari"),
+          person("Michael", "Betancourt"),
+          person("Andrew", "Gelman")
+        ),
+        year = "2019",
+        journal = "J. R. Stat. Soc. A",
+        volume = 182,
+        issue = 2,
+        pages = "389-402",
+        doi = "10.1111/rssa.12378"
+      )
+    ),
+    cmdstanr = utils::bibentry(
+      bibtype = "Manual",
+      key = "cmdstanr",
+      title = "cmdstanr: R Interface to 'CmdStan'",
+      author = .meta_authors(meta),
+      year = .meta_year(meta),
+      note = sprintf(
+        "R package version %s, https://discourse.mc-stan.org",
+        meta$Version
+      ),
+      url = "https://mc-stan.org/cmdstanr/"
+    ),
+    loo = utils::bibentry(
+      bibtype = "Misc",
+      key = "loo",
+      title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
+      author = .meta_authors(meta),
+      note = .meta_note(meta),
+      year = .meta_year(meta),
+      url = "https://mc-stan.org/loo/"
+    ),
+    posterior = c(
+      utils::bibentry(
+        bibtype = "Misc",
+        key = "posterior",
+        title = "posterior: Tools for Working with Posterior Distributions",
+        author = .meta_authors(meta),
+        year = .meta_year(meta),
+        note = .meta_note(meta),
+        url = "https://mc-stan.org/posterior/"
+      ),
+      utils::bibentry(
+        bibtype = "Article",
+        key = "rhat-2021",
+        title = "Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)",
+        author = c(
+          person("Aki", "Vehtari"),
+          person("Andrew", "Gelman"),
+          person("Daniel", "Simpson"),
+          person("Bob", "Carpenter"),
+          person("Paul-Christian", "B\\\"urkner")
+        ),
+        journal = "Bayesian Analysis",
+        year = "2021",
+        volume = "16",
+        number = "2",
+        pages = "667-718"
+      )
+    ),
+    projpred = utils::bibentry(
+      bibtype = "Misc",
+      key = "projpred",
+      title = "{{projpred}}: {{Projection}} Predictive Feature Selection",
+      author = .meta_authors(meta),
+      year = .meta_year(meta),
+      note = .meta_note(meta),
+      url = "https://mc-stan.org/projpred/"
+    ),
+    rstan = utils::bibentry(
+      bibtype = "Misc",
+      key = "rstan",
+      title = "{RStan}: the {R} interface to {Stan}",
+      author = .meta_authors(meta),
+      note = .meta_note(meta),
+      url = "https://mc-stan.org/"
+    ),
+    rstanarm = utils::bibentry(
+      bibtype = "Misc",
+      key = "rstanarm",
+      title = "rstanarm: {Bayesian} applied regression modeling via {Stan}.",
+      author = c(
+        person("Ben", "Goodrich"),
+        person("Jonah", "Gabry"),
+        person("Imad", "Ali"),
+        person("Sam", "Brilleman")
+      ),
+      note = .meta_note(meta),
+      year = .meta_year(meta),
+      url = "https://mc-stan.org/rstanarm/"
+    ),
+    rstantools = utils::bibentry(
+      bibtype = "Manual",
+      key = "rstantools",
+      title = "{rstantools: Tools for Developing R Packages Interfacing with 'Stan'",
+      author = .meta_authors(meta),
+      year = .meta_year(meta),
+      note = .meta_note(meta),
+      url = "https://mc-stan.org/rstantools/"
+    ),
+    shinystan = utils::bibentry(
+      bibtype = "Manual",
+      key = "shinystan",
+      title = "shinystan: Interactive Visual and Numerical Diagnostics and Posterior Analysis for Bayesian Models",
+      author = .meta_authors(meta),
+      year = .meta_year(meta),
+      note = .meta_note(meta),
+      url = "https://mc-stan.org/shinystan/"
+    ),
+    NULL
+  )
 }
 
 #' Find used Functions and Packages

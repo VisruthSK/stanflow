@@ -4,7 +4,7 @@
 \name{stanflow-package}
 \alias{stanflow}
 \alias{stanflow-package}
-\title{stanflow: An integrated Stan-based Bayesian Workflow}
+\title{stanflow: A Mildly Opinionated Stan Bayesian Workflow}
 \description{
 Streamlines access to the Stan ecosystem by attaching core workflow packages, surfacing conflicts, and providing helpers to set up Stan interfaces with sensible defaults. Facilitates the Bayesian Workflow as described in Gelman et al. (2020) \url{https://arxiv.org/abs/2011.01808}.
 }
