@@ -281,7 +281,7 @@ setup_cmdstanr <- function(
     }
   }
 
-  cli::cli_process_start("Installing CmdStan (this takes time)...")
+  cli::cli_process_start("Installing CmdStan (this can take some time)...")
 
   cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
 
@@ -305,13 +305,14 @@ setup_cmdstanr <- function(
 #' @export
 setup_rstan <- function(quiet, cores, rstan_auto_write) {
   local_cli_quiet(quiet)
+
   options(mc.cores = cores)
   rstan::rstan_options(auto_write = rstan_auto_write)
 
-  msg <- cli::format_inline(
+  cli::format_inline(
     "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = {rstan_auto_write})}"
-  )
-  cli::cli_alert_info(msg)
+  ) |>
+    cli::cli_alert_info()
 }
 
 #' Setup brms
@@ -325,19 +326,14 @@ setup_rstan <- function(quiet, cores, rstan_auto_write) {
 #' @export
 setup_brms <- function(quiet, brms_backend, cores) {
   local_cli_quiet(quiet)
-  options(mc.cores = cores)
 
-  msg <- "Configured {.pkg brms}: set {.code options(mc.cores = {cores})}"
+  options(mc.cores = cores)
   brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
   options(brms.backend = brms_backend)
-  msg <- paste0(
-    msg,
-    " and {.code options(brms.backend = '",
-    brms_backend,
-    "')}"
-  )
 
-  cli::cli_alert_info(msg)
+  cli::cli_alert_info(
+    "Configured {.pkg brms}: set {.code options(mc.cores = {cores})} and {.code options(brms.backend = '{brms_backend}')}"
+  )
 }
 
 #' Setup rstanarm
@@ -351,9 +347,10 @@ setup_brms <- function(quiet, brms_backend, cores) {
 #' @export
 setup_rstanarm <- function(quiet, cores) {
   local_cli_quiet(quiet)
+
   options(mc.cores = cores)
 
-  msg <- "Configured {.pkg rstanarm}: set {.code options(mc.cores = {cores})}"
-
-  cli::cli_alert_info(msg)
+  cli::cli_alert_info(
+    "Configured {.pkg rstanarm}: set {.code options(mc.cores = {cores})}"
+  )
 }
