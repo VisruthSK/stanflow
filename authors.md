@@ -8,19 +8,19 @@
 - **Jonah Gabry**. Contributor.
 
 - **tidyverse authors**. Copyright holder.  
-  Some code adapted from tidyverse package (MIT)
+  Some code adapted from tidyverse package (MIT). See LICENSE.note
 
 ## Citation
 
 Source:
 [`DESCRIPTION`](https://github.com/VisruthSK/stanflow/blob/main/DESCRIPTION)
 
-Srimath Kandali V (2026). *stanflow: An integrated Stan-based Bayesian
+Srimath Kandali V (2026). *stanflow: A Mildly Opinionated Stan Bayesian
 Workflow*. R package version 0.0.0.9000,
 <https://visruthsk.github.io/stanflow/>.
 
     @Manual{,
-      title = {stanflow: An integrated Stan-based Bayesian Workflow},
+      title = {stanflow: A Mildly Opinionated Stan Bayesian Workflow},
       author = {Visruth {Srimath Kandali}},
       year = {2026},
       note = {R package version 0.0.0.9000},
