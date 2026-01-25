@@ -14,7 +14,7 @@ stan_cite(
 }
 \arguments{
 \item{path}{A single project directory (searched recursively) or a vector of
-files (.R/.Rmd/.Qmd).}
+files (.R/.Rmd/.qmd).}
 
 \item{ignore_unqualified_functions}{Character vector of function names to ignore when
 attributing (unqualified) calls to Stan packages. Defaults to exports from
