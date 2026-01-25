@@ -6,7 +6,7 @@
 #' resolved package.
 #'
 #' @param path A single project directory (searched recursively) or a vector of
-#'   files (.R/.Rmd/.Qmd).
+#'   files (.R/.Rmd/.qmd).
 #' @param ignore_unqualified_functions Character vector of function names to ignore when
 #'   attributing (unqualified) calls to Stan packages. Defaults to exports from
 #'   base R packages listed in `stdlib_funs()`. Calls like `rstan::plot()` will NOT
@@ -271,9 +271,10 @@ scan_usage <- function(
       })()
   } else {
     if (any(dir_flags)) {
-      cli::cli_abort(
-        "{.arg path} must be a single directory or a vector of files."
-      )
+      cli::cli_abort(c(
+        "{.arg path} must be a single directory or a vector of files.",
+        "x" = "Mixed directories and files or multiple directories are not supported."
+      ))
     }
     paths |>
       (\(paths) {
@@ -286,7 +287,10 @@ scan_usage <- function(
   }
 
   if (!length(files)) {
-    cli::cli_abort("No files found.")
+    cli::cli_abort(c(
+      "No files found.",
+      "i" = "Check the {.arg path} and {.arg skip_dirs} arguments."
+    ))
   }
 
   hits <- unique(files) |>
@@ -307,19 +311,18 @@ scan_usage <- function(
 
   ambiguous <- .collect_unique(hits, "ambiguous")
   if (length(ambiguous)) {
-    msg <- ambiguous |>
-      paste0("{.code ", x = _, "()}") |>
-      paste(collapse = ", ") |>
-      paste0(
-        "Cannot reliably detect which packages these functions are from: ",
-        x = _,
-        ". Please namespace them ({.code pkg::function()}) and rerun the function."
-      )
-    if (strict) {
-      cli::cli_abort(msg)
-    } else {
-      cli::cli_warn(msg)
-    }
+    funs <- cli::cli_vec(ambiguous)
+
+    msg <- c(
+      "Cannot reliably detect which packages some functions are from.",
+      "x" = paste0(
+        "Ambiguous functions: ",
+        paste0("{.fun ", ambiguous, "}", collapse = ", ")
+      ),
+      "i" = "Please namespace them ({.code pkg::function()}) and rerun or set {.code strict = FALSE}."
+    )
+
+    if (strict) cli::cli_abort(msg) else cli::cli_warn(msg)
   }
 
   structure(
@@ -332,12 +335,12 @@ scan_usage <- function(
   )
 }
 
-.escape_regex <- function(x) {
-  gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x)
-}
-
 .scan_skip_regex <- function(skip_dirs) {
-  escaped <- vapply(skip_dirs, .escape_regex, character(1))
+  escaped <- vapply(
+    skip_dirs,
+    \(x) gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x),
+    character(1)
+  )
   paste0("(^|/)(?:", paste(escaped, collapse = "|"), ")(/|$)")
 }
 
@@ -355,9 +358,10 @@ scan_usage <- function(
     tolower()
 
   if (!ext %in% c("r", "rmd", "qmd")) {
-    cli::cli_abort(
-      "Unsupported file extension: {ext}. Use {.file .R}, {.file .Rmd}, or {.file .qmd}."
-    )
+    cli::cli_abort(c(
+      "Unsupported file extension: {.val {ext}}.",
+      "i" = "Supported extensions are {.file .R}, {.file .Rmd}, and {.file .qmd}."
+    ))
   }
 
   if (identical(ext, "r")) {
@@ -369,9 +373,10 @@ scan_usage <- function(
 
   if (identical(ext, "rmd") || identical(ext, "qmd")) {
     if (!requireNamespace("knitr", quietly = TRUE)) {
-      cli::cli_abort(
-        "Install {.pkg knitr} to parse R Markdown ({.file .Rmd}) or Quarto ({.file .Qmd}) files."
-      )
+      cli::cli_abort(c(
+        "Package {.pkg knitr} is required to parse R Markdown ({.file .Rmd}) or Quarto ({.file .qmd}) files.",
+        "i" = "Please install it with {.code install.packages('knitr')}."
+      ))
     }
     knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
   }
@@ -399,10 +404,14 @@ scan_usage <- function(
     } else {
       "<unknown file>"
     }
+    msg <- c(
+      "Failed to parse {.path {path_label}}.",
+      "x" = "Syntax error in file."
+    )
     if (strict) {
-      cli::cli_abort("Failed to parse {.path {path_label}}.")
+      cli::cli_abort(msg)
     } else {
-      cli::cli_warn("Failed to parse {.path {path_label}}.")
+      cli::cli_warn(msg)
     }
     return(empty)
   }

@@ -414,10 +414,7 @@ test_that(".extract_code extracts Qmd chunks", {
 test_that(".extract_code errors on unsupported extensions", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "note.txt"), "x <- 1")
-  expect_error(
-    .extract_code(path),
-    "Unsupported file extension: txt"
-  )
+  expect_snapshot_error(.extract_code(path))
 })
 
 

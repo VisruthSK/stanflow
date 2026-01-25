@@ -1,14 +1,25 @@
+# .extract_code errors on unsupported extensions
+
+    Unsupported file extension: "txt".
+    i Supported extensions are '.R', '.Rmd', and '.qmd'.
+
 # scan_usage strict aborts on ambiguous unqualified calls
 
-    Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and rerun the function.
+    Cannot reliably detect which packages some functions are from.
+    x Ambiguous functions: `ess_bulk()`, `rhat()`
+    i Please namespace them (`pkg::function()`) and rerun or set `strict = FALSE`.
 
 # scan_usage warns about multiple ambiguous calls in strict mode
 
-    Cannot reliably detect which packages these functions are from: `ess_bulk()`, `rhat()`. Please namespace them (`pkg::function()`) and rerun the function.
+    Cannot reliably detect which packages some functions are from.
+    x Ambiguous functions: `ess_bulk()`, `rhat()`
+    i Please namespace them (`pkg::function()`) and rerun or set `strict = FALSE`.
 
 # scan_usage warns on ambiguous calls in non-strict mode
 
-    Cannot reliably detect which packages these functions are from: `foo()`. Please namespace them (`pkg::function()`) and rerun the function.
+    Cannot reliably detect which packages some functions are from.
+    x Ambiguous functions: `foo()`
+    i Please namespace them (`pkg::function()`) and rerun or set `strict = FALSE`.
 
 # print.scan_usage shows functions with no packages
 
@@ -63,6 +74,7 @@
 # scan_usage errors on multiple directories
 
     `path` must be a single directory or a vector of files.
+    x Mixed directories and files or multiple directories are not supported.
 
 # scan_usage alerts full paths for file vectors
 
@@ -75,4 +87,5 @@
 # scan_usage errors when mixing directories and files
 
     `path` must be a single directory or a vector of files.
+    x Mixed directories and files or multiple directories are not supported.
 
