@@ -231,7 +231,7 @@ test_that("stanflow_deps returns direct deps when check_updates = FALSE and non-
 
   deps <- stanflow_deps(recursive = FALSE, check_updates = FALSE)
   expect_true(all(c("foo", "bar", "baz") %in% deps$package))
-  expect_false(any(grepl("qux", deps$package)))
+  expect_false(any(grepl("qux", deps$package, fixed = TRUE)))
 })
 
 test_that("stanflow_deps falls back when dependencies are empty", {
