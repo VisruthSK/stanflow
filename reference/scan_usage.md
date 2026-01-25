@@ -22,7 +22,7 @@ scan_usage(
 - path:
 
   A single project directory (searched recursively) or a vector of files
-  (.R/.Rmd/.Qmd).
+  (.R/.Rmd/.qmd).
 
 - ignore_unqualified_functions:
 

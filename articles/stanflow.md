@@ -80,7 +80,7 @@ setup_interface(
 #> ℹ Configured brms: set `options(mc.cores = 2)` and `options(brms.backend = 'cmdstanr')`
 #> ℹ Attaching cmdstanr...
 #> ! CmdStan binaries are missing or force-reinstall requested.
-#> ℹ Installing CmdStan (this takes time)...
+#> ℹ Installing CmdStan (this can take some time)...
 #> * Latest CmdStan release is v2.38.0
 #> * Installing CmdStan v2.38.0 in /home/runner/.cmdstan/cmdstan-2.38.0
 #> * Downloading cmdstan-2.38.0.tar.gz from GitHub...
@@ -89,8 +89,8 @@ setup_interface(
 #> * Building CmdStan binaries...
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a
-#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a
+#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a
 #> /home/runner/.cmdstan/cmdstan-2.38.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.11.0
 #> In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:
 #> ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template<class _Category, class _Tp, class _Distance, class _Pointer, class _Reference> struct std::iterator’ is deprecated [-Wdeprecated-declarations]
@@ -126,7 +126,7 @@ setup_interface(
 #> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
 #> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.38.0
 #> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.38.0
-#> ✔ Installing CmdStan (this takes time)... ... done
+#> ✔ Installing CmdStan (this can take some time)... ... done
 #> 
 #> ℹ Configured cmdstanr: set `options(mc.cores = 2)`
 #> ✔ Setup complete. brms, cmdstanr  packages are attached; you do not need to run `library()`.
