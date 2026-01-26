@@ -23,6 +23,8 @@
 #' @param format One of "bibtex" or "bibentry", specifying the return format.
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
+#' @examples
+#' stan_cite(strict = FALSE)
 stan_cite <- function(
   path = ".",
   strict = TRUE,

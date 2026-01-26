@@ -7,7 +7,7 @@
 stanflow_conflicts(only = NULL)
 }
 \arguments{
-\item{only}{Set this to a character vector to restrict to conflicts only
+\item{only}{Defaults to \code{NULL}. Set this to a character vector to restrict to conflicts only
 between the provided packages and loaded stanflow packages.}
 }
 \description{
@@ -16,9 +16,9 @@ and other loaded packages.
 }
 \details{
 There are several conflicts that are deliberately ignored: \code{diag},
-\code{drop}, \code{match}, \code{\%in\%}, \code{mad}, \code{sd}, and
-\code{var} from posterior.
+\code{drop}, \code{match}, \verb{\\\%in\\\%}, \code{mad}, \code{sd}, and \code{var} from posterior.
 }
 \examples{
 stanflow_conflicts()
+stanflow_conflicts(c("base"))
 }

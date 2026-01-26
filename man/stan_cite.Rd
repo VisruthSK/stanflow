@@ -44,3 +44,6 @@ and also attempts to map re-exports to their origin package.
 The parsing is handled by \code{funscanr()}; \code{stan_cite()} owns
 the citation lookups.
 }
+\examples{
+stan_cite(strict = FALSE)
+}

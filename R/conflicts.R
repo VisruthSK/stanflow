@@ -6,22 +6,23 @@
 #' This function lists all the conflicts between packages in stanflow
 #' and other loaded packages.
 #'
-#' There are several conflicts that are deliberately ignored: \code{diag},
-#' \code{drop}, \code{match}, \code{\%in\%}, \code{mad}, \code{sd}, and
-#' \code{var} from posterior.
+#' There are several conflicts that are deliberately ignored: `diag`,
+#' `drop`, `match`, `\%in\%`, `mad`, `sd`, and `var` from posterior.
 #'
 #' @export
-#' @param only Set this to a character vector to restrict to conflicts only
+#' @param only Defaults to `NULL`. Set this to a character vector to restrict to conflicts only
 #'   between the provided packages and loaded stanflow packages.
 #' @examples
 #' stanflow_conflicts()
+#' stanflow_conflicts(c("base"))
 stanflow_conflicts <- function(only = NULL) {
   envs <- grep("^package:", search(), value = TRUE)
   names(envs) <- envs
 
   if (!is.null(only)) {
-    only <- union(only, stanflow_pkgs)
-    envs <- envs[names(envs) %in% paste0("package:", only)]
+    envs <- envs[
+      names(envs) %in% paste0("package:", union(only, stanflow_pkgs))
+    ]
   }
 
   conflicts <- invert(lapply(envs, ls_env)) |>
@@ -39,7 +40,7 @@ stanflow_conflicts <- function(only = NULL) {
 }
 
 #' @export
-print.stanflow_conflicts <- function(x, ..., startup = FALSE) {
+print.stanflow_conflicts <- function(x, ...) {
   message <- stanflow_conflict_message(x)
   if (!is.null(message)) {
     cli::cat_line(message)
@@ -47,6 +48,13 @@ print.stanflow_conflicts <- function(x, ..., startup = FALSE) {
   invisible(x)
 }
 
+#' Generate conflict message
+#'
+#' Pulled from tidyverse. Builds the conflict message.
+#'
+#' @param x A named list describing function-name conflicts.
+#' @return Character vector of the conflict message to print.
+#' @keywords internal
 stanflow_conflict_message <- function(x) {
   if (length(x) == 0) {
     return(NULL)
@@ -71,11 +79,13 @@ stanflow_conflict_message <- function(x) {
 
   winner <- vapply(pkgs, "[", 1, FUN.VALUE = character(1))
 
-  funs <- format(paste0(
-    cli::col_blue(winner),
-    "::",
-    cli::col_green(paste0(names(x), "()"))
-  ))
+  funs <- format(
+    paste0(
+      cli::col_blue(winner),
+      "::",
+      cli::col_green(paste0(names(x), "()"))
+    )
+  )
 
   bullets <- paste0(
     cli::col_red(cli::symbol$cross),
@@ -99,23 +109,18 @@ stanflow_conflict_message <- function(x) {
   paste0(header, "\n", bullets, "\n", conflicted)
 }
 
+#' Find function name conflicts
+#' @keywords internal
 confirm_conflict <- function(packages, name) {
   objs <- lapply(packages, \(pkg) get(name, pos = pkg)) |>
-    Filter(is.function, x = _)
+    Filter(is.function, x = _) |>
+    unique()
 
-  if (length(objs) <= 1) {
-    return(NULL)
-  }
-
-  objs <- unique(objs)
-
-  if (length(objs) == 1) {
-    return(NULL)
-  }
-
-  packages[!duplicated(packages)]
+  if (length(objs) <= 1) NULL else unique(packages)
 }
 
+#' Remove ignored conflicts
+#' @keywords internal
 ls_env <- function(env) {
   x <- ls(pos = env)
 
