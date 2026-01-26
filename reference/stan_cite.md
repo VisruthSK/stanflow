@@ -1,20 +1,20 @@
-# Collect citations
+# Cite Stan packages in a project/files
 
-Unqualified function calls are only attributed when a Stan package is
-attached via [`library()`](https://rdrr.io/r/base/library.html) or
-[`require()`](https://rdrr.io/r/base/library.html) in the same file.
-Known reexports are remapped to their origin packages; missing mappings
-fall back to the resolved package.
+`stan_cite()` generates the correct citations for Stan packages in a
+directory or set of files. The `{knitr}` package is required to parse
+Quarto (.qmd) or RMarkdown (.Rmd) documents. `stan_cite()` uses some
+simple heuristics to guess which packages export functions, and also
+attempts to map re-exports to their origin package.
 
 ## Usage
 
 ``` r
 stan_cite(
   path = ".",
-  ignore_unqualified_functions = .stdlib_funs,
   strict = TRUE,
+  format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
-  format = c("bibtex", "bibentry")
+  ignore_unqualified_functions = .stdlib_funs
 )
 ```
 
@@ -25,28 +25,43 @@ stan_cite(
   A single project directory (searched recursively) or a vector of files
   (.R/.Rmd/.qmd).
 
-- ignore_unqualified_functions:
-
-  Character vector of function names to ignore when attributing
-  (unqualified) calls to Stan packages. Defaults to exports from base R
-  packages listed in
-  [`stdlib_funs()`](https://visruthsk.github.io/stanflow/reference/stdlib_funs.md).
-  Calls like `rstan::plot()` will NOT be ignored even if `plot` is in
-  `ignore_unqualified_functions`.
-
 - strict:
 
-  If `TRUE`, only count unqualified function calls that resolve to a
-  single Stan package.
-
-- skip_dirs:
-
-  Character vector of directory names to skip when scanning a directory.
+  Defaults to `FALSE`. If `TRUE`, only count unqualified function calls
+  that resolve to a single Stan package.
 
 - format:
 
-  One of "bibtex" or "bibentry".
+  One of "bibtex" or "bibentry", specifying the return format.
+
+- skip_dirs:
+
+  Defaults to directories listed in `scan_skip_dirs`. Character vector
+  of directory names to skip when scanning a directory.
+
+- ignore_unqualified_functions:
+
+  Defaults to exports from base R packages listed in
+  [`stdlib_funs()`](https://visruthsk.github.io/stanflow/reference/internal_data.md).
+  Character vector of function names to ignore when attributing
+  (unqualified) calls to Stan packages. Calls like `rstan::plot()` will
+  NOT be ignored even if `plot` is in `ignore_unqualified_functions`,
+  since they are namespaced.
 
 ## Value
 
 A BibTeX character vector or a bibentry object.
+
+## Details
+
+The parsing is handled by `funscanr()`; `stan_cite()` owns the citation
+lookups.
+
+## Examples
+
+``` r
+stan_cite(strict = FALSE)
+#> ℹ Searching directory /home/runner/work/stanflow/stanflow/docs/reference
+#> Error in scan_usage(path = path, ignore_unqualified_functions = ignore_unqualified_functions,     strict = strict, skip_dirs = skip_dirs, allowed_packages = .stan_pkgs,     export_index = .stan_export_index, origin_map = .stan_origin_map): No files found.
+#> ℹ Check the `path` and `skip_dirs` arguments.
+```

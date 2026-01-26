@@ -1,7 +1,6 @@
 # Print the stanflow ASCII art logo
 
-Emits the stanflow ASCII art logo via
-[`cli::cat_line()`](https://cli.r-lib.org/reference/cat_line.html).
+Print the stanflow ASCII art logo
 
 ## Usage
 

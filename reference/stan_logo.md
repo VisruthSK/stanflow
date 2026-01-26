@@ -1,7 +1,6 @@
 # Print the Stan ASCII art logo
 
-Emits the Stan ASCII art logo via
-[`cli::cat_line()`](https://cli.r-lib.org/reference/cat_line.html).
+Print the Stan ASCII art logo
 
 ## Usage
 

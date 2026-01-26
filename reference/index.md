@@ -17,7 +17,7 @@
 - [`setup_rstanarm()`](https://visruthsk.github.io/stanflow/reference/setup_rstanarm.md)
   : Setup rstanarm
 - [`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
-  : Collect citations
+  : Cite Stan packages in a project/files
 - [`stan_logo()`](https://visruthsk.github.io/stanflow/reference/stan_logo.md)
   : Print the Stan ASCII art logo
 - [`stan_repos()`](https://visruthsk.github.io/stanflow/reference/stan_repos.md)
@@ -30,5 +30,3 @@
   : Print the stanflow ASCII art logo
 - [`stanflow_update()`](https://visruthsk.github.io/stanflow/reference/stanflow_update.md)
   : Update stanflow packages
-- [`stdlib_funs()`](https://visruthsk.github.io/stanflow/reference/stdlib_funs.md)
-  : Standard-library function names to never attribute to Stan packages

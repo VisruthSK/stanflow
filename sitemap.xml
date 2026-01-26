@@ -6,9 +6,13 @@
 <url><loc>https://visruthsk.github.io/stanflow/articles/stanflow.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/authors.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/index.html</loc></url>
+<url><loc>https://visruthsk.github.io/stanflow/reference/confirm_conflict.html</loc></url>
+<url><loc>https://visruthsk.github.io/stanflow/reference/dot-build_pkg_citation.html</loc></url>
+<url><loc>https://visruthsk.github.io/stanflow/reference/dot-pkg_cite.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/flow_check.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/index.html</loc></url>
-<url><loc>https://visruthsk.github.io/stanflow/reference/scan_skip_dirs.html</loc></url>
+<url><loc>https://visruthsk.github.io/stanflow/reference/internal_data.html</loc></url>
+<url><loc>https://visruthsk.github.io/stanflow/reference/ls_env.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/scan_usage.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/setup_brms.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/setup_cmdstanr.html</loc></url>
@@ -19,10 +23,10 @@
 <url><loc>https://visruthsk.github.io/stanflow/reference/stan_logo.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/stan_repos.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/stanflow-package.html</loc></url>
+<url><loc>https://visruthsk.github.io/stanflow/reference/stanflow_conflict_message.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/stanflow_conflicts.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/stanflow_deps.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/stanflow_logo.html</loc></url>
 <url><loc>https://visruthsk.github.io/stanflow/reference/stanflow_update.html</loc></url>
-<url><loc>https://visruthsk.github.io/stanflow/reference/stdlib_funs.html</loc></url>
 </urlset>
 

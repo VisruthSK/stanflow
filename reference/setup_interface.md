@@ -63,7 +63,8 @@ setup_interface(
 
 - rstan_auto_write:
 
-  Logical. If `TRUE`, sets `rstan::rstan_options(auto_write = TRUE))`
+  Logical. If `TRUE` (default), sets
+  `rstan::rstan_options(auto_write = TRUE))`
 
 ## Value
 

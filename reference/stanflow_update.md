@@ -12,7 +12,7 @@ stanflow_update(recursive = FALSE, dev = FALSE)
 
 - recursive:
 
-  If `TRUE`, will also list all dependencies.
+  If `TRUE`, will also list all dependencies of dependencies and so on.
 
 - dev:
 
