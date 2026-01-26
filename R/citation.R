@@ -35,20 +35,34 @@ stan_cite <- function(
     export_index = .stan_export_index,
     origin_map = .stan_origin_map
   ) |>
-    with(expr = c(packages, functions, "stanflow", "R")) |>
-    unique() |>
-    (\(keys) {
-      mget(
-        keys,
-        envir = .stan_citation_funs,
-        inherits = TRUE,
-        ifnotfound = list(NULL)
-      ) |>
-        Map(
-          \(key, entry) if (is.null(entry)) .build_pkg_citation(key) else entry,
-          key = keys,
-          entry = _
+    (\(x) {
+      list(
+        pkgs = unique(c(x$packages, "stanflow")),
+        funs = unique(x$functions)
+      )
+    })() |>
+    (\(k) {
+      c(
+        packages = mget(
+          k$pkgs,
+          envir = .stan_citation_pkgs,
+          inherits = TRUE,
+          ifnotfound = list(NULL)
         ) |>
+          Map(
+            \(pkg, entry) {
+              if (is.null(entry)) .build_pkg_citation(pkg) else entry
+            },
+            pkg = k$pkgs,
+            entry = _
+          ),
+        functions = mget(
+          k$funs,
+          envir = .stan_citation_funs,
+          inherits = TRUE,
+          ifnotfound = list(NULL)
+        )
+      ) |>
         Filter(Negate(is.null), x = _)
     })() |>
     (\(entries) {
@@ -56,7 +70,7 @@ stan_cite <- function(
         cli::cli_alert_info("No citations found.")
         character()
       } else {
-        entries <- do.call(c, entries)
+        entries <- do.call(c, entries) |> c(utils::citation("base"))
         if (match.arg(format, c("bibtex", "bibentry")) == "bibentry") {
           entries
         } else {

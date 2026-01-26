@@ -32,8 +32,7 @@ if (length(missing) > 0) {
 }
 
 .stan_citation_pkgs <- new.env(parent = emptyenv())
-.stan_citation_funs <- new.env(parent = .stan_citation_pkgs)
-.stan_citation_pkgs$R <- citation("base")
+.stan_citation_funs <- new.env(parent = emptyenv())
 .stan_citation_pkgs$brms <- c(
   bibentry(
     bibtype = "Article",
