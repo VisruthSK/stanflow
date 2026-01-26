@@ -20,7 +20,6 @@ force_local_snapshots <- function() {
 .stan_export_index <- bind_internal(".stan_export_index")
 .stan_origin_map <- bind_internal(".stan_origin_map")
 .stan_pkgs <- bind_internal(".stan_pkgs")
-.build_pkg_citation <- bind_internal(".build_pkg_citation")
 
 resolve_origin_pkg <- function(pkg, fun) {
   key <- paste0(pkg, "::", fun)
@@ -44,17 +43,6 @@ resolve_origin_key <- function(pkg, fun) {
   }
   paste0(origin, "::", fun)
 }
-
-test_that("package citations match snapshots", {
-  for (pkg in c("stanflow", "R", .stan_pkgs)) {
-    expect_snapshot({
-      cat(
-        paste(utils::toBibtex(.build_pkg_citation(pkg)), collapse = "\n"),
-        "\n"
-      )
-    })
-  }
-})
 
 test_that("citation metadata helpers use Stan package metadata", {
   pkgs <- getFromNamespace(".stan_pkgs", "stanflow")

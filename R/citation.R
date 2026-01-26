@@ -98,7 +98,10 @@ stan_cite <- function(
       title = "stanflow: Stan Bayesian Workflow",
       author = .meta_authors(meta),
       year = .meta_year(meta),
-      note = .meta_note(meta),
+      note = sprintf(
+        "R package version %s, https://discourse.mc-stan.org",
+        meta$Version
+      ),
       url = "https://visruthsk.github.io/stanflow/"
     ),
     bayesplot = c(
@@ -136,7 +139,10 @@ stan_cite <- function(
       title = "cmdstanr: R Interface to 'CmdStan'",
       author = .meta_authors(meta),
       year = .meta_year(meta),
-      note = .meta_note(meta),
+      note = sprintf(
+        "R package version %s, https://discourse.mc-stan.org",
+        meta$Version
+      ),
       url = "https://mc-stan.org/cmdstanr/"
     ),
     loo = utils::bibentry(
@@ -225,7 +231,6 @@ stan_cite <- function(
       note = .meta_note(meta),
       url = "https://mc-stan.org/shinystan/"
     ),
-    brms = .stan_citation_pkgs$brms,
     NULL
   )
 }
