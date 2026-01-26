@@ -1,7 +1,7 @@
 # Portions of this file are adapted from the tidyverse package.
 # See LICENSE.note for details.
 # nocov start
-compliance_imports <- function() {
+compliance_imports <- \() {
   bayesplot::abline_01
   loo::compare
   posterior::as_draws
@@ -11,10 +11,7 @@ compliance_imports <- function() {
 # nocov end
 
 wrapped_startup <- function(msg, ...) {
-  if (is.null(msg)) {
-    return()
-  }
-  if (isTRUE(getOption("stanflow.quiet"))) {
+  if (is.null(msg) || isTRUE(getOption("stanflow.quiet"))) {
     return()
   }
   packageStartupMessage(msg, ...)
@@ -23,8 +20,14 @@ wrapped_startup <- function(msg, ...) {
 # Attach the package from the same package library it was loaded from before.
 # https://github.com/tidyverse/tidyverse/issues/171
 same_library <- function(pkg) {
-  loc <- if (pkg %in% loadedNamespaces()) dirname(getNamespaceInfo(pkg, "path"))
-  library(pkg, lib.loc = loc, character.only = TRUE, warn.conflicts = FALSE)
+  library(
+    pkg,
+    lib.loc = if (pkg %in% loadedNamespaces()) {
+      dirname(getNamespaceInfo(pkg, "path"))
+    },
+    character.only = TRUE,
+    warn.conflicts = FALSE
+  )
 }
 
 #' Stan package repositories
@@ -64,7 +67,7 @@ local_cli_quiet <- function(quiet, env = parent.frame()) {
     return(invisible(NULL))
   }
 
-  old <- options(cli.default_handler = function(...) invisible(NULL))
+  old <- options(cli.default_handler = \(...) invisible(NULL))
   restore_expr <- bquote(options(
     cli.default_handler = .(old$cli.default_handler)
   ))

@@ -10,7 +10,8 @@
 #' @param ignore_unqualified_functions Character vector of function names to ignore when
 #'   attributing (unqualified) calls to Stan packages. Defaults to exports from
 #'   base R packages listed in `stdlib_funs()`. Calls like `rstan::plot()` will NOT
-#'   be ignored even if `plot` is in `ignore_unqualified_functions`.
+#'   be ignored even if `plot` is in `ignore_unqualified_functions`, since they are
+#'   namespaced.
 #' @param strict If `TRUE`, only count unqualified function calls that resolve
 #'   to a single Stan package.
 #' @param skip_dirs Character vector of directory names to skip when scanning a
@@ -37,17 +38,17 @@ stan_cite <- function(
     with(expr = c(packages, functions, "stanflow", "R")) |>
     unique() |>
     (\(keys) {
-      entries <- mget(
+      mget(
         keys,
         envir = .stan_citation_funs,
-        inherits = FALSE,
+        inherits = TRUE,
         ifnotfound = list(NULL)
-      )
-      Map(
-        \(key, entry) if (is.null(entry)) .build_pkg_citation(key) else entry,
-        keys,
-        entries
       ) |>
+        Map(
+          \(key, entry) if (is.null(entry)) .build_pkg_citation(key) else entry,
+          key = keys,
+          entry = _
+        ) |>
         Filter(Negate(is.null), x = _)
     })() |>
     (\(entries) {
@@ -56,7 +57,7 @@ stan_cite <- function(
         character()
       } else {
         entries <- do.call(c, entries)
-        if (identical(match.arg(format, c("bibtex", "bibentry")), "bibentry")) {
+        if (match.arg(format, c("bibtex", "bibentry")) == "bibentry") {
           entries
         } else {
           toBibtex(entries)
@@ -68,13 +69,29 @@ stan_cite <- function(
 .meta_year <- function(meta) sub("-.*", "", meta[["Date"]])
 .meta_note <- function(meta) sprintf("R package version %s", meta[["Version"]])
 .meta_authors <- function(meta) citation(meta[["Package"]])[[1]]$author
+.meta_title <- function(meta) meta[["Title"]]
+
+.pkg_cite <- function(pkg) {
+  meta <- packageDescription(pkg)
+  utils::bibentry(
+    bibtype = "Manual",
+    key = pkg,
+    title = meta[["Title"]],
+    author = citation(meta[["Package"]])[[1]]$author,
+    year = sub("-.*", "", meta[["Date"]]),
+    note = sprintf(
+      "R package version %s, https://discourse.mc-stan.org",
+      meta$Version
+    ),
+    url = sprintf("https://mc-stan.org/%s/", pkg)
+  )
+}
 
 .build_pkg_citation <- function(pkg) {
-  meta <- if (pkg %in% c("R", "brms")) NULL else packageDescription(pkg)
+  meta <- suppressWarnings(packageDescription(pkg))
   switch(
     pkg,
     R = citation("base"),
-    brms = .stan_citation_pkgs$brms,
     stanflow = utils::bibentry(
       bibtype = "Manual",
       key = "stanflow",

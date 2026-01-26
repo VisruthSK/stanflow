@@ -144,14 +144,14 @@ scan_usage <- function(
     ))
   }
 
-  if (identical(ext, "r")) {
+  if (ext == "r") {
     return(paste(readLines(file, warn = FALSE), collapse = "\n"))
   }
 
   tmp <- tempfile(fileext = ".R")
   on.exit(unlink(tmp), add = TRUE)
 
-  if (identical(ext, "rmd") || identical(ext, "qmd")) {
+  if (ext == "rmd" || ext == "qmd") {
     if (!requireNamespace("knitr", quietly = TRUE)) {
       cli::cli_abort(c(
         "Package {.pkg knitr} is required to parse R Markdown ({.file .Rmd}) or Quarto ({.file .qmd}) files.",
@@ -320,7 +320,7 @@ scan_usage <- function(
           acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
           acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", fun))
         }
-      } else if (identical(head_name, "use")) {
+      } else if (head_name == "use") {
         pkg <- .ast_get_lib_pkg(x)
         if (!is.null(pkg) && !is.na(fastmatch::fmatch(pkg, allowed_packages))) {
           acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
@@ -336,7 +336,7 @@ scan_usage <- function(
           acc$lib_visit_idx <- c(acc$lib_visit_idx, acc$visit_idx)
           acc$lib_is_attach <- c(
             acc$lib_is_attach,
-            !identical(head_name, "requireNamespace")
+            head_name != "requireNamespace"
           )
         }
       } else if (!is.na(fastmatch::fmatch(head_name, ignore_heads))) {
