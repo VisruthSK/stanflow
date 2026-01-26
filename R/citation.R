@@ -1,30 +1,34 @@
-#' Collect citations
+#' Cite Stan packages in a project/files
 #'
-#' Unqualified function calls are only attributed when a Stan package is
-#' attached via `library()` or `require()` in the same file. Known reexports
-#' are remapped to their origin packages; missing mappings fall back to the
-#' resolved package.
+#' `stan_cite()` generates the correct citations for Stan packages
+#' in a directory or set of files. The `{knitr}` package is required
+#' to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. `stan_cite()`
+#' uses some simple heuristics to guess which packages export functions,
+#' and also attempts to map re-exports to their origin package.
+#'
+#' The parsing is handled by `funscanr()`; `stan_cite()` owns
+#' the citation lookups.
 #'
 #' @param path A single project directory (searched recursively) or a vector of
 #'   files (.R/.Rmd/.qmd).
-#' @param ignore_unqualified_functions Character vector of function names to ignore when
-#'   attributing (unqualified) calls to Stan packages. Defaults to exports from
-#'   base R packages listed in `stdlib_funs()`. Calls like `rstan::plot()` will NOT
-#'   be ignored even if `plot` is in `ignore_unqualified_functions`, since they are
-#'   namespaced.
-#' @param strict If `TRUE`, only count unqualified function calls that resolve
+#' @param ignore_unqualified_functions Defaults to exports from base R packages
+#'   listed in `stdlib_funs()`. Character vector of function names to ignore when
+#'   attributing (unqualified) calls to Stan packages. Calls like `rstan::plot()`
+#'   will NOT be ignored even if `plot` is in `ignore_unqualified_functions`, since
+#'   they are namespaced.
+#' @param strict Defaults to `FALSE`. If `TRUE`, only count unqualified function calls that resolve
 #'   to a single Stan package.
-#' @param skip_dirs Character vector of directory names to skip when scanning a
-#'   directory.
-#' @param format One of "bibtex" or "bibentry".
+#' @param skip_dirs Defaults to directories listed in `scan_skip_dirs`. Character
+#'   vector of directory names to skip when scanning a directory.
+#' @param format One of "bibtex" or "bibentry", specifying the return format.
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
 stan_cite <- function(
   path = ".",
-  ignore_unqualified_functions = .stdlib_funs,
   strict = TRUE,
+  format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
-  format = c("bibtex", "bibentry")
+  ignore_unqualified_functions = .stdlib_funs
 ) {
   scan_usage(
     path = path,
@@ -43,6 +47,8 @@ stan_cite <- function(
     })() |>
     (\(k) {
       c(
+        # Build package citations by first looking them up in the `.stan_citation_pkgs`
+        # environment generated in `data-raw/sysdata.R`, then appealing to `.build_pkg_citation()`.
         packages = mget(
           k$pkgs,
           envir = .stan_citation_pkgs,
@@ -56,6 +62,8 @@ stan_cite <- function(
             pkg = k$pkgs,
             entry = _
           ),
+        # Build function citations by pure lookup against `.stan_citation_funs`
+        # environment generated in `data-raw/sysdata.R`
         functions = mget(
           k$funs,
           envir = .stan_citation_funs,
@@ -63,13 +71,14 @@ stan_cite <- function(
           ifnotfound = list(NULL)
         )
       ) |>
-        Filter(Negate(is.null), x = _)
+        Filter(Negate(is.null), x = _) # ignore functions without citations
     })() |>
     (\(entries) {
       if (!length(entries)) {
         cli::cli_alert_info("No citations found.")
         character()
       } else {
+        # Add base R citation, and format as requested
         entries <- do.call(c, entries) |> c(utils::citation("base"))
         if (match.arg(format, c("bibtex", "bibentry")) == "bibentry") {
           entries
@@ -80,6 +89,70 @@ stan_cite <- function(
     })()
 }
 
+# TODO: is this the best way to expose these values?
+
+#' Ignored functions/directories used by scanner
+#'
+#' @name internal_data
+#' @rdname internal_data
+#' @keywords internal
+NULL
+
+#' Default ignored functions
+#'
+#' Vector of functions to be ignored when parsing.
+#'
+#' @rdname internal_data
+#' @export
+stdlib_funs <- function() {
+  # lapply(
+  #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
+  #   getNamespaceExports
+  # ) |>
+  #   unlist(use.names = FALSE) |>
+  #   unique() |>
+  #   sort()
+  print("See the source for how these are generated")
+  .stdlib_funs
+}
+
+#' Default skip directories
+#'
+#' Vector of directories skipped when recursively searching
+#' a project.
+#'
+#' @rdname internal_data
+#' @export
+scan_skip_dirs <- function() {
+  # c(
+  #   "renv",
+  #   "packrat",
+  #   "rv",
+  #   ".Rcheck",
+  #   "revdep",
+  #   "_site",
+  #   "_book",
+  #   "_bookdown_files",
+  #   "_freeze",
+  #   ".quarto",
+  #   ".quarto_cache",
+  #   ".knitr_cache",
+  #   "_cache",
+  #   ".cache"
+  # )
+  print("See the source for how these are generated")
+  .scan_skip_dirs
+}
+
+#' Build Stan package bibentry citations
+#'
+#' Helper function to build standardized package citations.
+#' This mostly matches how each Stan R package wants to be
+#' cited.
+#'
+#' @param pkg Stan package name as a character scalar.
+#' @return A bibentry for citing that package.
+#' @keywords internal
 .pkg_cite <- function(pkg) {
   meta <- packageDescription(pkg)
   utils::bibentry(
@@ -97,8 +170,19 @@ stan_cite <- function(
   )
 }
 
-# TODO: the two papers are used in papers.R already, reference those instead of rebuilding?
+#' Cite Stan Packages
+#'
+#' Build the appropriate citation for R packages, including papers
+#' needed to cite the package. Equivalent to `.pkg_cite()` for most packages.
+#'
+#' Bayesplot and Posterior have papers in addition to their "typical" software
+#' citation that should be cited when using the package, which is why this exists.
+#'
+#' @param pkg Stan package name as a character scalar.
+#' @return Vector of bibentries to properly cite the provided Stan package
+#' @keywords internal
 .build_pkg_citation <- function(pkg) {
+  # TODO: the two papers are used in papers.R already, reference those instead of rebuilding?
   c(
     .pkg_cite(pkg),
     switch(

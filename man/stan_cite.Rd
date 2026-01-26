@@ -2,39 +2,45 @@
 % Please edit documentation in R/citation.R
 \name{stan_cite}
 \alias{stan_cite}
-\title{Collect citations}
+\title{Cite Stan packages in a project/files}
 \usage{
 stan_cite(
   path = ".",
-  ignore_unqualified_functions = .stdlib_funs,
   strict = TRUE,
+  format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
-  format = c("bibtex", "bibentry")
+  ignore_unqualified_functions = .stdlib_funs
 )
 }
 \arguments{
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.qmd).}
 
-\item{ignore_unqualified_functions}{Character vector of function names to ignore when
-attributing (unqualified) calls to Stan packages. Defaults to exports from
-base R packages listed in \code{stdlib_funs()}. Calls like \code{rstan::plot()} will NOT
-be ignored even if \code{plot} is in \code{ignore_unqualified_functions}.}
-
-\item{strict}{If \code{TRUE}, only count unqualified function calls that resolve
+\item{strict}{Defaults to \code{FALSE}. If \code{TRUE}, only count unqualified function calls that resolve
 to a single Stan package.}
 
-\item{skip_dirs}{Character vector of directory names to skip when scanning a
-directory.}
+\item{format}{One of "bibtex" or "bibentry", specifying the return format.}
 
-\item{format}{One of "bibtex" or "bibentry".}
+\item{skip_dirs}{Defaults to directories listed in \code{scan_skip_dirs}. Character
+vector of directory names to skip when scanning a directory.}
+
+\item{ignore_unqualified_functions}{Defaults to exports from base R packages
+listed in \code{stdlib_funs()}. Character vector of function names to ignore when
+attributing (unqualified) calls to Stan packages. Calls like \code{rstan::plot()}
+will NOT be ignored even if \code{plot} is in \code{ignore_unqualified_functions}, since
+they are namespaced.}
 }
 \value{
 A BibTeX character vector or a bibentry object.
 }
 \description{
-Unqualified function calls are only attributed when a Stan package is
-attached via \code{library()} or \code{require()} in the same file. Known reexports
-are remapped to their origin packages; missing mappings fall back to the
-resolved package.
+\code{stan_cite()} generates the correct citations for Stan packages
+in a directory or set of files. The \code{{knitr}} package is required
+to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. \code{stan_cite()}
+uses some simple heuristics to guess which packages export functions,
+and also attempts to map re-exports to their origin package.
+}
+\details{
+The parsing is handled by \code{funscanr()}; \code{stan_cite()} owns
+the citation lookups.
 }

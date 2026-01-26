@@ -1,5 +1,6 @@
 # Portions of this file are adapted from the tidyverse package.
 # See LICENSE.note for details.
+
 # nocov start
 compliance_imports <- \() {
   bayesplot::abline_01

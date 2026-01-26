@@ -1,5 +1,6 @@
 # Portions of this file are adapted from the tidyverse package.
 # See LICENSE.note for details.
+
 #' Print the Stan ASCII art logo
 #'
 #' Emits the Stan ASCII art logo via `cli::cat_line()`.

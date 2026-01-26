@@ -2,6 +2,7 @@
 
 S3method(print,stanflow_conflicts)
 export(flow_check)
+export(scan_skip_dirs)
 export(scan_usage)
 export(setup_brms)
 export(setup_cmdstanr)
