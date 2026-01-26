@@ -11,9 +11,6 @@ force_local_snapshots <- function() {
 }
 
 # Bind internal helpers/data so tests can call them directly.
-.meta_year <- bind_internal(".meta_year")
-.meta_note <- bind_internal(".meta_note")
-.meta_authors <- bind_internal(".meta_authors")
 .scan_tokens <- bind_internal(".scan_tokens")
 .extract_code <- bind_internal(".extract_code")
 .stan_exports <- bind_internal(".stan_exports")
@@ -43,21 +40,6 @@ resolve_origin_key <- function(pkg, fun) {
   }
   paste0(origin, "::", fun)
 }
-
-test_that("citation metadata helpers use Stan package metadata", {
-  pkgs <- getFromNamespace(".stan_pkgs", "stanflow")
-
-  for (pkg in pkgs) {
-    meta <- packageDescription(pkg)
-    authors <- .meta_authors(meta)
-    cited <- citation(pkg)
-    cited_authors <- cited[[1]]$author
-
-    expect_true(inherits(authors, "person"))
-    expect_true(length(authors) >= 1L)
-    expect_equal(as.character(authors), as.character(cited_authors))
-  }
-})
 
 test_that(".scan_tokens handles empty or no-code files", {
   expect_equal(

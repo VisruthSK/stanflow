@@ -66,11 +66,6 @@ stan_cite <- function(
     })()
 }
 
-.meta_year <- function(meta) sub("-.*", "", meta[["Date"]])
-.meta_note <- function(meta) sprintf("R package version %s", meta[["Version"]])
-.meta_authors <- function(meta) citation(meta[["Package"]])[[1]]$author
-.meta_title <- function(meta) meta[["Title"]]
-
 .pkg_cite <- function(pkg) {
   meta <- packageDescription(pkg)
   utils::bibentry(
@@ -83,38 +78,18 @@ stan_cite <- function(
       "R package version %s, https://discourse.mc-stan.org",
       meta$Version
     ),
+    # rstan url will point to rstan package site instead of main Stan site here.
     url = sprintf("https://mc-stan.org/%s/", pkg)
   )
 }
 
+# TODO: the two papers are used in papers.R already, reference those instead of rebuilding?
 .build_pkg_citation <- function(pkg) {
-  meta <- suppressWarnings(packageDescription(pkg))
-  switch(
-    pkg,
-    R = citation("base"),
-    stanflow = utils::bibentry(
-      bibtype = "Manual",
-      key = "stanflow",
-      title = "stanflow: Stan Bayesian Workflow",
-      author = .meta_authors(meta),
-      year = .meta_year(meta),
-      note = sprintf(
-        "R package version %s, https://discourse.mc-stan.org",
-        meta$Version
-      ),
-      url = "https://visruthsk.github.io/stanflow/"
-    ),
-    bayesplot = c(
-      utils::bibentry(
-        bibtype = "Misc",
-        key = "bayesplot",
-        title = "bayesplot: Plotting for Bayesian Models",
-        author = .meta_authors(meta),
-        year = .meta_year(meta),
-        note = .meta_note(meta),
-        url = "https://mc-stan.org/bayesplot/"
-      ),
-      utils::bibentry(
+  c(
+    .pkg_cite(pkg),
+    switch(
+      pkg,
+      bayesplot = utils::bibentry(
         bibtype = "Article",
         key = "bayesplot-2019",
         title = "Visualization in Bayesian workflow",
@@ -131,40 +106,8 @@ stan_cite <- function(
         issue = 2,
         pages = "389-402",
         doi = "10.1111/rssa.12378"
-      )
-    ),
-    cmdstanr = utils::bibentry(
-      bibtype = "Manual",
-      key = "cmdstanr",
-      title = "cmdstanr: R Interface to 'CmdStan'",
-      author = .meta_authors(meta),
-      year = .meta_year(meta),
-      note = sprintf(
-        "R package version %s, https://discourse.mc-stan.org",
-        meta$Version
       ),
-      url = "https://mc-stan.org/cmdstanr/"
-    ),
-    loo = utils::bibentry(
-      bibtype = "Misc",
-      key = "loo",
-      title = "loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models",
-      author = .meta_authors(meta),
-      note = .meta_note(meta),
-      year = .meta_year(meta),
-      url = "https://mc-stan.org/loo/"
-    ),
-    posterior = c(
-      utils::bibentry(
-        bibtype = "Misc",
-        key = "posterior",
-        title = "posterior: Tools for Working with Posterior Distributions",
-        author = .meta_authors(meta),
-        year = .meta_year(meta),
-        note = .meta_note(meta),
-        url = "https://mc-stan.org/posterior/"
-      ),
-      utils::bibentry(
+      posterior = utils::bibentry(
         bibtype = "Article",
         key = "rhat-2021",
         title = "Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)",
@@ -180,57 +123,8 @@ stan_cite <- function(
         volume = "16",
         number = "2",
         pages = "667-718"
-      )
-    ),
-    projpred = utils::bibentry(
-      bibtype = "Misc",
-      key = "projpred",
-      title = "{{projpred}}: {{Projection}} Predictive Feature Selection",
-      author = .meta_authors(meta),
-      year = .meta_year(meta),
-      note = .meta_note(meta),
-      url = "https://mc-stan.org/projpred/"
-    ),
-    rstan = utils::bibentry(
-      bibtype = "Misc",
-      key = "rstan",
-      title = "{RStan}: the {R} interface to {Stan}",
-      author = .meta_authors(meta),
-      note = .meta_note(meta),
-      url = "https://mc-stan.org/"
-    ),
-    rstanarm = utils::bibentry(
-      bibtype = "Misc",
-      key = "rstanarm",
-      title = "rstanarm: {Bayesian} applied regression modeling via {Stan}.",
-      author = c(
-        person("Ben", "Goodrich"),
-        person("Jonah", "Gabry"),
-        person("Imad", "Ali"),
-        person("Sam", "Brilleman")
       ),
-      note = .meta_note(meta),
-      year = .meta_year(meta),
-      url = "https://mc-stan.org/rstanarm/"
-    ),
-    rstantools = utils::bibentry(
-      bibtype = "Manual",
-      key = "rstantools",
-      title = "{rstantools: Tools for Developing R Packages Interfacing with 'Stan'",
-      author = .meta_authors(meta),
-      year = .meta_year(meta),
-      note = .meta_note(meta),
-      url = "https://mc-stan.org/rstantools/"
-    ),
-    shinystan = utils::bibentry(
-      bibtype = "Manual",
-      key = "shinystan",
-      title = "shinystan: Interactive Visual and Numerical Diagnostics and Posterior Analysis for Bayesian Models",
-      author = .meta_authors(meta),
-      year = .meta_year(meta),
-      note = .meta_note(meta),
-      url = "https://mc-stan.org/shinystan/"
-    ),
-    NULL
+      NULL
+    )
   )
 }
