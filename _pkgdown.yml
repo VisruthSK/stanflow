@@ -5,3 +5,27 @@ template:
 
 development:
   mode: auto
+
+reference:
+  - title: Citation
+    contents:
+      - stan_cite
+      - scan_usage
+  - title: Setup Interfaces
+    contents:
+      - setup_interface
+      - setup_brms
+      - setup_cmdstanr
+      - setup_rstan
+      - setup_rstanarm
+  - title: Update/Status Checks
+    contents:
+      - flow_check
+      - stanflow_update
+      - stanflow_deps
+      - stanflow_conflicts
+  - title: Helpers/Miscellaneous
+    contents:
+      - stan_repos
+      - stan_logo
+      - stanflow_logo
