@@ -17,7 +17,7 @@
 #' @param force Logical. If `TRUE`, allows installation in non-interactive sessions.
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
-#' @param rstan_auto_write Logical. If `TRUE`, sets `rstan::rstan_options(auto_write = TRUE))`
+#' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE))`
 #' @return Returns the attached packages invisibly.
 #' @export
 setup_interface <- function(
@@ -76,8 +76,7 @@ setup_interface <- function(
     }
 
     cli::cli_alert_info("Attaching {.pkg {pkg}}...")
-
-    suppressPackageStartupMessages(same_library(pkg))
+    suppressPackageStartupMessages(.same_library(pkg))
 
     switch(
       pkg,
@@ -291,6 +290,7 @@ setup_cmdstanr <- function(
   cli::cli_alert_info(
     "Configured {.pkg cmdstanr}: set {.code options(mc.cores = {cores})}"
   )
+  invisible(NULL)
 }
 # nocov end
 
@@ -313,6 +313,7 @@ setup_rstan <- function(quiet, cores, rstan_auto_write) {
     "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = {rstan_auto_write})}"
   ) |>
     cli::cli_alert_info()
+  invisible(NULL)
 }
 
 #' Setup brms
@@ -334,6 +335,7 @@ setup_brms <- function(quiet, brms_backend, cores) {
   cli::cli_alert_info(
     "Configured {.pkg brms}: set {.code options(mc.cores = {cores})} and {.code options(brms.backend = '{brms_backend}')}"
   )
+  invisible(NULL)
 }
 
 #' Setup rstanarm
@@ -353,4 +355,5 @@ setup_rstanarm <- function(quiet, cores) {
   cli::cli_alert_info(
     "Configured {.pkg rstanarm}: set {.code options(mc.cores = {cores})}"
   )
+  invisible(NULL)
 }

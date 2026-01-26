@@ -9,7 +9,7 @@ test_that("setup_interface adds cmdstanr when brms_backend = cmdstanr", {
     install_backend_package = function(...) {
       stop("install_backend_package should not run")
     },
-    same_library = same_library,
+    .same_library = same_library,
     setup_cmdstanr = function(...) invisible(NULL),
     setup_brms = function(...) invisible(NULL),
     .package = "stanflow"
@@ -48,7 +48,7 @@ test_that("setup_interface installs backends when reinstall = TRUE", {
     install_backend_package = function(pkg, ...) {
       installed <<- c(installed, pkg)
     },
-    same_library = function(pkg) NULL,
+    .same_library = function(pkg) NULL,
     setup_cmdstanr = function(...) invisible(NULL),
     setup_rstan = function(...) invisible(NULL),
     .package = "stanflow"
@@ -75,7 +75,7 @@ test_that("setup_interface installs missing packages when not installed", {
     install_backend_package = function(pkg, ...) {
       installed <<- c(installed, pkg)
     },
-    same_library = function(pkg) NULL,
+    .same_library = function(pkg) NULL,
     setup_brms = function(...) invisible(NULL),
     .package = "stanflow"
   )
@@ -98,7 +98,7 @@ test_that("setup_interface runs backend setup helpers", {
 
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
-    same_library = function(pkg) {
+    .same_library = function(pkg) {
       calls <<- c(calls, paste0("library:", pkg))
       invisible(NULL)
     },
@@ -410,7 +410,7 @@ test_that("setup_interface aborts when install_backend_package fails", {
 test_that("setup_interface handles same_library errors gracefully", {
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
-    same_library = function(pkg) stop("library error"),
+    .same_library = function(pkg) stop("library error"),
     setup_cmdstanr = function(...) invisible(NULL),
     .package = "stanflow"
   )
@@ -423,7 +423,7 @@ test_that("setup_interface handles same_library errors gracefully", {
 test_that("setup_interface warns when brms_backend adds cmdstanr", {
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
-    same_library = function(pkg) NULL,
+    .same_library = function(pkg) NULL,
     install_backend_package = function(...) stop("install should not run"),
     setup_cmdstanr = function(...) invisible(NULL),
     setup_brms = function(...) invisible(NULL),

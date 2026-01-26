@@ -1,8 +1,6 @@
 # Portions of this file are adapted from the tidyverse package.
 # See LICENSE.note for details.
 
-find_unloaded <- function(pkgs) pkgs[!paste0("package:", pkgs) %in% search()]
-
 #' Print stanflow status and conflicts
 #'
 #' Print a consolidated status report showing attached packages, available
@@ -24,14 +22,14 @@ flow_check <- function(only = NULL) {
 }
 
 core_attach_message <- function(show_all = FALSE) {
-  core_unloaded <- find_unloaded(core)
-  suppressPackageStartupMessages(lapply(core_unloaded, same_library))
+  core_unloaded <- .find_unloaded(core)
+  suppressPackageStartupMessages(lapply(core_unloaded, .same_library))
   to_show <- if (show_all) core else core_unloaded
   if (length(to_show) == 0) {
     return(NULL)
   }
 
-  versions <- vapply(to_show, package_version_h, character(1))
+  versions <- vapply(to_show, .package_version_h, character(1))
 
   packages <- paste0(
     cli::col_green(cli::symbol$tick),
@@ -43,7 +41,7 @@ core_attach_message <- function(show_all = FALSE) {
 
   header <- cli::rule(
     left = cli::style_bold("Attaching Stan processing packages"),
-    right = paste0("stanflow ", package_version_h("stanflow"))
+    right = paste0("stanflow ", .package_version_h("stanflow"))
   )
 
   message_packages(packages, header)
@@ -53,7 +51,7 @@ backends_attach_message <- function() {
   versions <- vapply(
     backends,
     function(x) {
-      if (is_installed(x)) package_version_h(x) else ""
+      if (is_installed(x)) .package_version_h(x) else ""
     },
     character(1)
   )
@@ -102,7 +100,9 @@ message_packages <- function(packages, header) {
   paste0(header, "\n", paste(info, collapse = "\n"))
 }
 
-package_version_h <- function(pkg) {
+.find_unloaded <- \(pkgs) pkgs[!paste0("package:", pkgs) %in% search()]
+
+.package_version_h <- function(pkg) {
   pkg |>
     utils::packageVersion() |>
     as.character() |>

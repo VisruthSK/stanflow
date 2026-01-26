@@ -13,7 +13,7 @@ setup_rstan(quiet, cores, rstan_auto_write)
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
 \code{cores} explicitly.}
 
-\item{rstan_auto_write}{Logical. If \code{TRUE}, sets \verb{rstan::rstan_options(auto_write = TRUE))}}
+\item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \verb{rstan::rstan_options(auto_write = TRUE))}}
 }
 \value{
 Returns \code{NULL} invisibly.

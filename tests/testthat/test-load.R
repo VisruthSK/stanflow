@@ -9,9 +9,9 @@ test_that("core_attach_message reflects real core packages", {
 
   expect_snapshot_output(
     with_mocked_bindings(
-      find_unloaded = function(pkgs) pkgs,
-      same_library = function(...) NULL,
-      package_version_h = function(pkg) {
+      .find_unloaded = function(pkgs) pkgs,
+      .same_library = function(...) NULL,
+      .package_version_h = function(pkg) {
         if (pkg == "stanflow") {
           "0.0.0.9000"
         } else if (pkg %in% names(pinned_versions)) {
@@ -36,7 +36,7 @@ test_that("backends_attach_message shows installed vs missing", {
     with_mocked_bindings(
       is_installed = function(pkg) pkg != "rstanarm",
       is_attached = function(pkg) FALSE,
-      package_version_h = function(pkg) {
+      .package_version_h = function(pkg) {
         if (pkg %in% names(pinned_versions)) pinned_versions[[pkg]] else ""
       },
       cat(backends_attach_message(), "\n")
@@ -46,8 +46,8 @@ test_that("backends_attach_message shows installed vs missing", {
 
 test_that("core_attach_message returns NULL when nothing to show", {
   local_mocked_bindings(
-    find_unloaded = function(pkgs) character(),
-    same_library = function(...) NULL,
+    .find_unloaded = function(pkgs) character(),
+    .same_library = function(...) NULL,
     .package = "stanflow"
   )
 
@@ -66,7 +66,7 @@ test_that("backends_attach_message shows attached packages", {
     with_mocked_bindings(
       is_installed = function(pkg) TRUE,
       is_attached = function(pkg) pkg %in% c("cmdstanr", "rstanarm"),
-      package_version_h = function(pkg) pinned_versions[[pkg]],
+      .package_version_h = function(pkg) pinned_versions[[pkg]],
       {
         output <- backends_attach_message()
         output <- cli::ansi_strip(output)
@@ -114,7 +114,7 @@ test_that("package_version_h highlights development versions", {
   col_version <- with_mocked_bindings(
     packageVersion = function(pkg) base::package_version("1.2.9000"),
     .package = "utils",
-    package_version_h("dummy")
+    .package_version_h("dummy")
   )
   expect_match(col_version, "9000")
 })

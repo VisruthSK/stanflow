@@ -20,7 +20,7 @@ wrapped_startup <- function(msg, ...) {
 
 # Attach the package from the same package library it was loaded from before.
 # https://github.com/tidyverse/tidyverse/issues/171
-same_library <- function(pkg) {
+.same_library <- function(pkg) {
   library(
     pkg,
     lib.loc = if (pkg %in% loadedNamespaces()) {

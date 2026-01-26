@@ -34,7 +34,7 @@ test_that("invert handles empty inputs", {
 
 test_that("find_unloaded filters attached packages", {
   pkgs <- c("stats", "definitely.not.a.pkg")
-  expect_equal(find_unloaded(pkgs), "definitely.not.a.pkg")
+  expect_equal(.find_unloaded(pkgs), "definitely.not.a.pkg")
 })
 
 test_that("is_attached checks the current search path", {
