@@ -91,61 +91,6 @@ stan_cite <- function(
     })()
 }
 
-# TODO: is this the best way to expose these values?
-
-#' Ignored functions/directories used by scanner
-#'
-#' @name internal_data
-#' @rdname internal_data
-#' @keywords internal
-NULL
-
-#' Default ignored functions
-#'
-#' Vector of functions to be ignored when parsing.
-#'
-#' @rdname internal_data
-#' @export
-stdlib_funs <- function() {
-  # lapply(
-  #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
-  #   getNamespaceExports
-  # ) |>
-  #   unlist(use.names = FALSE) |>
-  #   unique() |>
-  #   sort()
-  print("See the source for how these are generated")
-  .stdlib_funs
-}
-
-#' Default skip directories
-#'
-#' Vector of directories skipped when recursively searching
-#' a project.
-#'
-#' @rdname internal_data
-#' @export
-scan_skip_dirs <- function() {
-  # c(
-  #   "renv",
-  #   "packrat",
-  #   "rv",
-  #   ".Rcheck",
-  #   "revdep",
-  #   "_site",
-  #   "_book",
-  #   "_bookdown_files",
-  #   "_freeze",
-  #   ".quarto",
-  #   ".quarto_cache",
-  #   ".knitr_cache",
-  #   "_cache",
-  #   ".cache"
-  # )
-  print("See the source for how these are generated")
-  .scan_skip_dirs
-}
-
 #' Build Stan package bibentry citations
 #'
 #' Helper function to build standardized package citations.

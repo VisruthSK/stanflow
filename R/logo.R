@@ -3,8 +3,6 @@
 
 #' Print the Stan ASCII art logo
 #'
-#' Emits the Stan ASCII art logo via `cli::cat_line()`.
-#'
 #' @return Invisibly returns the character vector that was printed.
 #' @export
 #' @examples
@@ -34,8 +32,6 @@ stan_logo <- function() {
 }
 
 #' Print the stanflow ASCII art logo
-#'
-#' Emits the stanflow ASCII art logo via `cli::cat_line()`.
 #'
 #' @return Invisibly returns the character vector that was printed.
 #' @export

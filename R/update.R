@@ -3,7 +3,7 @@
 
 #' List all stanflow dependencies
 #'
-#' @param recursive If `TRUE`, will also list all dependencies.
+#' @param recursive If `TRUE`, will also list all dependencies of dependencies and so on.
 #' @param dev If `FALSE` (default), checks for updates in the R-multiverse or CRAN
 #'   (stable releases). If `TRUE`, checks the Stan R-universe (dev versions). This is
 #'   only cogent for Stan packages, and cannot compare two dev versions.
@@ -141,7 +141,7 @@ stanflow_deps <- function(
 
   data.frame(
     package = pkg_deps,
-    remote = ifelse(is.na(repo_ver), NA, as.character(repo_ver)),
+    remote = as.character(repo_ver),
     local = local_ver,
     behind = behind,
     stringsAsFactors = FALSE
@@ -181,7 +181,6 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
     )
   )
   cli::cat_line()
-
   cli::cat_bullet(
     format(behind$package),
     " (",
@@ -190,13 +189,13 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
     behind$remote,
     ")"
   )
-
   cli::cat_line()
 
   repos <- stan_repos(dev)
 
   pkgs_to_report <- if (is_testing) behind$package else character()
 
+  # Muffle all warnings except cannot install
   withCallingHandlers(
     utils::install.packages(behind$package, repos = repos, quiet = TRUE),
     warning = function(w) {
@@ -218,9 +217,12 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
     }
   )
 
-  if (length(pkgs_to_report) > 0) {
-    pkgs_to_report <- unique(pkgs_to_report)
-    pkg_call <- paste0('c("', paste(pkgs_to_report, collapse = '", "'), '")')
+  if (length(pkgs_to_report)) {
+    pkg_call <- paste0(
+      'c("',
+      paste(unique(pkgs_to_report), collapse = '", "'),
+      '")'
+    )
     repos_call <- paste0('c("', repos[1], '", getOption("repos"))')
     cli::cat_line("Start a clean R session then run:")
     cli::cat_line(

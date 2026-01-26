@@ -10,7 +10,7 @@ stan_logo()
 Invisibly returns the character vector that was printed.
 }
 \description{
-Emits the Stan ASCII art logo via \code{cli::cat_line()}.
+Print the Stan ASCII art logo
 }
 \examples{
 stan_logo()

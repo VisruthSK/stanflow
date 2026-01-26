@@ -10,7 +10,7 @@ stanflow_logo()
 Invisibly returns the character vector that was printed.
 }
 \description{
-Emits the stanflow ASCII art logo via \code{cli::cat_line()}.
+Print the stanflow ASCII art logo
 }
 \examples{
 stanflow_logo()

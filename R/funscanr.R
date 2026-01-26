@@ -617,12 +617,20 @@ scan_usage <- function(
   list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
 }
 
-#' Standard-library function names to never attribute to Stan packages
+# TODO: is this the best way to expose these values?
+
+#' Ignored functions/directories used by scanner
 #'
-#' This includes exports from: base, stats, utils, graphics, grDevices, methods.
-#' This is generated in `data_raw/sysdata.R` and exported for documentation/transparency.
+#' @name internal_data
+#' @rdname internal_data
+#' @keywords internal
+NULL
+
+#' Default ignored functions
 #'
-#' @return Character vector of standard-library function names.
+#' Vector of functions to be ignored when parsing.
+#'
+#' @rdname internal_data
 #' @export
 stdlib_funs <- function() {
   # lapply(
@@ -632,12 +640,17 @@ stdlib_funs <- function() {
   #   unlist(use.names = FALSE) |>
   #   unique() |>
   #   sort()
+  print("See the source for how these are generated")
   .stdlib_funs
 }
 
-#' Default directory names skipped by scan_usage/stan_cite
-#' @return Character vector of directory names to skip.
-#' @keywords internal
+#' Default skip directories
+#'
+#' Vector of directories skipped when recursively searching
+#' a project.
+#'
+#' @rdname internal_data
+#' @export
 scan_skip_dirs <- function() {
   # c(
   #   "renv",
@@ -655,5 +668,6 @@ scan_skip_dirs <- function() {
   #   "_cache",
   #   ".cache"
   # )
+  print("See the source for how these are generated")
   .scan_skip_dirs
 }
