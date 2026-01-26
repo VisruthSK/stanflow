@@ -5,6 +5,7 @@
 
 [![R-CMD-check](https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml)
+[![check-interfaces](https://github.com/VisruthSK/stanflow/actions/workflows/interfaces.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/interfaces.yaml)
 <!-- badges: end -->
 
 `stanflow` is currently under active development–breaking changes may be
