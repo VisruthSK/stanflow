@@ -1,10 +1,5 @@
-assign_bayesplot <- function(funs, entries) {
-  for (fun in funs) {
-    .stan_citation_funs[[paste0("bayesplot::", fun)]] <- entries
-  }
-}
-
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c(
     "mcmc_nuts_acceptance",
     "mcmc_nuts_divergence",
@@ -15,7 +10,8 @@ assign_bayesplot(
   c(betancourt2017, betancourt_girolami2013, hoffman2014_nuts, stan_users_guide)
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c(
     "mcmc_rhat",
     "mcmc_rhat_hist",
@@ -29,12 +25,14 @@ assign_bayesplot(
   c(stan_users_guide, gelman_rubin1992)
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c("mcmc_parcoord", "mcmc_parcoord_data", "parcoord_style_np"),
   hartikainen2017_divergences
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c(
     "mcmc_trace",
     "mcmc_trace_highlight",
@@ -47,17 +45,20 @@ assign_bayesplot(
   c(vehtari2019_rhat, sailynoja2021)
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c("ppc_km_overlay", "ppc_km_overlay_grouped"),
   c(BDA, kaplan)
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c("ppc_bars", "ppc_bars_grouped", "ppc_rootogram", "ppc_bars_data"),
   kleiber2016_rootogram
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c(
     "ppc_data",
     "ppc_dens_overlay",
@@ -77,7 +78,8 @@ assign_bayesplot(
   c(sailynoja2021, BDA)
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c(
     "ppc_error_hist",
     "ppc_error_hist_grouped",
@@ -108,7 +110,8 @@ assign_bayesplot(
   BDA
 )
 
-assign_bayesplot(
+assign_citation(
+  "bayesplot",
   c(
     "ppc_loo_pit_overlay",
     "ppc_loo_pit_data",

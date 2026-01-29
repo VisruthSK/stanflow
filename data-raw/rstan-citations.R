@@ -1,10 +1,5 @@
-assign_rstan <- function(funs, entries) {
-  for (fun in funs) {
-    .stan_citation_funs[[paste0("rstan::", fun)]] <- entries
-  }
-}
-
-assign_rstan(
+assign_citation(
+  "rstan",
   c(
     "ess_bulk",
     "ess_tail",

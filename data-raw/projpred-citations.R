@@ -1,10 +1,5 @@
-assign_projpred <- function(funs, entries) {
-  for (fun in funs) {
-    .stan_citation_funs[[paste0("projpred::", fun)]] <- entries
-  }
-}
-
-assign_projpred(
+assign_citation(
+  "projpred",
   c("cv_varsel"),
   c(
     magnusson2020_large_data,
@@ -14,3 +9,5 @@ assign_projpred(
     vehtari2024_psis
   )
 )
+
+assign_citation("projpred", "mesquite", gelman_hill_2006)

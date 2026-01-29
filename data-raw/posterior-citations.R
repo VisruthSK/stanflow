@@ -1,50 +1,53 @@
-assign_posterior <- function(funs, entries) {
-  for (fun in funs) {
-    .stan_citation_funs[[paste0("posterior::", fun)]] <- entries
-  }
-}
-
-assign_posterior(
+assign_citation(
+  "posterior",
   c("dissent", "print.rvar"),
   tastle2007_dissent
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "entropy",
   wilcox1967_variation
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "example_draws",
   BDA
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   c("ess_mean", "mcse_mean"),
   BDA
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "rhat_basic",
   BDA
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "ess_basic",
   c(BDA, vehtari2021_ess_comparison)
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   c("ess_bulk", "ess_tail"),
   vehtari2021_ess_comparison
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "mcse_sd",
   kenney1951_stats
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   c(
     "pareto_diags",
     "pareto_khat",
@@ -57,27 +60,32 @@ assign_posterior(
   vehtari2024_psis
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "gpdfit",
   zhang2009_gpd
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "resample_draws",
   kitagawa1996_mc_filter
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "rhat_nested",
   margossian2023_nested_rhat
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "rstar",
   lambert2020_rstar
 )
 
-assign_posterior(
+assign_citation(
+  "posterior",
   "thin_draws",
   sailynoja2022_uniformity
 )

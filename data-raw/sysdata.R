@@ -122,6 +122,12 @@ if (length(missing) > 0) {
   ".cache"
 )
 
+assign_citation <- function(pkg, funs, entries) {
+  for (fun in funs) {
+    .stan_citation_funs[[paste0(pkg, "::", fun)]] <- entries
+  }
+}
+
 source("data-raw/papers.R")
 source("data-raw/bayesplot-citations.R")
 source("data-raw/brms-citations.R")

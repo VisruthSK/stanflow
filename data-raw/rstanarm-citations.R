@@ -1,20 +1,17 @@
-assign_rstanarm <- function(funs, entries) {
-  for (fun in funs) {
-    .stan_citation_funs[[paste0("rstanarm::", fun)]] <- entries
-  }
-}
-
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("launch_shinystan", "launch_shinystan.stanreg"),
   c(muth2018, gabry2019_vis)
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("kfold", "kfold.stanreg"),
   c(vehtari2017_loo, yao2018_stacking)
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c(
     "loo_predict",
     "loo_linpred",
@@ -28,22 +25,26 @@ assign_rstanarm(
   c(vehtari2017_loo, yao2018_stacking, gabry2019_vis)
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("pp_check", "pp_check.stanreg"),
   c(BDA, gabry2019_vis)
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("posterior_interval", "posterior_interval.stanreg"),
   c(gelman_carlin_2014, morey2016_ci)
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("stan_glm", "stan_glmer"),
   c(gelman_hill_2007, muth2018)
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c(
     "normal",
     "student_t",
@@ -64,47 +65,56 @@ assign_rstanarm(
   c(BDA, gelman2008_prior, piironen2017_horseshoe, stan_users_guide)
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("bayes_R2", "loo_R2", "bayes_R2.stanreg", "loo_R2.stanreg"),
   gelman2019_bayes_r2
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("posterior_vs_prior", "posterior_vs_prior.stanreg"),
   gabry2019_vis
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("plot.stanreg"),
   gabry2019_vis
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("posterior_survfit"),
   rizopoulos2011
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("pp_validate"),
   cook2006
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("stan_betareg"),
   ferrari2004
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("stan_gamm4"),
   crainiceanu2005
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("stan_lm"),
   lewandowski2009
 )
 
-assign_rstanarm(
+assign_citation(
+  "rstanarm",
   c("stan_polr"),
   nagler1994
 )

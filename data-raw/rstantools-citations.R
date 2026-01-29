@@ -1,15 +1,11 @@
-assign_rstantools <- function(funs, entries) {
-  for (fun in funs) {
-    .stan_citation_funs[[paste0("rstantools::", fun)]] <- entries
-  }
-}
-
-assign_rstantools(
+assign_citation(
+  "rstantools",
   "bayes_R2",
   gelman2019_bayes_r2
 )
 
-assign_rstantools(
+assign_citation(
+  "rstantools",
   c(
     "loo_linpred",
     "loo_epred",

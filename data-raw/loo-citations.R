@@ -1,10 +1,5 @@
-assign_loo <- function(funs, entries) {
-  for (fun in funs) {
-    .stan_citation_funs[[paste0("loo::", fun)]] <- entries
-  }
-}
-
-assign_loo(
+assign_citation(
+  "loo",
   c(
     "compare",
     "pareto_k_table",
@@ -25,7 +20,8 @@ assign_loo(
   c(vehtari2017_loo, vehtari2024_psis)
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("loo_compare"),
   c(
     vehtari2017_loo,
@@ -35,42 +31,50 @@ assign_loo(
   )
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("loo_model_weights"),
   c(vehtari2017_loo, vehtari2024_psis, yao2018_stacking)
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("loo_approximate_posterior", "loo_subsample"),
   c(magnusson2019_large_data, magnusson2020_large_data)
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("loo_moment_match", "loo_moment_match.default", "loo_moment_match_split"),
   paananen2021_moment_matching
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("extract_log_lik"),
   c(stan_cpp_2017, rstan_2017)
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("crps", "scrps", "loo_crps", "loo_scrps"),
   c(bolin2023_scoring, gneiting2007_scoring)
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("tis"),
   ionides2008_tis
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("gpdfit"),
   zhang2009_gpd
 )
 
-assign_loo(
+assign_citation(
+  "loo",
   c("waic"),
   c(watanabe2010_waic, vehtari2017_loo, vehtari2024_psis)
 )
