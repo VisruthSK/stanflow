@@ -124,6 +124,7 @@ if (length(missing) > 0) {
 
 source("data-raw/papers.R")
 source("data-raw/bayesplot-citations.R")
+source("data-raw/brms-citations.R")
 source("data-raw/cmdstanr-citations.R")
 source("data-raw/loo-citations.R")
 source("data-raw/posterior-citations.R")

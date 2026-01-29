@@ -4,12 +4,8 @@ assign_shinystan <- function(funs, entries) {
   }
 }
 
+# TODO: should the muth be a package citation?
 assign_shinystan(
-  c("launch_shinystan"),
-  muth2018
-)
-
-assign_shinystan(
-  c("shinystan"),
-  muth2018
+  c("launch_shinystan", "shinystan"),
+  c(muth2018, gabry2019_vis)
 )

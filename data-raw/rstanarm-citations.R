@@ -5,27 +5,36 @@ assign_rstanarm <- function(funs, entries) {
 }
 
 assign_rstanarm(
-  c("launch_shinystan.stanreg"),
-  muth2018
+  c("launch_shinystan", "launch_shinystan.stanreg"),
+  c(muth2018, gabry2019_vis)
 )
 
 assign_rstanarm(
-  c("kfold.stanreg"),
+  c("kfold", "kfold.stanreg"),
   c(vehtari2017_loo, yao2018_stacking)
 )
 
 assign_rstanarm(
-  c("loo_predict.stanreg", "loo.stanreg"),
-  c(vehtari2017_loo, yao2018_stacking)
+  c(
+    "loo_predict",
+    "loo_linpred",
+    "loo_predictive_interval",
+    "loo",
+    "loo_predict.stanreg",
+    "loo_linpred.stanreg",
+    "loo_predictive_interval.stanreg",
+    "loo.stanreg"
+  ),
+  c(vehtari2017_loo, yao2018_stacking, gabry2019_vis)
 )
 
 assign_rstanarm(
-  c("pp_check.stanreg"),
-  BDA
+  c("pp_check", "pp_check.stanreg"),
+  c(BDA, gabry2019_vis)
 )
 
 assign_rstanarm(
-  c("posterior_interval.stanreg"),
+  c("posterior_interval", "posterior_interval.stanreg"),
   c(gelman_carlin_2014, morey2016_ci)
 )
 
@@ -56,8 +65,18 @@ assign_rstanarm(
 )
 
 assign_rstanarm(
-  c("bayes_R2.stanreg", "loo_R2.stanreg"),
+  c("bayes_R2", "loo_R2", "bayes_R2.stanreg", "loo_R2.stanreg"),
   gelman2019_bayes_r2
+)
+
+assign_rstanarm(
+  c("posterior_vs_prior", "posterior_vs_prior.stanreg"),
+  gabry2019_vis
+)
+
+assign_rstanarm(
+  c("plot.stanreg"),
+  gabry2019_vis
 )
 
 assign_rstanarm(

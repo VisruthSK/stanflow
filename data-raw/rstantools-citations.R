@@ -15,7 +15,8 @@ assign_rstantools(
     "loo_epred",
     "loo_predict",
     "loo_predictive_interval",
-    "loo_pit"
+    "loo_pit",
+    "loo_pit.default"
   ),
   czado2009_pit
 )

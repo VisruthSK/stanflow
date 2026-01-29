@@ -15,7 +15,17 @@ assign_posterior(
 )
 
 assign_posterior(
-  c("ess_mean", "example_draws", "mcse_mean", "rhat_basic"),
+  "example_draws",
+  BDA
+)
+
+assign_posterior(
+  c("ess_mean", "mcse_mean"),
+  BDA
+)
+
+assign_posterior(
+  "rhat_basic",
   BDA
 )
 
@@ -35,8 +45,21 @@ assign_posterior(
 )
 
 assign_posterior(
-  c("pareto_diags", "pareto_khat", "pareto_smooth"),
+  c(
+    "pareto_diags",
+    "pareto_khat",
+    "pareto_smooth",
+    "ps_tail",
+    "pareto_khat_threshold",
+    "pareto_min_ss",
+    "pareto_convergence_rate"
+  ),
   vehtari2024_psis
+)
+
+assign_posterior(
+  "gpdfit",
+  zhang2009_gpd
 )
 
 assign_posterior(

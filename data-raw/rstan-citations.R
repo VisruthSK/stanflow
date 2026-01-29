@@ -6,19 +6,13 @@ assign_rstan <- function(funs, entries) {
 
 assign_rstan(
   c(
-    "conv_quantile",
     "ess_bulk",
-    "ess_mean",
-    "ess_quantile",
-    "ess_rfun",
-    "ess_sd",
     "ess_tail",
-    "mcse_mean",
-    "mcse_quantile",
-    "mcse_sd",
-    "monitor",
+    "stan_ess",
+    "stan_mcse",
     "Rhat",
-    "rhat_rfun"
+    "stan_rhat",
+    "monitor"
   ),
   vehtari2019_rhat
 )

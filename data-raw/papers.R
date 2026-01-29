@@ -687,3 +687,203 @@ czado2009_pit <- bibentry(
   pages = "1254--1261",
   doi = "10.1111/j.1541-0420.2009.01191.x"
 )
+
+gelman_rubin1992 <- bibentry(
+  bibtype = "Article",
+  key = "gelman-rubin-1992",
+  title = "Inference from iterative simulation using multiple sequences",
+  author = c(person("Andrew", "Gelman"), person("Donald", "Rubin")),
+  journal = "Statistical Science",
+  year = "1992",
+  volume = "7",
+  number = "4",
+  pages = "457--472"
+)
+
+boneva1971_spline <- bibentry(
+  bibtype = "Article",
+  key = "boneva-1971-spline",
+  title = "Spline transformations: Three new diagnostic aids for the statistical data-analyst",
+  author = c(
+    person("L. I.", "Boneva"),
+    person("D.", "Kendall"),
+    person("I.", "Stefanov")
+  ),
+  journal = "Journal of the Royal Statistical Society: Series B (Methodological)",
+  year = "1971",
+  volume = "33",
+  number = "1",
+  pages = "1--71",
+  url = "https://www.jstor.org/stable/2986005"
+)
+
+hartikainen2017_divergences <- bibentry(
+  bibtype = "Misc",
+  key = "hartikainen-2017-divergences",
+  title = "Concentration of divergences",
+  author = person("Aki", "Hartikainen"),
+  year = "2017",
+  note = "Message posted to The Stan Forums",
+  url = "https://discourse.mc-stan.org/t/concentration-of-divergences/1590/21"
+)
+
+carvalho2009_horseshoe <- bibentry(
+  bibtype = "InProceedings",
+  key = "carvalho-2009-horseshoe",
+  title = "Handling sparsity via the horseshoe",
+  author = c(
+    person("Carlos", "Carvalho"),
+    person("Nicholas", "Polson"),
+    person("James", "Scott")
+  ),
+  booktitle = "Artificial Intelligence and Statistics",
+  year = "2009",
+  url = "http://proceedings.mlr.press/v5/carvalho09a"
+)
+
+piironen2017_hyperprior <- bibentry(
+  bibtype = "Misc",
+  key = "piironen-2017-hyperprior",
+  title = "On the Hyperprior Choice for the Global Shrinkage Parameter in the Horseshoe Prior",
+  author = c(person("Juho", "Piironen"), person("Aki", "Vehtari")),
+  year = "2017",
+  note = "arXiv preprint: https://arxiv.org/abs/1610.05559v1"
+)
+
+zhang2020_r2d2 <- bibentry(
+  bibtype = "Article",
+  key = "zhang-2020-r2d2",
+  title = "Bayesian regression using a prior on the model fit: The R2-D2 shrinkage prior",
+  author = c(
+    person("Y. D.", "Zhang"),
+    person("B. P.", "Naughton"),
+    person("H. D.", "Bondell"),
+    person("B. J.", "Reich")
+  ),
+  journal = "Journal of the American Statistical Association",
+  year = "2020",
+  note = "arXiv preprint: https://arxiv.org/pdf/1609.00046"
+)
+
+aguilar2022_r2d2m2 <- bibentry(
+  bibtype = "Misc",
+  key = "aguilar-2022-r2d2m2",
+  title = "Intuitive Joint Priors for Bayesian Linear Multilevel Models: The R2D2M2 prior",
+  author = c(
+    person("J. E.", "Aguilar"),
+    person(given = "Paul-Christian", family = "B\\u00fcrkner")
+  ),
+  year = "2022",
+  note = "arXiv preprint: https://arxiv.org/abs/2208.07132"
+)
+
+park2008_lasso <- bibentry(
+  bibtype = "Article",
+  key = "park-2008-lasso",
+  title = "The Bayesian Lasso",
+  author = c(person("Trevor", "Park"), person("George", "Casella")),
+  journal = "Journal of the American Statistical Association",
+  year = "2008",
+  volume = "103",
+  number = "482",
+  pages = "681--686"
+)
+
+pedersen2019_gam <- bibentry(
+  bibtype = "Article",
+  key = "pedersen-2019-gam",
+  title = "Hierarchical generalized additive models in ecology: an introduction with mgcv",
+  author = c(
+    person("E. J.", "Pedersen"),
+    person("D. L.", "Miller"),
+    person("G. L.", "Simpson"),
+    person("N.", "Ross")
+  ),
+  journal = "PeerJ",
+  year = "2019"
+)
+
+burkner_charpentier2020_monotonic <- bibentry(
+  bibtype = "Article",
+  key = "burkner-charpentier-2020-monotonic",
+  title = "Modeling Monotonic Effects of Ordinal Predictors in Regression Models",
+  author = c(
+    person(given = "Paul-Christian", family = "B\\u00fcrkner"),
+    person("Emilie", "Charpentier")
+  ),
+  journal = "British Journal of Mathematical and Statistical Psychology",
+  year = "2020",
+  doi = "10.1111/bmsp.12195"
+)
+
+kosmidis_zeileis2024_beta <- bibentry(
+  bibtype = "Misc",
+  key = "kosmidis-zeileis-2024-beta",
+  title = "Extended-Support Beta Regression for [0, 1] Responses",
+  author = c(person("Ioannis", "Kosmidis"), person("Achim", "Zeileis")),
+  year = "2024",
+  note = "arXiv preprint: https://arxiv.org/abs/2409.07233"
+)
+
+gelman_hwang_vehtari2014 <- bibentry(
+  bibtype = "Article",
+  key = "gelman-hwang-vehtari-2014",
+  title = "Understanding predictive information criteria for Bayesian models",
+  author = c(
+    person("Andrew", "Gelman"),
+    person("Jessica", "Hwang"),
+    person("Aki", "Vehtari")
+  ),
+  journal = "Statistics and Computing",
+  year = "2014",
+  volume = "24",
+  pages = "997--1016"
+)
+
+vehtari_lampinen2002 <- bibentry(
+  bibtype = "Article",
+  key = "vehtari-lampinen-2002",
+  title = "Bayesian model assessment and comparison using cross-validation predictive densities",
+  author = c(person("Aki", "Vehtari"), person("Jouni", "Lampinen")),
+  journal = "Neural Computation",
+  year = "2002",
+  volume = "14",
+  number = "10",
+  pages = "2439--2468"
+)
+
+vehtari2021_rhat <- bibentry(
+  bibtype = "Article",
+  key = "vehtari-2021-rhat",
+  title = "Rank-normalization, folding, and localization: An improved R-hat for assessing convergence of MCMC (with discussion)",
+  author = c(
+    person("Aki", "Vehtari"),
+    person("Andrew", "Gelman"),
+    person("Daniel", "Simpson"),
+    person("Bob", "Carpenter"),
+    person(given = "Paul-Christian", family = "B\\u00fcrkner")
+  ),
+  journal = "Bayesian Analysis",
+  year = "2021",
+  volume = "16",
+  number = "2",
+  pages = "667--718",
+  doi = "10.1214/20-BA1221"
+)
+
+bates2015_lme4 <- bibentry(
+  bibtype = "Article",
+  key = "bates-2015-lme4",
+  title = "Fitting Linear Mixed-Effects Models Using lme4",
+  author = c(
+    person("Douglas", "Bates"),
+    person("Martin", "M\\u00e4chler"),
+    person("Ben", "Bolker"),
+    person("Steve", "Walker")
+  ),
+  journal = "Journal of Statistical Software",
+  year = "2015",
+  volume = "67",
+  number = "1",
+  pages = "1--48"
+)

@@ -26,7 +26,12 @@ assign_bayesplot(
     "mcmc_acf",
     "mcmc_acf_bar"
   ),
-  stan_users_guide
+  c(stan_users_guide, gelman_rubin1992)
+)
+
+assign_bayesplot(
+  c("mcmc_parcoord", "mcmc_parcoord_data", "parcoord_style_np"),
+  hartikainen2017_divergences
 )
 
 assign_bayesplot(
@@ -113,5 +118,5 @@ assign_bayesplot(
     "ppc_loo_intervals",
     "ppc_loo_ribbon"
   ),
-  c(BDA, vehtari2017_loo)
+  c(BDA, vehtari2017_loo, boneva1971_spline)
 )
