@@ -10,6 +10,16 @@ install/configure Stan interfaces (`cmdstanr`, `rstan`, `brms`,
 
 ``` r
 library(stanflow)
+#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
+#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
+#> ✔ posterior 1.6.1
+#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
+#> • brms     2.23.0     • rstan    2.32.7
+#> • cmdstanr 0.9.0      • rstanarm 2.32.2
+#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
+#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 stan_logo()
 #>            G08GLG80G           
 #>         G80LLLLLLLLL08G        
@@ -43,19 +53,25 @@ flow_check()
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
 #> ✔ posterior 1.6.1      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
-#> ✔ brms     2.23.0     • rstan    2.32.7
-#> ✔ cmdstanr 0.9.0      • rstanarm 2.32.2
+#> • brms     2.23.0     • rstan    2.32.7
+#> • cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ brms::ar()      masks stats::ar()
-#> ✖ brms::do_call() masks projpred::do_call()
-#> ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()
+#> ✖ posterior::rhat() masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 stanflow_conflicts()
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ brms::ar()      masks stats::ar()
-#> ✖ brms::do_call() masks projpred::do_call()
-#> ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()
+#> ✖ posterior::rhat() masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+```
+
+## Keep the flow fresh
+
+Check whether your Stan workflow packages are up to date (stable
+releases by default, or dev builds with `dev = TRUE`). Set `recursive`
+to check the full dependency closure.
+
+``` r
+stanflow_update(recursive = TRUE)
 ```
 
 ## Choose interface backends
@@ -89,8 +105,8 @@ setup_interface(
 #> * Building CmdStan binaries...
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a
-#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a
+#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a
 #> /home/runner/.cmdstan/cmdstan-2.38.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.11.0
 #> In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:
 #> ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template<class _Category, class _Tp, class _Distance, class _Pointer, class _Reference> struct std::iterator’ is deprecated [-Wdeprecated-declarations]
@@ -145,7 +161,7 @@ flow_check()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
-If you prefer `RStan`, you could just load it alongside `brms`.
+If you prefer `RStan`, you could load it alongside `brms`.
 
 ``` r
 setup_interface(
@@ -155,11 +171,21 @@ setup_interface(
 )
 ```
 
+You can setup as many interfaces you’d like:
+
+``` r
+setup_interface(
+  interface = c("rstan", "rstanarm", "brms"),
+  brms_backend = "cmdstanr",
+  cores = 2,
+  quiet = TRUE
+)
+```
+
 ## A tiny workflow
 
 With the core packages attached, you can generate, summarise, and
-visualise draws immediately. Here we create fake draws, compute a simple
-`loo` object, and plot a quick histogram with `bayesplot`.
+visualise draws immediately.
 
 ``` r
 set.seed(0)
@@ -175,7 +201,7 @@ mcmc_hist(draws, pars = "theta")
 #> `stat_bin()` using `bins = 30`. Pick better value `binwidth`.
 ```
 
-![](stanflow_files/figure-html/unnamed-chunk-6-1.png)
+![](stanflow_files/figure-html/unnamed-chunk-8-1.png)
 
 ``` r
 
@@ -196,12 +222,119 @@ loo(log_lik)
 #> See help('pareto-k-diagnostic') for details.
 ```
 
-## Keep the flow fresh
+## Painless citations
 
-Check whether your Stan workflow packages are up to date (stable
-releases by default, or dev builds with `dev = TRUE`). Set `recursive`
-to check the full dependency closure.
+Once you’ve finished your analysis and need to cite the Stan software
+you used, simply run
+[`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
+on your project/files to generate an appropriate BibTeX or bibentry.
 
 ``` r
-stanflow_update(recursive = TRUE)
+start <- Sys.time()
+stan_cite("stanflow.qmd")
+#> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
+#> @Manual{bayesplot,
+#>   title = {Plotting for Bayesian Models},
+#>   author = {Jonah Gabry and Tristan Mahr},
+#>   year = {2025},
+#>   note = {R package version 1.15.0, https://discourse.mc-stan.org},
+#>   url = {https://mc-stan.org/bayesplot/},
+#> }
+#> 
+#> @Article{bayesplot-2019,
+#>   title = {Visualization in Bayesian workflow},
+#>   author = {Jonah Gabry and Daniel Simpson and Aki Vehtari and Michael Betancourt and Andrew Gelman},
+#>   year = {2019},
+#>   journal = {J. R. Stat. Soc. A},
+#>   volume = {182},
+#>   issue = {2},
+#>   pages = {389-402},
+#>   doi = {10.1111/rssa.12378},
+#> }
+#> 
+#> @Manual{loo,
+#>   title = {Efficient Leave-One-Out Cross-Validation and WAIC for Bayesian
+#> Models},
+#>   author = {Aki Vehtari and Jonah Gabry and Måns Magnusson and Yuling Yao and Paul-Christian Bürkner and Topi Paananen and Andrew Gelman},
+#>   year = {2025},
+#>   note = {R package version 2.9.0, https://discourse.mc-stan.org},
+#>   url = {https://mc-stan.org/loo/},
+#> }
+#> 
+#> @Manual{posterior,
+#>   title = {Tools for Working with Posterior Distributions},
+#>   author = {Paul-Christian Bürkner and Jonah Gabry and Matthew Kay and Aki Vehtari},
+#>   year = {2025},
+#>   note = {R package version 1.6.1, https://discourse.mc-stan.org},
+#>   url = {https://mc-stan.org/posterior/},
+#> }
+#> 
+#> @Article{rhat-2021,
+#>   title = {Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)},
+#>   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\"urkner},
+#>   journal = {Bayesian Analysis},
+#>   year = {2021},
+#>   volume = {16},
+#>   number = {2},
+#>   pages = {667-718},
+#> }
+#> 
+#> @Manual{projpred,
+#>   title = {Projection Predictive Feature Selection},
+#>   author = {Juho Piironen and Markus Paasiniemi and Alejandro Catalina and Frank Weber and Osvaldo Martin and Aki Vehtari},
+#>   year = {2025},
+#>   note = {R package version 2.10.0, https://discourse.mc-stan.org},
+#>   url = {https://mc-stan.org/projpred/},
+#> }
+#> 
+#> @Manual{shinystan,
+#>   title = {Interactive Visual and Numerical Diagnostics and Posterior
+#> Analysis for Bayesian Models},
+#>   author = {Jonah Gabry and Duco Veen},
+#>   year = {2025},
+#>   note = {R package version 2.7.0, https://discourse.mc-stan.org},
+#>   url = {https://mc-stan.org/shinystan/},
+#> }
+#> 
+#> @Manual{stanflow,
+#>   title = {A Mildly Opinionated Stan Bayesian Workflow},
+#>   author = {Visruth {Srimath Kandali}},
+#>   year = {2026},
+#>   note = {R package version 0.0.0.9000, https://discourse.mc-stan.org},
+#>   url = {https://mc-stan.org/stanflow/},
+#> }
+#> 
+#> @Article{vehtari-2017-loo,
+#>   title = {Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC},
+#>   author = {Aki Vehtari and Andrew Gelman and Jonah Gabry},
+#>   journal = {Statistics and Computing},
+#>   year = {2017},
+#>   volume = {27},
+#>   number = {5},
+#>   pages = {1413--1432},
+#>   doi = {10.1007/s11222-016-9696-4},
+#>   note = {arXiv preprint: https://arxiv.org/abs/1507.04544},
+#> }
+#> 
+#> @Article{vehtari-2024-psis,
+#>   title = {Pareto smoothed importance sampling},
+#>   author = {Aki Vehtari and Daniel Simpson and Andrew Gelman and Yuling Yao and Jonah Gabry},
+#>   journal = {Journal of Machine Learning Research},
+#>   year = {2024},
+#>   volume = {25},
+#>   number = {72},
+#>   pages = {1--58},
+#>   url = {https://jmlr.org/papers/v25/19-556.html},
+#> }
+#> 
+#> @Manual{,
+#>   title = {R: A Language and Environment for Statistical Computing},
+#>   author = {{R Core Team}},
+#>   organization = {R Foundation for Statistical Computing},
+#>   address = {Vienna, Austria},
+#>   year = {2025},
+#>   url = {https://www.R-project.org/},
+#> }
+Sys.time() - start
+#> Time difference of 0.1634502 secs
 ```

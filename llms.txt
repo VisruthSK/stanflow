@@ -1,17 +1,45 @@
 # stanflow (Stan Bayesian Workflow)
 
-`stanflow` is currently under active development–breaking changes may be
-made without warning, until a proper release.
+NB: `stanflow` is currently under active development–breaking changes
+may be made without warning, until a proper release (see the v1.0.0
+milestone).
 
-`stanflow` offers an integrated, mildly opinionated access to a
-Stan-based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman
-et al. 2020). Much like the famous [tidyverse
+------------------------------------------------------------------------
+
+`stanflow` is a R package for a mildly opinionated Stan based [Bayesian
+Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much
+like the famous [tidyverse
 package](https://github.com/tidyverse/tidyverse), `stanflow` is a
 metapackage which installs and attaches relevant Stan R packages,
 serving as a one-stop-shop for Bayesian modelling. `stanflow` draws
 heavy inspiration from `tidyverse`, and reuses portions of its
 codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
-`purrr`, `dplyr`, etc.) for base R whenever necessary.
+`purrr`, `dplyr`, etc.) for base R.
+
+## Features
+
+- Install common Stan packages in one step[¹](#fn1):
+  - Installing/loading `stanflow` loads `bayesplot`, `loo`, `posterior`,
+    `projpred`, and `shinystan`
+- Generate proper Stan citations for your research project:
+  - [`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
+    scans a directory (or a provided list of files) to find all used
+    Stan functions, and outputs a BibTeX with the correct citations for
+    every package and function you used.
+- Setup Stan interfaces:
+  - [`setup_interface()`](https://visruthsk.github.io/stanflow/reference/setup_interface.md)
+    automatically handles installing/updating/loading any of the
+    compatible Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`,
+    with some mild defaults.
+- Update packages[²](#fn2):
+  - [`stanflow_update()`](https://visruthsk.github.io/stanflow/reference/stanflow_update.md)
+    attempts to automatically update out of date packages, and can
+    optionally search for dependencies’ dependencies. `stanflow`
+    natively relies on the [`multiverse`](https://r-multiverse.org/) for
+    stable releases (see `stan_repos`).
+
+There are a few more functions, but these four are the heart of
+`stanflow` and what you will probably use the most.
 
 ## Installation
 
@@ -25,45 +53,28 @@ pak::pak("VisruthSK/stanflow")
 
 ## Usage
 
-Here, we load `stanflow` and decide to use `cmdstanr` as the backend for
-`brms`.
+Here, we load `stanflow` and use `cmdstanr` as the backend for `brms`.
 
 ``` r
 library(stanflow)
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
-#> ✔ bayesplot 1.15.0.9000     ✔ projpred  2.10.0     
-#> ✔ loo       2.9.0           ✔ shinystan 2.7.0      
-#> ✔ posterior 1.6.1
-#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
-#> • brms     2.23.0     • rstan    2.32.7
-#> • cmdstanr 0.9.0      • rstanarm 2.32.2
-#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
-#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 setup_interface(
   interface = "brms",
-  dev = FALSE,
   brms_backend = "cmdstanr",
-  cores = 2,
-  quiet = FALSE,
-  force = FALSE,
-  check_updates = TRUE
+  cores = 2
 )
 #> ℹ Adding cmdstanr to setup because `brms_backend = 'cmdstanr'`
 #> ℹ Attaching brms...
 #> ℹ Configured brms: set `options(mc.cores = 2)` and `options(brms.backend = 'cmdstanr')`
 #> ℹ Attaching cmdstanr...
-#> The C++ toolchain required for CmdStan is setup properly!
-#> ℹ Found CmdStan v2.37.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.37.0'
-#> ! Update available: v2.37.0 -> v2.38.0
-#> ℹ Skipping update in non-interactive mode (set `force = TRUE` to upgrade).
+#> ℹ Found CmdStan v2.38.0 at '//wsl$/Ubuntu/home/visru/.cmdstan/cmdstan-2.38.0'
+#> ℹ Configured cmdstanr: set `options(mc.cores = 2)`
 #> ✔ Setup complete. brms, cmdstanr  packages are attached; you do not need to run `library()`.
 set.seed(0)
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
-#> ✔ bayesplot 1.15.0.9000     ✔ projpred  2.10.0     
-#> ✔ loo       2.9.0           ✔ shinystan 2.7.0      
-#> ✔ posterior 1.6.1           
+#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
+#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
+#> ✔ posterior 1.6.1      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.23.0     • rstan    2.32.7
 #> ✔ cmdstanr 0.9.0      • rstanarm 2.32.2
@@ -74,14 +85,12 @@ flow_check()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
-With the first two commands (note that the
-[`setup_interface()`](https://visruthsk.github.io/stanflow/reference/setup_interface.md)
-call is unnecessarily verbose), users have access to everything they
-need to fit and interrogate Bayesian models. Specifically, those two
-commands will load the core stanflow packages: `bayesplot`, `loo`,
-`posterior`, `projpred` and `shinystan`, as well as setup `brms` to use
-the `cmdstanr` backend with as many cores as are available on your
-machine. These package (inlcuding `brms` and `cmdstanr`) are all
+With the first two commands, users have access to everything they need
+to fit and interrogate Bayesian models. Specifically, those two commands
+will load the core stanflow packages: `bayesplot`, `loo`, `posterior`,
+`projpred` and `shinystan`, as well as setup `brms` to use the
+`cmdstanr` backend with 2 cores. These packages (including `brms` and
+`cmdstanr`) are all
 “[`library()`](https://rdrr.io/r/base/library.html)d” as well, so we can
 proceed with our analysis immediately.
 
@@ -250,7 +259,14 @@ loo(fit1, fit2)
 ```
 
 Code snippets above are taken from the [`brms`
-README](https://paulbuerkner.com/brms/) but aren’t directly comparable.
+README](https://paulbuerkner.com/brms/) but results aren’t directly
+comparable.
+
+------------------------------------------------------------------------
+
+1.  This feature is adopted from the `tidyverse` package!
+
+2.  This feature is adopted from the `tidyverse` package!
 
 # Package index
 
