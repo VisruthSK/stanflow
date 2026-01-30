@@ -74,6 +74,19 @@ test_that("stan_cite always cites stanflow and R", {
   )
 })
 
+test_that("stan_cite returns empty when no citations are found", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
+
+  local_mocked_bindings(
+    Filter = function(...) list(),
+    .package = "base"
+  )
+
+  out <- stan_cite(path, format = "bibtex")
+  expect_identical(out, character())
+})
+
 test_that("all package citations exist", {
   expected <- getFromNamespace(".stan_pkgs", "stanflow")
 

@@ -392,11 +392,44 @@ test_that(".extract_code extracts Qmd chunks", {
   expect_match(out, "as_draws\\(")
 })
 
+test_that(".extract_code errors when knitr is unavailable", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.Rmd"),
+    c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r}",
+      "as_draws(1)",
+      "```"
+    )
+  )
+
+  local_mocked_bindings(
+    requireNamespace = function(...) FALSE,
+    .package = "base"
+  )
+
+  expect_error(.extract_code(path), "knitr")
+})
+
 
 test_that(".extract_code errors on unsupported extensions", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "note.txt"), "x <- 1")
   expect_snapshot_error(.extract_code(path))
+})
+
+test_that(".scan_tokens warns on parse errors with unknown file path", {
+  expect_warning(
+    res <- .scan_tokens("function(", stdlib_funs()),
+    "Failed to parse"
+  )
+  expect_identical(res$pkgs, character())
+  expect_identical(res$keys, character())
+  expect_identical(res$ambiguous, character())
 })
 
 test_that("scan_usage handles a single file path", {

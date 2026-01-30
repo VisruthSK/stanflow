@@ -87,7 +87,7 @@ test_that("stanflow_deps computes remote/local state", {
     .package = "utils"
   )
   local_mocked_bindings(
-    package_dependencies = function(pkgs, db, recursive) {
+    package_dependencies = function(pkgs, db, recursive, ...) {
       list(stanflow = c("cmdstanr", "posterior", "base"))
     },
     .package = "tools"
@@ -134,7 +134,7 @@ test_that("stanflow_deps warns but proceeds on repository access warnings", {
     .package = "utils"
   )
   local_mocked_bindings(
-    package_dependencies = function(pkgs, db, recursive) {
+    package_dependencies = function(pkgs, db, recursive, ...) {
       list(stanflow = NA)
     },
     .package = "tools"
@@ -177,7 +177,7 @@ test_that("stanflow_deps handles missing repo versions", {
     .package = "utils"
   )
   local_mocked_bindings(
-    package_dependencies = function(pkgs, db, recursive) {
+    package_dependencies = function(pkgs, db, recursive, ...) {
       list(stanflow = c("cmdstanr", "posterior"))
     },
     .package = "tools"
@@ -202,7 +202,7 @@ test_that("stanflow_deps builds from description when check_updates = FALSE", {
     .package = "utils"
   )
   local_mocked_bindings(
-    package_dependencies = function(pkgs, db, recursive) {
+    package_dependencies = function(pkgs, db, recursive, ...) {
       dep_calls$recursive <<- recursive
       list(foo = "qux")
     },
@@ -254,7 +254,7 @@ test_that("stanflow_deps falls back when dependencies are empty", {
     .package = "utils"
   )
   local_mocked_bindings(
-    package_dependencies = function(pkgs, db, recursive) {
+    package_dependencies = function(pkgs, db, recursive, ...) {
       if (identical(pkgs, "stanflow")) {
         called$primary <<- TRUE
         return(list(stanflow = character()))
@@ -296,7 +296,7 @@ test_that("stanflow_deps uses recursive fallback dependencies", {
     .package = "utils"
   )
   local_mocked_bindings(
-    package_dependencies = function(pkgs, db, recursive) {
+    package_dependencies = function(pkgs, db, recursive, ...) {
       if (identical(pkgs, "stanflow")) {
         called$primary <<- TRUE
         return(list(stanflow = character()))

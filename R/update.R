@@ -193,8 +193,6 @@ stanflow_deps <- function(
 #' @inheritParams stanflow_deps
 #' @export
 stanflow_update <- function(recursive = FALSE, dev = FALSE) {
-  is_testing <- getOption("stanflow.testing", FALSE)
-
   if (!is_interactive_session()) {
     cli::cli_abort(
       c(
@@ -231,7 +229,11 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
 
   repos <- stan_repos(dev)
 
-  pkgs_to_report <- if (is_testing) behind$package else character()
+  pkgs_to_report <- if (getOption("stanflow.testing", FALSE)) {
+    behind$package
+  } else {
+    character()
+  }
 
   # Muffle all warnings except cannot install
   withCallingHandlers(

@@ -61,3 +61,28 @@ test_that("wrapped_startup emits startup messages when enabled", {
   withr::local_options(list(stanflow.quiet = FALSE))
   expect_message(wrapped_startup("hello from stanflow"), "hello from stanflow")
 })
+
+test_that(".same_library uses the package library path when loaded", {
+  captured <- list(lib.loc = NULL, character.only = NULL, warn.conflicts = NULL)
+
+  local_mocked_bindings(
+    library = function(pkg, lib.loc, character.only, warn.conflicts, ...) {
+      captured$lib.loc <<- lib.loc
+      captured$character.only <<- character.only
+      captured$warn.conflicts <<- warn.conflicts
+      NULL
+    },
+    loadedNamespaces = function() c("stats", "utils"),
+    .package = "base"
+  )
+
+  .same_library("stats")
+
+  expect_true(length(captured$lib.loc) == 1)
+  expect_identical(
+    captured$lib.loc,
+    dirname(getNamespaceInfo("stats", "path"))
+  )
+  expect_true(isTRUE(captured$character.only))
+  expect_false(captured$warn.conflicts)
+})
