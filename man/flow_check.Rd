@@ -4,9 +4,11 @@
 \alias{flow_check}
 \title{Print stanflow status and conflicts}
 \usage{
-flow_check(only = NULL)
+flow_check(check_updates = FALSE, only = NULL)
 }
 \arguments{
+\item{check_updates}{If \code{TRUE}, checks for stable updates to stanflow packages.}
+
 \item{only}{Set this to a character vector to restrict to conflicts only
 between the provided packages and loaded stanflow packages.}
 }

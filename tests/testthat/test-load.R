@@ -119,6 +119,53 @@ test_that("flow_check prints and returns messages", {
   expect_identical(result, c("core-msg", "backend-msg", "conflict-msg"))
 })
 
+test_that("flow_check includes update status when requested (no updates)", {
+  local_mocked_bindings(
+    core_attach_message = function(...) "core-msg",
+    backends_attach_message = function(...) "backend-msg",
+    stanflow_conflicts = function(...) "conflicts",
+    stanflow_conflict_message = function(...) "conflict-msg",
+    stanflow_deps = function(...) {
+      data.frame(
+        package = c("cmdstanr", "posterior"),
+        remote = c("1.2.0", "1.6.0"),
+        local = c("1.2.0", "1.6.0"),
+        behind = c(FALSE, FALSE),
+        stringsAsFactors = FALSE
+      )
+    },
+    .package = "stanflow"
+  )
+
+  result <- flow_check(check_updates = TRUE)
+  expect_true(any(grepl("Available updates", result, fixed = TRUE)))
+  expect_true(any(grepl("up-to-date", result, fixed = TRUE)))
+})
+
+test_that("flow_check includes update list when packages are behind", {
+  local_mocked_bindings(
+    core_attach_message = function(...) "core-msg",
+    backends_attach_message = function(...) "backend-msg",
+    stanflow_conflicts = function(...) "conflicts",
+    stanflow_conflict_message = function(...) "conflict-msg",
+    stanflow_deps = function(...) {
+      data.frame(
+        package = c("cmdstanr", "posterior"),
+        remote = c("1.2.0", "1.6.0"),
+        local = c("1.1.0", "1.5.0"),
+        behind = c(TRUE, TRUE),
+        stringsAsFactors = FALSE
+      )
+    },
+    .package = "stanflow"
+  )
+
+  result <- flow_check(check_updates = TRUE)
+  expect_true(any(grepl("Available updates", result, fixed = TRUE)))
+  expect_true(any(grepl("cmdstanr", result, fixed = TRUE)))
+  expect_true(any(grepl("posterior", result, fixed = TRUE)))
+})
+
 test_that("message_packages balances odd package counts", {
   header <- "Header"
   packages <- c("pkgA", "pkgB", "pkgC")

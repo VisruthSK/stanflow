@@ -8,17 +8,23 @@
 #'
 #' @param only Set this to a character vector to restrict to conflicts only
 #'   between the provided packages and loaded stanflow packages.
+#' @param check_updates If `TRUE`, checks for stable updates to stanflow packages.
 #' @return Invisibly returns the character vector that was printed.
 #' @export
 #' @examples
 #' flow_check()
-flow_check <- function(only = NULL) {
+flow_check <- function(check_updates = FALSE, only = NULL) {
   messages <- list(
     core_attach_message(show_all = TRUE),
     backends_attach_message(),
     stanflow_conflict_message(stanflow_conflicts(only))
   ) |>
     Filter(Negate(is.null), x = _)
+
+  if (check_updates) {
+    messages <- c(messages, update_check_message())
+  }
+
   cli::cat_line(messages)
   invisible(unlist(messages))
 }
@@ -87,6 +93,41 @@ backends_attach_message <- function() {
   header <- cli::rule(
     left = cli::style_bold("Available Stan interfaces"),
     right = "setup_interface()"
+  )
+
+  message_packages(packages, header)
+}
+
+update_check_message <- function() {
+  deps <- stanflow_deps(TRUE, check_updates = TRUE)
+  behind <- deps[deps$behind, , drop = FALSE]
+
+  header <- cli::rule(
+    left = cli::style_bold("Available updates"),
+    right = "stanflow_update()"
+  )
+
+  if (nrow(behind) == 0) {
+    ok <- paste0(
+      cli::col_green(cli::symbol$tick),
+      " All stanflow packages up-to-date"
+    )
+    return(paste0(header, "\n", ok))
+  }
+
+  versions <- paste0(
+    cli::col_silver(behind$local),
+    " -> ",
+    cli::col_green(behind$remote)
+  )
+  versions <- cli::ansi_align(versions, max(cli::ansi_nchar(versions)))
+
+  packages <- paste0(
+    cli::col_red(cli::symbol$cross),
+    " ",
+    cli::col_blue(format(behind$package)),
+    " ",
+    versions
   )
 
   message_packages(packages, header)
