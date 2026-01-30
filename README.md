@@ -27,8 +27,8 @@ codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
 ## Features
 
 - Install common Stan packages in one step[^1]:
-  - Installing/loading `stanflow` loads `bayesplot`, `loo`, `posterior`,
-    `projpred`, and `shinystan`
+  - Installing (or attaching) `stanflow` installs (attaches)
+    `bayesplot`, `loo`, `posterior`, `projpred`, and `shinystan`
 - Generate proper Stan citations for your research project:
   - `stan_cite()` scans a directory (or a provided list of files) to
     find all used Stan functions, and outputs a BibTeX with the correct

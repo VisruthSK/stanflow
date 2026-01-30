@@ -17,3 +17,6 @@ Invisibly returns the character vector that was printed.
 Print a consolidated status report showing attached packages, available
 interfaces, and any conflicts.
 }
+\examples{
+flow_check()
+}

@@ -10,6 +10,8 @@
 #'   between the provided packages and loaded stanflow packages.
 #' @return Invisibly returns the character vector that was printed.
 #' @export
+#' @examples
+#' flow_check()
 flow_check <- function(only = NULL) {
   messages <- list(
     core_attach_message(show_all = TRUE),

@@ -17,7 +17,7 @@
 #' @param force Logical. If `TRUE`, allows installation in non-interactive sessions.
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
-#' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE))`
+#' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE)`
 #' @return Returns the attached packages invisibly.
 #' @export
 setup_interface <- function(

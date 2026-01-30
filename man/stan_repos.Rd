@@ -7,7 +7,7 @@
 stan_repos(dev = FALSE)
 }
 \arguments{
-\item{dev}{Include the development r-universe repo.}
+\item{dev}{Include the development r-universe repo--don't use this unless you need the latest commits.}
 }
 \value{
 Character vector of repository URLs.

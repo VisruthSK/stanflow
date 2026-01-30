@@ -1,7 +1,7 @@
 ---
 title: "stanflow: quick tour"
 vignette: >
-  %\VignetteIndexEntry{test}
+  %\VignetteIndexEntry{tour}
   %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 knitr:

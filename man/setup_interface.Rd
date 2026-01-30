@@ -38,7 +38,7 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 \code{getOption("brms.backend", "cmdstanr")} and must be one of
 \code{c("cmdstanr", "rstan")}.}
 
-\item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \verb{rstan::rstan_options(auto_write = TRUE))}}
+\item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \code{rstan::rstan_options(auto_write = TRUE)}}
 }
 \value{
 Returns the attached packages invisibly.

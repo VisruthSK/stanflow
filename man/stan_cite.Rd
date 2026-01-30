@@ -16,7 +16,7 @@ stan_cite(
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.qmd).}
 
-\item{strict}{Defaults to \code{FALSE}. If \code{TRUE}, only count unqualified function calls that resolve
+\item{strict}{If \code{TRUE} (default), only count unqualified function calls that resolve
 to a single Stan package.}
 
 \item{format}{One of "bibtex" or "bibentry", specifying the return format.}
@@ -43,7 +43,4 @@ and also attempts to map re-exports to their origin package.
 \details{
 The parsing is handled by \code{funscanr()}; \code{stan_cite()} owns
 the citation lookups.
-}
-\examples{
-stan_cite(strict = FALSE)
 }

@@ -16,15 +16,13 @@
 #'   attributing (unqualified) calls to Stan packages. Calls like `rstan::plot()`
 #'   will NOT be ignored even if `plot` is in `ignore_unqualified_functions`, since
 #'   they are namespaced.
-#' @param strict Defaults to `FALSE`. If `TRUE`, only count unqualified function calls that resolve
+#' @param strict If `TRUE` (default), only count unqualified function calls that resolve
 #'   to a single Stan package.
 #' @param skip_dirs Defaults to directories listed in `scan_skip_dirs`. Character
 #'   vector of directory names to skip when scanning a directory.
 #' @param format One of "bibtex" or "bibentry", specifying the return format.
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
-#' @examples
-#' stan_cite(strict = FALSE)
 stan_cite <- function(
   path = ".",
   strict = TRUE,
