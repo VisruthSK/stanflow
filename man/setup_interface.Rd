@@ -48,3 +48,6 @@ This function ensures specific Stan interfaces are installed, configured,
 and loaded. It handles package installation (from R-multiverse/CRAN (stable) or Stan
 universe (dev)) and performs necessary one-time setup (like installing CmdStan).
 }
+\details{
+The setup functions are exported (e.g., \code{setup_brms()}) for transparency.
+}

@@ -4,6 +4,8 @@
 #' and loaded. It handles package installation (from R-multiverse/CRAN (stable) or Stan
 #' universe (dev)) and performs necessary one-time setup (like installing CmdStan).
 #'
+#' The setup functions are exported (e.g., `setup_brms()`) for transparency.
+#'
 #' @param interface A character vector. Select at least one of: "brms", "cmdstanr", "rstan", "rstanarm".
 #' @param dev Logical. If `FALSE` (default), installs stable releases from
 #'   R-multiverse or CRAN. If `TRUE`, installs development versions from Stan R-universe.
@@ -327,9 +329,9 @@ setup_rstan <- function(quiet, cores, rstan_auto_write) {
 #' @export
 setup_brms <- function(quiet, brms_backend, cores) {
   local_cli_quiet(quiet)
+  brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
 
   options(mc.cores = cores)
-  brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
   options(brms.backend = brms_backend)
 
   cli::cli_alert_info(

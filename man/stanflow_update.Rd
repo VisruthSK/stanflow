@@ -7,7 +7,10 @@
 stanflow_update(recursive = FALSE, dev = FALSE)
 }
 \arguments{
-\item{recursive}{If \code{TRUE}, will also list all dependencies of dependencies and so on.}
+\item{recursive}{If \code{TRUE}, will also list dependencies of dependencies. When
+\code{check_updates = TRUE}, the recursive traversal follows only "strong"
+dependencies (Depends/Imports/LinkingTo), so Suggests are not expanded
+recursively.}
 
 \item{dev}{If \code{FALSE} (default), checks for updates in the R-multiverse or CRAN
 (stable releases). If \code{TRUE}, checks the Stan R-universe (dev versions). This is

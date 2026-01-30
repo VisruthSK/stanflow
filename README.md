@@ -34,9 +34,9 @@ codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
     find all used Stan functions, and outputs a BibTeX with the correct
     citations for every package and function you used.
 - Setup Stan interfaces:
-  - `setup_interface()` automatically handles
-    installing/updating/loading any of the compatible Stan backends:
-    `brms`, `cmdstanr`, `rstan`, `rstanarm`, with some mild defaults.
+  - `setup_interface()` automatically handles installing/attaching any
+    of the compatible Stan backends: `brms`, `cmdstanr`, `rstan`,
+    `rstanarm`, with some mild defaults.
 - Update packages[^2]:
   - `stanflow_update()` attempts to automatically update out of date
     packages, and can optionally search for dependencies’ dependencies.

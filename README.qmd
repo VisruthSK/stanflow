@@ -29,7 +29,7 @@ NB: `stanflow` is currently under active development--breaking changes may be ma
 * Generate proper Stan citations for your research project:
   * `stan_cite()` scans a directory (or a provided list of files) to find all used Stan functions, and outputs a BibTeX with the correct citations for every package and function you used.
 * Setup Stan interfaces:
-  * `setup_interface()` automatically handles installing/updating/loading any of the compatible Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`, with some mild defaults.
+  * `setup_interface()` automatically handles installing/attaching any of the compatible Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`, with some mild defaults.
 * Update packages[^1]:
   * `stanflow_update()` attempts to automatically update out of date packages, and can optionally search for dependencies' dependencies. `stanflow` natively relies on the [`multiverse`](https://r-multiverse.org/) for stable releases (see `stan_repos`).
 

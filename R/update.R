@@ -8,7 +8,10 @@
 #' When `check_updates = FALSE`, remote versions are not queried and the `remote`
 #' and `behind` columns are `NA` and `FALSE`, respectively.
 #'
-#' @param recursive If `TRUE`, will also list all dependencies of dependencies and so on.
+#' @param recursive If `TRUE`, will also list dependencies of dependencies. When
+#'   `check_updates = TRUE`, the recursive traversal follows only "strong"
+#'   dependencies (Depends/Imports/LinkingTo), so Suggests are not expanded
+#'   recursively.
 #' @param dev If `FALSE` (default), checks for updates in the R-multiverse or CRAN
 #'   (stable releases). If `TRUE`, checks the Stan R-universe (dev versions). This is
 #'   only cogent for Stan packages, and cannot compare two dev versions.
@@ -54,7 +57,8 @@ stanflow_deps <- function(
     pkg_deps <- tools::package_dependencies(
       "stanflow",
       pkgs,
-      recursive = recursive
+      which = "most",
+      recursive = if (recursive) "strong" else FALSE
     )
   } else {
     pkg_deps <- utils::packageDescription("stanflow") |>
