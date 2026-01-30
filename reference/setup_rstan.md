@@ -26,7 +26,7 @@ setup_rstan(quiet, cores, rstan_auto_write)
 - rstan_auto_write:
 
   Logical. If `TRUE` (default), sets
-  `rstan::rstan_options(auto_write = TRUE))`
+  `rstan::rstan_options(auto_write = TRUE)`
 
 ## Value
 

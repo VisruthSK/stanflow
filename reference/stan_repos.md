@@ -12,7 +12,8 @@ stan_repos(dev = FALSE)
 
 - dev:
 
-  Include the development r-universe repo.
+  Include the development r-universe repo–don't use this unless you need
+  the latest commits.
 
 ## Value
 

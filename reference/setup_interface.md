@@ -64,8 +64,14 @@ setup_interface(
 - rstan_auto_write:
 
   Logical. If `TRUE` (default), sets
-  `rstan::rstan_options(auto_write = TRUE))`
+  `rstan::rstan_options(auto_write = TRUE)`
 
 ## Value
 
 Returns the attached packages invisibly.
+
+## Details
+
+The setup functions are exported (e.g.,
+[`setup_brms()`](https://visruthsk.github.io/stanflow/reference/setup_brms.md))
+for transparency.

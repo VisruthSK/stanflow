@@ -27,8 +27,8 @@ stan_cite(
 
 - strict:
 
-  Defaults to `FALSE`. If `TRUE`, only count unqualified function calls
-  that resolve to a single Stan package.
+  If `TRUE` (default), only count unqualified function calls that
+  resolve to a single Stan package.
 
 - format:
 
@@ -56,12 +56,3 @@ A BibTeX character vector or a bibentry object.
 
 The parsing is handled by `funscanr()`; `stan_cite()` owns the citation
 lookups.
-
-## Examples
-
-``` r
-stan_cite(strict = FALSE)
-#> ℹ Searching directory /home/runner/work/stanflow/stanflow/docs/reference
-#> Error in scan_usage(path = path, ignore_unqualified_functions = ignore_unqualified_functions,     strict = strict, skip_dirs = skip_dirs, allowed_packages = .stan_pkgs,     export_index = .stan_export_index, origin_map = .stan_origin_map): No files found.
-#> ℹ Check the `path` and `skip_dirs` arguments.
-```

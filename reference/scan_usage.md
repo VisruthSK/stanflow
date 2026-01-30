@@ -36,8 +36,8 @@ scan_usage(
 
 - strict:
 
-  Defaults to `FALSE`. If `TRUE`, only count unqualified function calls
-  that resolve to a single Stan package.
+  If `TRUE` (default), only count unqualified function calls that
+  resolve to a single Stan package.
 
 - skip_dirs:
 

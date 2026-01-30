@@ -1,6 +1,9 @@
 # List all stanflow dependencies
 
-List all stanflow dependencies
+Returns a data frame of Stan workflow packages and their local/remote
+versions. When `check_updates = FALSE`, remote versions are not queried
+and the `remote` and `behind` columns are `NA` and `FALSE`,
+respectively.
 
 ## Usage
 
@@ -12,7 +15,10 @@ stanflow_deps(recursive = FALSE, dev = FALSE, check_updates = TRUE)
 
 - recursive:
 
-  If `TRUE`, will also list all dependencies of dependencies and so on.
+  If `TRUE`, will also list dependencies of dependencies. When
+  `check_updates = TRUE`, the recursive traversal follows only "strong"
+  dependencies (Depends/Imports/LinkingTo), so Suggests are not expanded
+  recursively.
 
 - dev:
 
@@ -25,3 +31,35 @@ stanflow_deps(recursive = FALSE, dev = FALSE, check_updates = TRUE)
 
   Logical. If `FALSE`, skips checking for remote versions and only
   reports locally installed package versions.
+
+## Value
+
+A data frame with columns:
+
+- package:
+
+  Package name.
+
+- remote:
+
+  Repository version (character, `NA` when not queried).
+
+- local:
+
+  Installed version (character, `"0"` if not installed).
+
+- behind:
+
+  Logical; `TRUE` when `remote` is newer than `local`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Full dependency check with remote versions
+stanflow_deps(recursive = TRUE)
+
+# Local-only inventory (fast, no network)
+stanflow_deps(check_updates = FALSE)
+} # }
+```

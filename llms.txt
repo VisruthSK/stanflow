@@ -19,8 +19,8 @@ codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
 ## Features
 
 - Install common Stan packages in one step[¹](#fn1):
-  - Installing/loading `stanflow` loads `bayesplot`, `loo`, `posterior`,
-    `projpred`, and `shinystan`
+  - Installing (or attaching) `stanflow` installs (attaches)
+    `bayesplot`, `loo`, `posterior`, `projpred`, and `shinystan`
 - Generate proper Stan citations for your research project:
   - [`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
     scans a directory (or a provided list of files) to find all used
@@ -28,9 +28,9 @@ codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
     every package and function you used.
 - Setup Stan interfaces:
   - [`setup_interface()`](https://visruthsk.github.io/stanflow/reference/setup_interface.md)
-    automatically handles installing/updating/loading any of the
-    compatible Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`,
-    with some mild defaults.
+    automatically handles installing/attaching any of the compatible
+    Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`, with some
+    mild defaults.
 - Update packages[²](#fn2):
   - [`stanflow_update()`](https://visruthsk.github.io/stanflow/reference/stanflow_update.md)
     attempts to automatically update out of date packages, and can

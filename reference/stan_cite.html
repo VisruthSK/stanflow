@@ -100,7 +100,7 @@ files (.R/.Rmd/.qmd).</p></dd>
 
 
 <dt id="arg-strict">strict<a class="anchor" aria-label="anchor" href="#arg-strict"></a></dt>
-<dd><p>Defaults to <code>FALSE</code>. If <code>TRUE</code>, only count unqualified function calls that resolve
+<dd><p>If <code>TRUE</code> (default), only count unqualified function calls that resolve
 to a single Stan package.</p></dd>
 
 
@@ -131,14 +131,6 @@ they are namespaced.</p></dd>
 the citation lookups.</p>
     </div>
 
-    <div class="section level2">
-    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">stan_cite</span><span class="op">(</span>strict <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Searching directory <span style="color: #0000BB;">/home/runner/work/stanflow/stanflow/docs/reference</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in scan_usage(path = path, ignore_unqualified_functions = ignore_unqualified_functions,     strict = strict, skip_dirs = skip_dirs, allowed_packages = .stan_pkgs,     export_index = .stan_export_index, origin_map = .stan_origin_map):</span> No files found.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Check the `path` and `skip_dirs` arguments.</span>
-</code></pre></div>
-    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

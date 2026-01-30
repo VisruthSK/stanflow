@@ -336,5 +336,5 @@ stan_cite("stanflow.qmd")
 #>   url = {https://www.R-project.org/},
 #> }
 Sys.time() - start
-#> Time difference of 0.1524513 secs
+#> Time difference of 0.1487925 secs
 ```
