@@ -16,6 +16,26 @@ only cogent for Stan packages, and cannot compare two dev versions.}
 \item{check_updates}{Logical. If \code{FALSE}, skips checking for remote versions and
 only reports locally installed package versions.}
 }
+\value{
+A data frame with columns:
+\describe{
+\item{package}{Package name.}
+\item{remote}{Repository version (character, \code{NA} when not queried).}
+\item{local}{Installed version (character, \code{"0"} if not installed).}
+\item{behind}{Logical; \code{TRUE} when \code{remote} is newer than \code{local}.}
+}
+}
 \description{
-List all stanflow dependencies
+Returns a data frame of Stan workflow packages and their local/remote versions.
+When \code{check_updates = FALSE}, remote versions are not queried and the \code{remote}
+and \code{behind} columns are \code{NA} and \code{FALSE}, respectively.
+}
+\examples{
+\dontrun{
+# Full dependency check with remote versions
+stanflow_deps(recursive = TRUE)
+
+# Local-only inventory (fast, no network)
+stanflow_deps(check_updates = FALSE)
+}
 }

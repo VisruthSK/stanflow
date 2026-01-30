@@ -3,12 +3,32 @@
 
 #' List all stanflow dependencies
 #'
+#' @description
+#' Returns a data frame of Stan workflow packages and their local/remote versions.
+#' When `check_updates = FALSE`, remote versions are not queried and the `remote`
+#' and `behind` columns are `NA` and `FALSE`, respectively.
+#'
 #' @param recursive If `TRUE`, will also list all dependencies of dependencies and so on.
 #' @param dev If `FALSE` (default), checks for updates in the R-multiverse or CRAN
 #'   (stable releases). If `TRUE`, checks the Stan R-universe (dev versions). This is
 #'   only cogent for Stan packages, and cannot compare two dev versions.
 #' @param check_updates Logical. If `FALSE`, skips checking for remote versions and
 #'   only reports locally installed package versions.
+#' @return A data frame with columns:
+#' \describe{
+#'   \item{package}{Package name.}
+#'   \item{remote}{Repository version (character, `NA` when not queried).}
+#'   \item{local}{Installed version (character, `"0"` if not installed).}
+#'   \item{behind}{Logical; `TRUE` when `remote` is newer than `local`.}
+#' }
+#' @examples
+#' \dontrun{
+#' # Full dependency check with remote versions
+#' stanflow_deps(recursive = TRUE)
+#'
+#' # Local-only inventory (fast, no network)
+#' stanflow_deps(check_updates = FALSE)
+#' }
 #' @export
 stanflow_deps <- function(
   recursive = FALSE,
@@ -150,7 +170,21 @@ stanflow_deps <- function(
 
 #' Update stanflow packages
 #'
-#' This function requires an interactive R session.
+#' @description
+#' Checks for outdated Stan workflow packages and installs updates. This function
+#' requires an interactive R session and will error otherwise.
+#'
+#' @return Invisibly returns a data frame of outdated packages (same columns as
+#' \code{\link{stanflow_deps}}). Returns \code{NULL} invisibly when no updates are
+#' needed.
+#' @examples
+#' \dontrun{
+#' # Update direct dependencies only
+#' stanflow_update()
+#'
+#' # Update full dependency tree (including suggests)
+#' stanflow_update(recursive = TRUE)
+#' }
 #'
 #' @inheritParams stanflow_deps
 #' @export

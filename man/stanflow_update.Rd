@@ -13,6 +13,22 @@ stanflow_update(recursive = FALSE, dev = FALSE)
 (stable releases). If \code{TRUE}, checks the Stan R-universe (dev versions). This is
 only cogent for Stan packages, and cannot compare two dev versions.}
 }
+\value{
+Invisibly returns a data frame of outdated packages (same columns as
+\code{\link{stanflow_deps}}). Returns \code{NULL} invisibly when no updates are
+needed.
+}
 \description{
-This function requires an interactive R session.
+Checks for outdated Stan workflow packages and installs updates. This function
+requires an interactive R session and will error otherwise.
+}
+\examples{
+\dontrun{
+# Update direct dependencies only
+stanflow_update()
+
+# Update full dependency tree (including suggests)
+stanflow_update(recursive = TRUE)
+}
+
 }
