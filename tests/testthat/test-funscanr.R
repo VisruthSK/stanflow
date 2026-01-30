@@ -868,6 +868,116 @@ test_that("scan_usage attributes unqualified calls only in files attaching Stan 
   expect_true(setequal(res$functions, expected_functions))
 })
 
+test_that("scan_usage treats stanflow attachment as core packages", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "stanflow.R"),
+    c(
+      "library(stanflow)",
+      "as_draws_df(matrix(1))",
+      "mcmc_hist(as_draws_df(matrix(1)), pars = 'theta')",
+      "loo(matrix(1))"
+    )
+  )
+
+  res <- scan_usage(path)
+
+  expected_keys <- unique(na.omit(c(
+    resolve_origin_key("posterior", "as_draws_df"),
+    resolve_origin_key("bayesplot", "mcmc_hist"),
+    resolve_origin_key("loo", "loo")
+  )))
+  expected_pkgs <- unique(na.omit(c(
+    "posterior",
+    "bayesplot",
+    "loo",
+    resolve_origin_pkg("posterior", "as_draws_df"),
+    resolve_origin_pkg("bayesplot", "mcmc_hist"),
+    resolve_origin_pkg("loo", "loo")
+  )))
+
+  expect_true(all(expected_pkgs %in% res$packages))
+  expect_true(all(expected_keys %in% res$functions))
+})
+
+test_that("scan_usage treats require(stanflow) as core attachment", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "stanflow-require.R"),
+    c(
+      "require(stanflow)",
+      "as_draws_df(matrix(1))",
+      "loo(matrix(1))"
+    )
+  )
+
+  res <- scan_usage(path)
+
+  expected_keys <- unique(na.omit(c(
+    resolve_origin_key("posterior", "as_draws_df"),
+    resolve_origin_key("loo", "loo")
+  )))
+  expected_pkgs <- unique(na.omit(c(
+    "posterior",
+    "loo",
+    resolve_origin_pkg("posterior", "as_draws_df"),
+    resolve_origin_pkg("loo", "loo")
+  )))
+
+  expect_true(all(expected_pkgs %in% res$packages))
+  expect_true(all(expected_keys %in% res$functions))
+})
+
+test_that("scan_usage does not treat requireNamespace(stanflow) as core attachment", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "stanflow-namespace.R"),
+    c(
+      "requireNamespace('stanflow')",
+      "loo(matrix(1))"
+    )
+  )
+
+  res <- scan_usage(path)
+
+  expect_true("stanflow" %in% res$packages)
+  expect_false(any(
+    res$packages %in% c("bayesplot", "loo", "posterior", "projpred", "shinystan")
+  ))
+  expect_identical(res$functions, character())
+})
+
+test_that("scan_usage handles stanflow attachment in qmd", {
+  skip_if_not_installed("knitr")
+
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "note.qmd"),
+    c(
+      "---",
+      "title: 'Note'",
+      "---",
+      "",
+      "```{r}",
+      "library(stanflow)",
+      "loo(matrix(1))",
+      "```"
+    )
+  )
+
+  res <- scan_usage(path)
+
+  expected_key <- resolve_origin_key("loo", "loo")
+  expected_keys <- if (is.na(expected_key)) character() else expected_key
+  expected_pkgs <- unique(na.omit(c(
+    "loo",
+    resolve_origin_pkg("loo", "loo")
+  )))
+
+  expect_true(all(expected_pkgs %in% res$packages))
+  expect_true(all(expected_keys %in% res$functions))
+})
+
 test_that("scan_usage keeps namespaced calls when unqualified calls are ignored", {
   fun_candidates <- setdiff(names(.stan_export_index), stdlib_funs())
   if (!length(fun_candidates)) {

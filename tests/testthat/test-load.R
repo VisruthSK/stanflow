@@ -54,6 +54,25 @@ test_that("core_attach_message returns NULL when nothing to show", {
   expect_null(core_attach_message(show_all = FALSE))
 })
 
+test_that("core packages attach in declared order", {
+  core <- getFromNamespace("core", "stanflow")
+  calls <- character()
+
+  with_mocked_bindings(
+    .find_unloaded = function(pkgs) pkgs,
+    .same_library = function(pkg) {
+      calls <<- c(calls, pkg)
+      NULL
+    },
+    .package = "stanflow",
+    {
+      core_attach_message(show_all = TRUE)
+    }
+  )
+
+  expect_identical(calls, core)
+})
+
 test_that("backends_attach_message shows attached packages", {
   pinned_versions <- c(
     brms = "2.22.0",

@@ -100,3 +100,13 @@ mcmc_hist(draws, pars = "theta")
 log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
 loo(log_lik)
 ```
+
+## Painless citations
+
+Once you've finished your analysis and need to cite the Stan software you used, simply run `stan_cite()` on your project/files to generate an appropriate BibTeX or bibentry.
+
+```{r}
+start <- Sys.time()
+stan_cite("stanflow.qmd")
+Sys.time() - start
+```
