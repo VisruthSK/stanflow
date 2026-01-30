@@ -38,6 +38,15 @@ flow_check()
 stanflow_conflicts()
 ```
 
+## Keep the flow fresh
+
+Check whether your Stan workflow packages are up to date (stable releases by default, or dev builds with `dev = TRUE`). Set `recursive` to check the full dependency closure.
+
+```{r}
+#| eval: false
+stanflow_update(recursive = TRUE)
+```
+
 ## Choose interface backends
 
 Use `setup_interface()` to install (if needed), attach, and configure interfaces. This example prefers the `cmdstanr` backend for `brms`. Running this command will attach both packages and ensure that `brms` calls rely on `cmdstanr` by default.
@@ -53,7 +62,7 @@ setup_interface(
 flow_check()
 ```
 
-If you prefer `RStan`, you could just load it alongside `brms`.
+If you prefer `RStan`, you could load it alongside `brms`.
 
 ```{r}
 #| eval: false
@@ -64,9 +73,21 @@ setup_interface(
 )
 ```
 
+You can setup as many interfaces you'd like:
+
+```{r}
+#| eval: false
+setup_interface(
+  interface = c("rstan", "rstanarm", "brms"),
+  brms_backend = "cmdstanr",
+  cores = 2,
+  quiet = TRUE
+)
+```
+
 ## A tiny workflow
 
-With the core packages attached, you can generate, summarise, and visualise draws immediately. Here we create fake draws, compute a simple `loo` object, and plot a quick histogram with `bayesplot`.
+With the core packages attached, you can generate, summarise, and visualise draws immediately.
 
 ```{r}
 set.seed(0)
@@ -78,13 +99,4 @@ mcmc_hist(draws, pars = "theta")
 
 log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
 loo(log_lik)
-```
-
-## Keep the flow fresh
-
-Check whether your Stan workflow packages are up to date (stable releases by default, or dev builds with `dev = TRUE`). Set `recursive` to check the full dependency closure.
-
-```{r}
-#| eval: false
-stanflow_update(recursive = TRUE)
 ```
