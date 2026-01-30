@@ -72,14 +72,18 @@ interfaces, and any conflicts.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">flow_check</span><span class="op">(</span>only <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">flow_check</span><span class="op">(</span>check_updates <span class="op">=</span> <span class="cn">FALSE</span>, only <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-only">only<a class="anchor" aria-label="anchor" href="#arg-only"></a></dt>
+<dl><dt id="arg-check-updates">check_updates<a class="anchor" aria-label="anchor" href="#arg-check-updates"></a></dt>
+<dd><p>If <code>TRUE</code>, checks for stable updates to stanflow packages.</p></dd>
+
+
+<dt id="arg-only">only<a class="anchor" aria-label="anchor" href="#arg-only"></a></dt>
 <dd><p>Set this to a character vector to restrict to conflicts only
 between the provided packages and loaded stanflow packages.</p></dd>
 

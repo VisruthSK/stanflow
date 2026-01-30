@@ -6,10 +6,14 @@ interfaces, and any conflicts.
 ## Usage
 
 ``` r
-flow_check(only = NULL)
+flow_check(check_updates = FALSE, only = NULL)
 ```
 
 ## Arguments
+
+- check_updates:
+
+  If `TRUE`, checks for stable updates to stanflow packages.
 
 - only:
 
