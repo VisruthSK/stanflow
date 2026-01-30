@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   pull_request:
+    paths:
+      - ".github/workflows/interfaces.yaml"
+      - "DESCRIPTION"
+      - "NAMESPACE"
+      - "R/interfaces.R"
+      - "R/utils.R"
+      - "tests/testthat/test-interfaces-*-ci.R"
+      - "tests/testthat/test-cmdstanr-ci.R"
   workflow_dispatch:
 
 permissions: read-all
