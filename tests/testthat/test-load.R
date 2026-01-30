@@ -166,6 +166,42 @@ test_that("flow_check includes update list when packages are behind", {
   expect_true(any(grepl("posterior", result, fixed = TRUE)))
 })
 
+test_that("update_check_message prints up-to-date status", {
+  expect_snapshot_output(
+    with_mocked_bindings(
+      stanflow_deps = function(...) {
+        data.frame(
+          package = c("cmdstanr", "posterior"),
+          remote = c("1.2.0", "1.6.0"),
+          local = c("1.2.0", "1.6.0"),
+          behind = c(FALSE, FALSE),
+          stringsAsFactors = FALSE
+        )
+      },
+      cat(update_check_message(), "\n"),
+      .package = "stanflow"
+    )
+  )
+})
+
+test_that("update_check_message prints update list", {
+  expect_snapshot_output(
+    with_mocked_bindings(
+      stanflow_deps = function(...) {
+        data.frame(
+          package = c("cmdstanr", "posterior"),
+          remote = c("1.2.0", "1.6.0"),
+          local = c("1.1.0", "1.5.0"),
+          behind = c(TRUE, TRUE),
+          stringsAsFactors = FALSE
+        )
+      },
+      cat(update_check_message(), "\n"),
+      .package = "stanflow"
+    )
+  )
+})
+
 test_that("message_packages balances odd package counts", {
   header <- "Header"
   packages <- c("pkgA", "pkgB", "pkgC")

@@ -17,3 +17,13 @@
     * brms     2.22.0          * rstan    2.36.0.9000
     v cmdstanr 0.9.0.9000      v rstanarm 2.32.1 
 
+# update_check_message prints up-to-date status
+
+    -- Available updates -------------------------------------- stanflow_update() --
+    v All stanflow packages up-to-date 
+
+# update_check_message prints update list
+
+    -- Available updates -------------------------------------- stanflow_update() --
+    x cmdstanr  1.1.0 -> 1.2.0     x posterior 1.5.0 -> 1.6.0 
+
