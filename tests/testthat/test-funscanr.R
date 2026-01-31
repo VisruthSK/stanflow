@@ -1833,3 +1833,14 @@ test_that("origin_map is applied even when an ambiguous call is position-resolve
   expect_identical(r2$keys, "origin::foo")
   expect_identical(r2$pkgs, "origin")
 })
+
+test_that("scan_usage quiet suppresses cli messages", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
+
+  noisy <- testthat::capture_messages(scan_usage(path, quiet = FALSE))
+  expect_true(length(noisy) > 0)
+
+  silent <- testthat::capture_messages(scan_usage(path, quiet = TRUE))
+  expect_equal(silent, character())
+})

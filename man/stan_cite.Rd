@@ -9,7 +9,8 @@ stan_cite(
   strict = TRUE,
   format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
-  ignore_unqualified_functions = .stdlib_funs
+  ignore_unqualified_functions = .stdlib_funs,
+  quiet = FALSE
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ listed in \code{stdlib_funs()}. Character vector of function names to ignore whe
 attributing (unqualified) calls to Stan packages. Calls like \code{rstan::plot()}
 will NOT be ignored even if \code{plot} is in \code{ignore_unqualified_functions}, since
 they are namespaced.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 }
 \value{
 A BibTeX character vector or a bibentry object.

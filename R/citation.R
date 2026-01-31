@@ -23,6 +23,7 @@
 #' @param skip_dirs Defaults to directories listed in `scan_skip_dirs`. Character
 #'   vector of directory names to skip when scanning a directory.
 #' @param format One of "bibtex" or "bibentry", specifying the return format.
+#' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
 stan_cite <- function(
@@ -30,8 +31,11 @@ stan_cite <- function(
   strict = TRUE,
   format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
-  ignore_unqualified_functions = .stdlib_funs
+  ignore_unqualified_functions = .stdlib_funs,
+  quiet = FALSE
 ) {
+  local_cli_quiet(quiet)
+
   scan_usage(
     path = path,
     ignore_unqualified_functions = ignore_unqualified_functions,
@@ -39,7 +43,8 @@ stan_cite <- function(
     skip_dirs = skip_dirs,
     allowed_packages = .stan_pkgs,
     export_index = .stan_export_index,
-    origin_map = .stan_origin_map
+    origin_map = .stan_origin_map,
+    quiet = quiet
   ) |>
     (\(x) {
       list(

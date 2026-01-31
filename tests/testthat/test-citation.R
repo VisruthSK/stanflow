@@ -87,6 +87,21 @@ test_that("stan_cite returns empty when no citations are found", {
   expect_identical(out, character())
 })
 
+test_that("stan_cite quiet suppresses cli messages", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
+
+  noisy <- testthat::capture_messages(
+    stan_cite(path, format = "bibtex", quiet = FALSE)
+  )
+  expect_true(length(noisy) > 0)
+
+  silent <- testthat::capture_messages(
+    stan_cite(path, format = "bibtex", quiet = TRUE)
+  )
+  expect_equal(silent, character())
+})
+
 test_that("all package citations exist", {
   expected <- getFromNamespace(".stan_pkgs", "stanflow")
 

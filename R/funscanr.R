@@ -38,8 +38,11 @@ scan_usage <- function(
   skip_dirs = .scan_skip_dirs,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
-  origin_map = .stan_origin_map
+  origin_map = .stan_origin_map,
+  quiet = FALSE
 ) {
+  local_cli_quiet(quiet)
+
   paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
   dir_flags <- dir.exists(paths)
 

@@ -11,7 +11,8 @@ scan_usage(
   skip_dirs = .scan_skip_dirs,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
-  origin_map = .stan_origin_map
+  origin_map = .stan_origin_map,
+  quiet = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ to \code{.stan_export_index}.}
 
 \item{origin_map}{Named character vector mapping \code{pkg::fun} keys to the
 origin package. Defaults to \code{.stan_origin_map}.}
+
+\item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 }
 \value{
 A list of packages, resolved functions, and ambiguous function calls.
