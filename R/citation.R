@@ -4,9 +4,11 @@
 #' in a directory or set of files. The `{knitr}` package is required
 #' to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. `stan_cite()`
 #' uses some simple heuristics to guess which packages export functions,
-#' and also attempts to map re-exports to their origin package.
+#' and also attempts to map re-exports to their origin package. Calls
+#' to `library()`, `require()`, `requireNamespace()`, or `use()` are
+#' all recognized as attaching a package.
 #'
-#' The parsing is handled by `funscanr()`; `stan_cite()` owns
+#' The parsing is handled by `scan_usage()`; `stan_cite()` owns
 #' the citation lookups.
 #'
 #' @param path A single project directory (searched recursively) or a vector of

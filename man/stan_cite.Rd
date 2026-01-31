@@ -38,9 +38,11 @@ A BibTeX character vector or a bibentry object.
 in a directory or set of files. The \code{{knitr}} package is required
 to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. \code{stan_cite()}
 uses some simple heuristics to guess which packages export functions,
-and also attempts to map re-exports to their origin package.
+and also attempts to map re-exports to their origin package. Calls
+to \code{library()}, \code{require()}, \code{requireNamespace()}, or \code{use()} are
+all recognized as attaching a package.
 }
 \details{
-The parsing is handled by \code{funscanr()}; \code{stan_cite()} owns
+The parsing is handled by \code{scan_usage()}; \code{stan_cite()} owns
 the citation lookups.
 }

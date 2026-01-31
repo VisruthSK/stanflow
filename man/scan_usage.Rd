@@ -24,7 +24,7 @@ attributing (unqualified) calls to Stan packages. Calls like \code{rstan::plot()
 will NOT be ignored even if \code{plot} is in \code{ignore_unqualified_functions}, since
 they are namespaced.}
 
-\item{strict}{If \code{TRUE} (default), only count unqualified function calls that resolve
+\item{strict}{If \code{TRUE}, only count unqualified function calls that resolve
 to a single Stan package.}
 
 \item{skip_dirs}{Character vector of directory names to skip when scanning a

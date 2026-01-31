@@ -19,6 +19,8 @@
 #' origin packages; missing mappings fall back to the resolved package.
 #'
 #' @inheritParams stan_cite
+#' @param strict If `TRUE`, only count unqualified function calls that resolve
+#'   to a single Stan package.
 #' @param allowed_packages Character vector of package namespaces to attribute
 #'   to Stan usage. Defaults to `.stan_pkgs`.
 #' @param export_index Named list mapping function names to packages. Defaults
