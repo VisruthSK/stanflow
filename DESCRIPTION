@@ -20,13 +20,13 @@ BugReports: https://github.com/VisruthSK/stanflow/issues/
 Depends:
     R (>= 4.2.0)
 Imports:
-    bayesplot (>= 1.15.0),
+    bayesplot,
     cli,
     fastmatch,
-    loo (>= 2.8.0),
-    posterior (>= 1.6.0),
-    projpred (>= 2.10.0),
-    shinystan (>= 2.7.0),
+    loo,
+    posterior,
+    projpred,
+    shinystan,
     withr
 Suggests:
     brms,
