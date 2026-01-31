@@ -39,7 +39,7 @@ scan_usage <- function(
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map,
-  quiet = FALSE
+  quiet = getOption("stanflow.quiet", FALSE)
 ) {
   local_cli_quiet(quiet)
 
@@ -662,7 +662,8 @@ NULL
 #'
 #' @rdname internal_data
 #' @export
-stdlib_funs <- function() {
+stdlib_funs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
+  local_cli_quiet(quiet)
   # lapply(
   #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
   #   getNamespaceExports
@@ -670,7 +671,7 @@ stdlib_funs <- function() {
   #   unlist(use.names = FALSE) |>
   #   unique() |>
   #   sort()
-  print("See the source for how these are generated")
+  cli::cli_alert_info("See the source for how these are generated")
   .stdlib_funs
 }
 
@@ -681,7 +682,8 @@ stdlib_funs <- function() {
 #'
 #' @rdname internal_data
 #' @export
-scan_skip_dirs <- function() {
+scan_skip_dirs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
+  local_cli_quiet(quiet)
   # c(
   #   "renv",
   #   "packrat",
@@ -698,6 +700,6 @@ scan_skip_dirs <- function() {
   #   "_cache",
   #   ".cache"
   # )
-  print("See the source for how these are generated")
+  cli::cli_alert_info("See the source for how these are generated")
   .scan_skip_dirs
 }

@@ -12,7 +12,7 @@ scan_usage(
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map,
-  quiet = FALSE
+  quiet = getOption("stanflow.quiet", FALSE)
 )
 }
 \arguments{

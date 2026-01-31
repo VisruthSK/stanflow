@@ -25,7 +25,7 @@
 setup_interface <- function(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   cores = getOption("mc.cores"),
-  quiet = TRUE,
+  quiet = getOption("stanflow.quiet", TRUE),
   force = FALSE,
   reinstall = FALSE,
   check_updates = FALSE,

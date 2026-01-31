@@ -1844,3 +1844,16 @@ test_that("scan_usage quiet suppresses cli messages", {
   silent <- testthat::capture_messages(scan_usage(path, quiet = TRUE))
   expect_equal(silent, character())
 })
+
+test_that("scan_usage defaults to stanflow.quiet option", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
+
+  withr::local_options(list(stanflow.quiet = TRUE))
+  silent <- testthat::capture_messages(scan_usage(path))
+  expect_equal(silent, character())
+
+  withr::local_options(list(stanflow.quiet = FALSE))
+  noisy <- testthat::capture_messages(scan_usage(path))
+  expect_true(length(noisy) > 0)
+})

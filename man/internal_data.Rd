@@ -6,9 +6,9 @@
 \alias{scan_skip_dirs}
 \title{Ignored functions/directories used by scanner}
 \usage{
-stdlib_funs()
+stdlib_funs(quiet = getOption("stanflow.quiet", FALSE))
 
-scan_skip_dirs()
+scan_skip_dirs(quiet = getOption("stanflow.quiet", FALSE))
 }
 \description{
 Vector of functions to be ignored when parsing.

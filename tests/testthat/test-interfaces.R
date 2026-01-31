@@ -166,6 +166,27 @@ test_that("setup_interface is silent when quiet = TRUE", {
   expect_equal(output, character())
 })
 
+test_that("setup_interface defaults to stanflow.quiet option", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .same_library = function(pkg) NULL,
+    setup_brms = function(...) invisible(NULL),
+    .package = "stanflow"
+  )
+
+  withr::local_options(list(stanflow.quiet = TRUE))
+  silent <- testthat::capture_messages(
+    setup_interface(interface = "brms", brms_backend = "rstan", cores = 2)
+  )
+  expect_equal(silent, character())
+
+  withr::local_options(list(stanflow.quiet = FALSE))
+  noisy <- testthat::capture_messages(
+    setup_interface(interface = "brms", brms_backend = "rstan", cores = 2)
+  )
+  expect_true(length(noisy) > 0)
+})
+
 test_that("install_backend_package installs from Stan universe when dev = TRUE", {
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")

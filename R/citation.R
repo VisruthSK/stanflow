@@ -32,7 +32,7 @@ stan_cite <- function(
   format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
   ignore_unqualified_functions = .stdlib_funs,
-  quiet = FALSE
+  quiet = getOption("stanflow.quiet", FALSE)
 ) {
   local_cli_quiet(quiet)
 
