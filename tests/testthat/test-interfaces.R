@@ -146,6 +146,26 @@ test_that("setup_interface runs backend setup helpers", {
   )
 })
 
+test_that("setup_interface is silent when quiet = TRUE", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .same_library = function(pkg) NULL,
+    setup_brms = function(...) invisible(NULL),
+    .package = "stanflow"
+  )
+
+  output <- testthat::capture_messages(
+    setup_interface(
+      interface = "brms",
+      brms_backend = "rstan",
+      cores = 2,
+      quiet = TRUE
+    )
+  )
+
+  expect_equal(output, character())
+})
+
 test_that("install_backend_package installs from Stan universe when dev = TRUE", {
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")
@@ -390,6 +410,32 @@ test_that("setup_cmdstanr returns invisibly when up to date", {
   )
 
   expect_identical(result, TRUE)
+})
+
+test_that("setup_cmdstanr is silent when quiet = TRUE", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() "/tmp",
+    cmdstan_version = function() "2.31.0",
+    .package = "cmdstanr"
+  )
+  local_mocked_bindings(
+    readLines = function(...) stop("no network"),
+    .package = "base"
+  )
+
+  output <- testthat::capture_messages(
+    setup_cmdstanr(
+      quiet = TRUE,
+      force = FALSE,
+      check_updates = FALSE,
+      cores = 2
+    )
+  )
+
+  expect_equal(output, character())
 })
 
 test_that("setup_interface aborts when install_backend_package fails", {

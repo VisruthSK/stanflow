@@ -21,12 +21,13 @@ Depends:
     R (>= 4.2.0)
 Imports:
     bayesplot (>= 1.15.0),
-    cli (>= 3.6.5),
+    cli,
     fastmatch,
     loo (>= 2.8.0),
     posterior (>= 1.6.0),
     projpred (>= 2.10.0),
     shinystan (>= 2.7.0),
+    withr
 Suggests:
     brms,
     cmdstanr,
@@ -34,8 +35,7 @@ Suggests:
     quarto,
     rstan,
     rstanarm,
-    testthat (>= 3.0.0),
-    withr
+    testthat (>= 3.0.0)
 VignetteBuilder: 
     quarto
 Additional_repositories:

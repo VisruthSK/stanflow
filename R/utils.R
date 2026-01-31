@@ -68,12 +68,9 @@ local_cli_quiet <- function(quiet, env = parent.frame()) {
     return(invisible(NULL))
   }
 
-  old <- options(cli.default_handler = \(...) invisible(NULL))
-  restore_expr <- bquote(options(
-    cli.default_handler = .(old$cli.default_handler)
-  ))
-
-  eval(call("on.exit", restore_expr, add = TRUE), envir = env)
-
+  withr::local_options(
+    list(cli.default_handler = function(...) invisible(NULL)),
+    .local_envir = env
+  )
   invisible(NULL)
 }

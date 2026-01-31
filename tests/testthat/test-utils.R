@@ -62,6 +62,32 @@ test_that("wrapped_startup emits startup messages when enabled", {
   expect_message(wrapped_startup("hello from stanflow"), "hello from stanflow")
 })
 
+test_that("local_cli_quiet suppresses cli messages within caller", {
+  capture <- function(quiet) {
+    f <- function() {
+      local_cli_quiet(quiet)
+      cli::cli_alert_info("hello from cli")
+      invisible(NULL)
+    }
+    testthat::capture_messages(f())
+  }
+
+  expect_equal(capture(TRUE), character())
+  expect_match(capture(FALSE), "hello from cli")
+})
+
+test_that("local_cli_quiet restores cli output after caller exits", {
+  f <- function() {
+    local_cli_quiet(TRUE)
+    cli::cli_alert_info("silenced")
+    invisible(NULL)
+  }
+  testthat::capture_messages(f())
+
+  out <- testthat::capture_messages(cli::cli_alert_info("audible"))
+  expect_match(out, "audible")
+})
+
 test_that(".same_library uses the package library path when loaded", {
   captured <- list(lib.loc = NULL, character.only = NULL, warn.conflicts = NULL)
 
