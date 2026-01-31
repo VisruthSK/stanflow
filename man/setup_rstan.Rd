@@ -7,7 +7,7 @@
 setup_rstan(quiet, cores, rstan_auto_write)
 }
 \arguments{
-\item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
 
 \item{cores}{Integer. Number of cores to use. Defaults to
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass

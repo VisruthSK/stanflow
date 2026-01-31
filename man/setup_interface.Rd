@@ -23,7 +23,7 @@ setup_interface(
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
 \code{cores} explicitly.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
 
 \item{force}{Logical. If \code{TRUE}, allows installation in non-interactive sessions.}
 

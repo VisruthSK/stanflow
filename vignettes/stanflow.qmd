@@ -14,7 +14,6 @@ knitr:
 #| include: false
 options(
   repos = c(
-    Multiverse = "https://community.r-multiverse.org",
     P3M = "https://packagemanager.posit.co/cran/latest",
     CRAN = "https://cloud.r-project.org"
   )

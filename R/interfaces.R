@@ -15,7 +15,7 @@
 #' @param cores Integer. Number of cores to use. Defaults to
 #'   `getOption("mc.cores")`. You must set `options(mc.cores = ...)` or pass
 #'   `cores` explicitly.
-#' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @param quiet Logical. If `TRUE`, suppresses status messages. This cannot suppress cmdstan messages.
 #' @param force Logical. If `TRUE`, allows installation in non-interactive sessions.
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
@@ -196,7 +196,7 @@ setup_cmdstanr <- function(
       cli::cli_alert_info("Found CmdStan v{local_ver} at {.path {path}}")
       cmdstan_ready <- TRUE
     },
-    error = function(e) {}
+    error = \(e) NULL
   )
 
   latest_ver <- NULL

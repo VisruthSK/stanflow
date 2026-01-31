@@ -7,7 +7,7 @@
 setup_brms(quiet, brms_backend, cores)
 }
 \arguments{
-\item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
 
 \item{brms_backend}{Character. The \code{brms} backend to use. Defaults to
 \code{getOption("brms.backend", "cmdstanr")} and must be one of

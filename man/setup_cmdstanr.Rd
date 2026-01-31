@@ -7,7 +7,7 @@
 setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
 }
 \arguments{
-\item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
 
 \item{force}{Logical. If \code{TRUE}, allows installation in non-interactive sessions.}
 
