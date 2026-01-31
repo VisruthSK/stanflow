@@ -16,7 +16,8 @@ setup_rstan(quiet, cores, rstan_auto_write)
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses status messages.
+  Logical. If `TRUE`, suppresses status messages. This cannot suppress
+  cmdstan messages.
 
 - cores:
 

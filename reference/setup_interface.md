@@ -35,7 +35,8 @@ setup_interface(
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses status messages.
+  Logical. If `TRUE`, suppresses status messages. This cannot suppress
+  cmdstan messages.
 
 - force:
 

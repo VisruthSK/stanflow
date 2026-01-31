@@ -16,7 +16,8 @@ setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses status messages.
+  Logical. If `TRUE`, suppresses status messages. This cannot suppress
+  cmdstan messages.
 
 - force:
 

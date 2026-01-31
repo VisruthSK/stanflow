@@ -15,7 +15,8 @@ setup_brms(quiet, brms_backend, cores)
 
 - quiet:
 
-  Logical. If `TRUE`, suppresses status messages.
+  Logical. If `TRUE`, suppresses status messages. This cannot suppress
+  cmdstan messages.
 
 - brms_backend:
 
