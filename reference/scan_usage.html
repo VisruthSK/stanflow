@@ -82,7 +82,8 @@ defaults and <code>{stanflow}</code> behavior explained later.</p>
 <span>  skip_dirs <span class="op">=</span> <span class="va">.scan_skip_dirs</span>,</span>
 <span>  allowed_packages <span class="op">=</span> <span class="va">.stan_pkgs</span>,</span>
 <span>  export_index <span class="op">=</span> <span class="va">.stan_export_index</span>,</span>
-<span>  origin_map <span class="op">=</span> <span class="va">.stan_origin_map</span></span>
+<span>  origin_map <span class="op">=</span> <span class="va">.stan_origin_map</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"stanflow.quiet"</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -104,7 +105,7 @@ they are namespaced.</p></dd>
 
 
 <dt id="arg-strict">strict<a class="anchor" aria-label="anchor" href="#arg-strict"></a></dt>
-<dd><p>If <code>TRUE</code> (default), only count unqualified function calls that resolve
+<dd><p>If <code>TRUE</code>, only count unqualified function calls that resolve
 to a single Stan package.</p></dd>
 
 
@@ -126,6 +127,10 @@ to <code>.stan_export_index</code>.</p></dd>
 <dt id="arg-origin-map">origin_map<a class="anchor" aria-label="anchor" href="#arg-origin-map"></a></dt>
 <dd><p>Named character vector mapping <code>pkg::fun</code> keys to the
 origin package. Defaults to <code>.stan_origin_map</code>.</p></dd>
+
+
+<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, suppresses status messages.</p></dd>
 
 </dl></div>
     <div class="section level2">

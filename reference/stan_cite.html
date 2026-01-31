@@ -4,11 +4,15 @@
 in a directory or set of files. The {knitr} package is required
 to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. stan_cite()
 uses some simple heuristics to guess which packages export functions,
-and also attempts to map re-exports to their origin package."><meta property="og:description" content="stan_cite() generates the correct citations for Stan packages
+and also attempts to map re-exports to their origin package. Calls
+to library(), require(), requireNamespace(), or use() are
+all recognized as attaching a package."><meta property="og:description" content="stan_cite() generates the correct citations for Stan packages
 in a directory or set of files. The {knitr} package is required
 to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. stan_cite()
 uses some simple heuristics to guess which packages export functions,
-and also attempts to map re-exports to their origin package."></head><body>
+and also attempts to map re-exports to their origin package. Calls
+to library(), require(), requireNamespace(), or use() are
+all recognized as attaching a package."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -76,7 +80,9 @@ and also attempts to map re-exports to their origin package."></head><body>
 in a directory or set of files. The <code>{knitr}</code> package is required
 to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. <code>stan_cite()</code>
 uses some simple heuristics to guess which packages export functions,
-and also attempts to map re-exports to their origin package.</p>
+and also attempts to map re-exports to their origin package. Calls
+to <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code>, <code><a href="https://rdrr.io/r/base/library.html" class="external-link">require()</a></code>, <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace()</a></code>, or <code><a href="https://rdrr.io/r/base/use.html" class="external-link">use()</a></code> are
+all recognized as attaching a package.</p>
     </div>
 
     <div class="section level2">
@@ -86,7 +92,8 @@ and also attempts to map re-exports to their origin package.</p>
 <span>  strict <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bibtex"</span>, <span class="st">"bibentry"</span><span class="op">)</span>,</span>
 <span>  skip_dirs <span class="op">=</span> <span class="va">.scan_skip_dirs</span>,</span>
-<span>  ignore_unqualified_functions <span class="op">=</span> <span class="va">.stdlib_funs</span></span>
+<span>  ignore_unqualified_functions <span class="op">=</span> <span class="va">.stdlib_funs</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"stanflow.quiet"</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -120,6 +127,10 @@ attributing (unqualified) calls to Stan packages. Calls like <code>rstan::plot()
 will NOT be ignored even if <code>plot</code> is in <code>ignore_unqualified_functions</code>, since
 they are namespaced.</p></dd>
 
+
+<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, suppresses status messages.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -127,7 +138,7 @@ they are namespaced.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The parsing is handled by <code>funscanr()</code>; <code>stan_cite()</code> owns
+    <p>The parsing is handled by <code><a href="scan_usage.html">scan_usage()</a></code>; <code>stan_cite()</code> owns
 the citation lookups.</p>
     </div>
 

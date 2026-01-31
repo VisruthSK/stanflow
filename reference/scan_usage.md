@@ -14,7 +14,8 @@ scan_usage(
   skip_dirs = .scan_skip_dirs,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
-  origin_map = .stan_origin_map
+  origin_map = .stan_origin_map,
+  quiet = getOption("stanflow.quiet", FALSE)
 )
 ```
 
@@ -36,8 +37,8 @@ scan_usage(
 
 - strict:
 
-  If `TRUE` (default), only count unqualified function calls that
-  resolve to a single Stan package.
+  If `TRUE`, only count unqualified function calls that resolve to a
+  single Stan package.
 
 - skip_dirs:
 
@@ -58,6 +59,10 @@ scan_usage(
 
   Named character vector mapping `pkg::fun` keys to the origin package.
   Defaults to `.stan_origin_map`.
+
+- quiet:
+
+  Logical. If `TRUE`, suppresses status messages.
 
 ## Value
 

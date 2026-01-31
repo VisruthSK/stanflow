@@ -1,4 +1,4 @@
-# NA
+# BSD 3-Clause License
 
 Copyright 2026 Visruth Srimath Kandali
 
