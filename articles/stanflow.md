@@ -10,7 +10,7 @@ install/configure Stan interfaces (`cmdstanr`, `rstan`, `brms`,
 
 ``` r
 library(stanflow)
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
 #> ✔ posterior 1.6.1
@@ -48,7 +48,7 @@ or just the namespace conflicts with
 
 ``` r
 flow_check()
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
 #> ✔ posterior 1.6.1      
@@ -80,7 +80,7 @@ using
 
 ``` r
 flow_check(check_updates = TRUE)
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
 #> ✔ posterior 1.6.1      
@@ -157,7 +157,7 @@ setup_interface(
 #> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.38.0
 #> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.38.0
 flow_check()
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
 #> ✔ posterior 1.6.1      
@@ -244,7 +244,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1311059 secs
+#> Time difference of 0.130857 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
@@ -313,7 +313,7 @@ citations
 #>   title = {A Mildly Opinionated Stan Bayesian Workflow},
 #>   author = {Visruth {Srimath Kandali}},
 #>   year = {2026},
-#>   note = {R package version 0.0.0.9000, https://discourse.mc-stan.org},
+#>   note = {R package version 0.1.0, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/stanflow/},
 #> }
 #> 

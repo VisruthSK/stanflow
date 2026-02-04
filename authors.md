@@ -16,13 +16,13 @@ Source:
 [`DESCRIPTION`](https://github.com/VisruthSK/stanflow/blob/main/DESCRIPTION)
 
 Srimath Kandali V (2026). *stanflow: A Mildly Opinionated Stan Bayesian
-Workflow*. R package version 0.0.0.9000,
+Workflow*. R package version 0.1.0,
 <https://visruthsk.github.io/stanflow/>.
 
     @Manual{,
       title = {stanflow: A Mildly Opinionated Stan Bayesian Workflow},
       author = {Visruth {Srimath Kandali}},
       year = {2026},
-      note = {R package version 0.0.0.9000},
+      note = {R package version 0.1.0},
       url = {https://visruthsk.github.io/stanflow/},
     }

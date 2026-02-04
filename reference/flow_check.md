@@ -28,7 +28,7 @@ Invisibly returns the character vector that was printed.
 
 ``` r
 flow_check()
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
 #> ✔ posterior 1.6.1      
