@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       # Run benchmarks when files related to cite or funscanr are changed
+      - "R/aaa.R"
       - "R/citation.R"
       - "R/funscanr.R"
       - "data-raw/sysdata.R"
@@ -42,7 +43,8 @@ jobs:
           content="${content//$'\r'/'%0D'}"
           # end of optional handling for multi line json
           echo "::set-output name=config::$content"
-          
+
+
   build:
     needs: prepare
     runs-on: ${{ matrix.config.os }}
