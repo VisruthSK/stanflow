@@ -5,6 +5,8 @@
 #' universe (dev)) and performs necessary one-time setup (like installing CmdStan).
 #'
 #' The setup functions are exported (e.g., `setup_brms()`) for transparency.
+#' Each function has some side effects, mainly setting `mc.cores`, see the function
+#' for specifics.
 #'
 #' @param interface A character vector. Select at least one of: "brms", "cmdstanr", "rstan", "rstanarm".
 #' @param dev Logical. If `FALSE` (default), installs stable releases from
@@ -25,7 +27,7 @@
 setup_interface <- function(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   cores = getOption("mc.cores"),
-  quiet = getOption("stanflow.quiet", TRUE),
+  quiet = getOption("stanflow.quiet", FALSE),
   force = FALSE,
   reinstall = FALSE,
   check_updates = FALSE,
@@ -97,7 +99,7 @@ setup_interface <- function(
 
   attached_pkgs <- paste0("{.pkg ", interface, "}", collapse = ", ")
   pkg_count <- cli::qty(length(interface))
-  pkg_phrase <- cli::pluralize("{pkg_count} package{?s} {?is/are}")
+  pkg_phrase <- cli::pluralize("{pkg_count}{?is/are}")
   cli::cli_alert_success(
     cli::format_inline(
       "Setup complete. {attached_pkgs} {pkg_phrase} attached; you do not need to run {.code library()}."

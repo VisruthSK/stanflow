@@ -10,7 +10,7 @@
 
 NB: `stanflow` is currently under active development–breaking changes
 may be made without warning, until a proper release (see the v1.0.0
-milestone).
+milestone). `stanflow` will join `stan-dev` once stable as well.
 
 ------------------------------------------------------------------------
 
@@ -18,11 +18,11 @@ milestone).
 Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much
 like the famous [tidyverse
 package](https://github.com/tidyverse/tidyverse), `stanflow` is a
-metapackage which installs and attaches relevant Stan R packages,
-serving as a one-stop-shop for Bayesian modelling. `stanflow` draws
-heavy inspiration from `tidyverse`, and reuses portions of its
-codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
-`purrr`, `dplyr`, etc.) for base R.
+metapackage which installs and attaches Stan R packages, serving as a
+one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration
+from `tidyverse`, and reuses portions of its codebase–however,
+`stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.)
+for base R.
 
 ## Features
 
@@ -41,8 +41,8 @@ codebase–however, `stanflow` eschews `tidyverse` packages (i.e.,
   - `stanflow_update()` attempts to automatically update out of date
     packages, and can optionally search for dependencies’ dependencies.
     `stanflow` natively relies on the
-    [`multiverse`](https://r-multiverse.org/) for stable releases (see
-    `stan_repos`).
+    [`multiverse`](https://r-multiverse.org/) for up to date stable
+    releases (see `stan_repos`).
 
 There are a few more functions, but these four are the heart of
 `stanflow` and what you will probably use the most.

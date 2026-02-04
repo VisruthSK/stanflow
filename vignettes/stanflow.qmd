@@ -45,6 +45,12 @@ Check whether your Stan workflow packages are up to date (stable releases by def
 stanflow_update(recursive = TRUE)
 ```
 
+You can also check if stanflow's direct dependencies are up to date using `flow_check()`.
+
+```{r}
+flow_check(check_updates = TRUE)
+```
+
 ## Choose interface backends
 
 Use `setup_interface()` to install (if needed), attach, and configure interfaces. This example prefers the `cmdstanr` backend for `brms`. Running this command will attach both packages and ensure that `brms` calls rely on `cmdstanr` by default.
@@ -54,7 +60,7 @@ setup_interface(
   interface = "brms",
   brms_backend = "cmdstanr",
   cores = 2,
-  quiet = TRUE,
+  quiet = TRUE, # only silences R output
   force = TRUE # only required for non-interactive usage
 )
 flow_check()
@@ -76,7 +82,7 @@ You can setup as many interfaces you'd like:
 ```{r}
 #| eval: false
 setup_interface(
-  interface = c("rstan", "rstanarm", "brms"),
+  interface = c("rstan", "rstanarm", "brms", "cmdstanr"),
   brms_backend = "cmdstanr",
   cores = 2,
   quiet = TRUE
@@ -94,17 +100,17 @@ draws <- as_draws_df(
 )
 summarise_draws(draws, mean, sd, rhat, ess_bulk)
 mcmc_hist(draws, pars = "theta")
-
 log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
 loo(log_lik)
 ```
 
 ## Painless citations
 
-Once you've finished your analysis and need to cite the Stan software you used, simply run `stan_cite()` on your project/files to generate an appropriate BibTeX or bibentry.
+Once you've finished your analysis and need to cite the Stan software you used, simply run `stan_cite()` on your project/files to quickly generate an appropriate BibTeX or bibentry.
 
 ```{r}
 start <- Sys.time()
-stan_cite("stanflow.qmd")
+citations <- stan_cite("stanflow.qmd")
 Sys.time() - start
+citations
 ```

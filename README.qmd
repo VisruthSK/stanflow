@@ -16,11 +16,11 @@ cache: true
 [![check-interfaces](https://github.com/VisruthSK/stanflow/actions/workflows/interfaces.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/interfaces.yaml)
 <!-- badges: end -->
 
-NB: `stanflow` is currently under active development--breaking changes may be made without warning, until a proper release (see the v1.0.0 milestone).
+NB: `stanflow` is currently under active development--breaking changes may be made without warning, until a proper release (see the v1.0.0 milestone). `stanflow` will join `stan-dev` once stable as well.
 
 ---
 
-`stanflow` is a R package for a mildly opinionated Stan based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [tidyverse package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches relevant Stan R packages, serving as a one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration from `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R.
+`stanflow` is a R package for a mildly opinionated Stan based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [tidyverse package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches Stan R packages, serving as a one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration from `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R.
 
 ## Features
 
@@ -31,7 +31,7 @@ NB: `stanflow` is currently under active development--breaking changes may be ma
 * Setup Stan interfaces:
   * `setup_interface()` automatically handles installing/attaching any of the compatible Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`, with some mild defaults.
 * Update packages[^1]:
-  * `stanflow_update()` attempts to automatically update out of date packages, and can optionally search for dependencies' dependencies. `stanflow` natively relies on the [`multiverse`](https://r-multiverse.org/) for stable releases (see `stan_repos`).
+  * `stanflow_update()` attempts to automatically update out of date packages, and can optionally search for dependencies' dependencies. `stanflow` natively relies on the [`multiverse`](https://r-multiverse.org/) for up to date stable releases (see `stan_repos`).
 
 [^1]: This feature is adopted from the `tidyverse` package!
 

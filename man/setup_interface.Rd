@@ -7,7 +7,7 @@
 setup_interface(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   cores = getOption("mc.cores"),
-  quiet = getOption("stanflow.quiet", TRUE),
+  quiet = getOption("stanflow.quiet", FALSE),
   force = FALSE,
   reinstall = FALSE,
   check_updates = FALSE,
@@ -50,4 +50,6 @@ universe (dev)) and performs necessary one-time setup (like installing CmdStan).
 }
 \details{
 The setup functions are exported (e.g., \code{setup_brms()}) for transparency.
+Each function has some side effects, mainly setting \code{mc.cores}, see the function
+for specifics.
 }
