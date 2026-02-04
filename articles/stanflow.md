@@ -74,6 +74,26 @@ to check the full dependency closure.
 stanflow_update(recursive = TRUE)
 ```
 
+You can also check if stanflow’s direct dependencies are up to date
+using
+[`flow_check()`](https://visruthsk.github.io/stanflow/reference/flow_check.md).
+
+``` r
+flow_check(check_updates = TRUE)
+#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
+#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
+#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
+#> ✔ posterior 1.6.1      
+#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
+#> • brms     2.23.0     • rstan    2.32.7
+#> • cmdstanr 0.9.0      • rstanarm 2.32.2
+#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
+#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+#> ── Available updates ────────────────────────────────────── stanflow_update() ──
+#> ✔ All stanflow packages up-to-date
+```
+
 ## Choose interface backends
 
 Use
@@ -88,7 +108,7 @@ setup_interface(
   interface = "brms",
   brms_backend = "cmdstanr",
   cores = 2,
-  quiet = TRUE,
+  quiet = TRUE, # only silences R output
   force = TRUE # only required for non-interactive usage
 )
 #> * Latest CmdStan release is v2.38.0
@@ -165,7 +185,7 @@ You can setup as many interfaces you’d like:
 
 ``` r
 setup_interface(
-  interface = c("rstan", "rstanarm", "brms"),
+  interface = c("rstan", "rstanarm", "brms", "cmdstanr"),
   brms_backend = "cmdstanr",
   cores = 2,
   quiet = TRUE
@@ -191,10 +211,9 @@ mcmc_hist(draws, pars = "theta")
 #> `stat_bin()` using `bins = 30`. Pick better value `binwidth`.
 ```
 
-![](stanflow_files/figure-html/unnamed-chunk-8-1.png)
+![](stanflow_files/figure-html/unnamed-chunk-9-1.png)
 
 ``` r
-
 log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
 loo(log_lik)
 #> 
@@ -217,12 +236,16 @@ loo(log_lik)
 Once you’ve finished your analysis and need to cite the Stan software
 you used, simply run
 [`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
-on your project/files to generate an appropriate BibTeX or bibentry.
+on your project/files to quickly generate an appropriate BibTeX or
+bibentry.
 
 ``` r
 start <- Sys.time()
-stan_cite("stanflow.qmd")
+citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
+Sys.time() - start
+#> Time difference of 0.1311059 secs
+citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
 #>   author = {Jonah Gabry and Tristan Mahr},
@@ -325,6 +348,4 @@ stan_cite("stanflow.qmd")
 #>   year = {2025},
 #>   url = {https://www.R-project.org/},
 #> }
-Sys.time() - start
-#> Time difference of 0.1496172 secs
 ```

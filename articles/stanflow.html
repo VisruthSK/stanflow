@@ -166,16 +166,33 @@
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/stanflow_update.html">stanflow_update</a></span><span class="op">(</span>recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
+<p>You can also check if stanflow’s direct dependencies are up to date using <code><a href="../reference/flow_check.html">flow_check()</a></code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/flow_check.html">flow_check</a></span><span class="op">(</span>check_updates <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──</span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
+<span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
+<span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
+<span><span class="co">#&gt; • brms     2.23.0     • rstan    2.32.7</span></span>
+<span><span class="co">#&gt; • cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
+<span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
+<span><span class="co">#&gt; ── Available updates ────────────────────────────────────── stanflow_update() ──</span></span>
+<span><span class="co">#&gt; ✔ All stanflow packages up-to-date</span></span></code></pre></div>
+</div>
 </section><section class="level2"><h2 id="choose-interface-backends">Choose interface backends<a class="anchor" aria-label="anchor" href="#choose-interface-backends"></a>
 </h2>
 <p>Use <code><a href="../reference/setup_interface.html">setup_interface()</a></code> to install (if needed), attach, and configure interfaces. This example prefers the <code>cmdstanr</code> backend for <code>brms</code>. Running this command will attach both packages and ensure that <code>brms</code> calls rely on <code>cmdstanr</code> by default.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="st">"brms"</span>,</span>
 <span>  brms_backend <span class="op">=</span> <span class="st">"cmdstanr"</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># only silences R output</span></span>
 <span>  force <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># only required for non-interactive usage</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; * Latest CmdStan release is v2.38.0</span></span>
@@ -239,7 +256,7 @@
 </div>
 <p>If you prefer <code>RStan</code>, you could load it alongside <code>brms</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
 <span>  interface <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rstan"</span>, <span class="st">"brms"</span><span class="op">)</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -248,9 +265,9 @@
 </div>
 <p>You can setup as many interfaces you’d like:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setup_interface.html">setup_interface</a></span><span class="op">(</span></span>
-<span>  interface <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rstan"</span>, <span class="st">"rstanarm"</span>, <span class="st">"brms"</span><span class="op">)</span>,</span>
+<span>  interface <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rstan"</span>, <span class="st">"rstanarm"</span>, <span class="st">"brms"</span>, <span class="st">"cmdstanr"</span><span class="op">)</span>,</span>
 <span>  brms_backend <span class="op">=</span> <span class="st">"cmdstanr"</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -260,7 +277,7 @@
 </h2>
 <p>With the core packages attached, you can generate, summarise, and visualise draws immediately.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">draws</span> <span class="op">&lt;-</span> <span class="fu">as_draws_df</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">4000</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">NULL</span>, <span class="st">"theta"</span><span class="op">)</span><span class="op">)</span></span>
@@ -274,13 +291,12 @@
 <span><span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</span></span></code></pre></div>
 <div class="cell-output-display">
 <div>
-<figure><p><img src="stanflow_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
+<figure><p><img src="stanflow_files/figure-html/unnamed-chunk-9-1.png" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="va">log_lik</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">4000</span> <span class="op">*</span> <span class="fl">10</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0.2</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">log_lik</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">4000</span> <span class="op">*</span> <span class="fl">10</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0.2</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu">loo</span><span class="op">(</span><span class="va">log_lik</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Computed from 4000 by 10 log-likelihood matrix.</span></span>
@@ -298,12 +314,15 @@
 </div>
 </section><section class="level2"><h2 id="painless-citations">Painless citations<a class="anchor" aria-label="anchor" href="#painless-citations"></a>
 </h2>
-<p>Once you’ve finished your analysis and need to cite the Stan software you used, simply run <code><a href="../reference/stan_cite.html">stan_cite()</a></code> on your project/files to generate an appropriate BibTeX or bibentry.</p>
+<p>Once you’ve finished your analysis and need to cite the Stan software you used, simply run <code><a href="../reference/stan_cite.html">stan_cite()</a></code> on your project/files to quickly generate an appropriate BibTeX or bibentry.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">start</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/stan_cite.html">stan_cite</a></span><span class="op">(</span><span class="st">"stanflow.qmd"</span><span class="op">)</span></span>
+<span><span class="va">citations</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_cite.html">stan_cite</a></span><span class="op">(</span><span class="st">"stanflow.qmd"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">start</span></span>
+<span><span class="co">#&gt; Time difference of 0.1311059 secs</span></span>
+<span><span class="va">citations</span></span>
 <span><span class="co">#&gt; @Manual{bayesplot,</span></span>
 <span><span class="co">#&gt;   title = {Plotting for Bayesian Models},</span></span>
 <span><span class="co">#&gt;   author = {Jonah Gabry and Tristan Mahr},</span></span>
@@ -405,9 +424,7 @@
 <span><span class="co">#&gt;   address = {Vienna, Austria},</span></span>
 <span><span class="co">#&gt;   year = {2025},</span></span>
 <span><span class="co">#&gt;   url = {https://www.R-project.org/},</span></span>
-<span><span class="co">#&gt; }</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">start</span></span>
-<span><span class="co">#&gt; Time difference of 0.1496172 secs</span></span></code></pre></div>
+<span><span class="co">#&gt; }</span></span></code></pre></div>
 </div>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {

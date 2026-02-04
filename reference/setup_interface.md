@@ -11,7 +11,7 @@ necessary one-time setup (like installing CmdStan).
 setup_interface(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   cores = getOption("mc.cores"),
-  quiet = getOption("stanflow.quiet", TRUE),
+  quiet = getOption("stanflow.quiet", FALSE),
   force = FALSE,
   reinstall = FALSE,
   check_updates = FALSE,
@@ -75,4 +75,5 @@ Returns the attached packages invisibly.
 
 The setup functions are exported (e.g.,
 [`setup_brms()`](https://visruthsk.github.io/stanflow/reference/setup_brms.md))
-for transparency.
+for transparency. Each function has some side effects, mainly setting
+`mc.cores`, see the function for specifics.
