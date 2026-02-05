@@ -35,65 +35,37 @@ options(
 # Install both branches to benchmark
 branch_install()
 
-# Benchmark settings
-benchmark_n <- 10
-run_cite <- function(name, path) {
-  do.call(
-    benchmark_run,
-    c(
-      list(
-        expr_before_benchmark = {
-          library(stanflow)
-        },
-        n = benchmark_n
-      ),
-      setNames(
-        list(
-          stan_cite(
-            path = path,
-            strict = FALSE,
-            quiet = TRUE
-          )
-        ),
-        name
-      )
-    )
-  )
-}
-
-repo_dir <- \(url) sub("\\.git$", "", basename(url))
-
 # Clone pinned repositories for benchmarking
 base_dir <- file.path("touchstone", "sources")
 repos <- list(
-  list(
-    url = "https://github.com/paul-buerkner/brms.git",
-    ref = "v2.22.0"
-  ),
-  list(
-    url = "https://github.com/stan-dev/bayesplot.git",
-    ref = "v1.15.0"
-  ),
-  list(
-    url = "https://github.com/stan-dev/rstan.git",
-    ref = "v2.32.2"
-  ),
-  list(
-    url = "https://github.com/tidyverse/ggplot2.git",
-    ref = "v4.0.2"
-  ),
-  list(
-    url = "https://github.com/stan-dev/projpred.git",
-    ref = "v2.10.0"
-  ),
+  # list(
+  #   url = "https://github.com/paul-buerkner/brms.git",
+  #   ref = "v2.22.0"
+  # ),
+  # list(
+  #   url = "https://github.com/stan-dev/bayesplot.git",
+  #   ref = "v1.15.0"
+  # ),
+  # list(
+  #   url = "https://github.com/stan-dev/rstan.git",
+  #   ref = "v2.32.2"
+  # ),
+  # list(
+  #   url = "https://github.com/tidyverse/ggplot2.git",
+  #   ref = "v4.0.2"
+  # ),
+  # list(
+  #   url = "https://github.com/stan-dev/projpred.git",
+  #   ref = "v2.10.0"
+  # ),
   list(
     url = "https://github.com/stan-dev/loo.git",
     ref = "v2.9.0"
-  ),
-  list(
-    url = "https://github.com/stan-dev/posterior.git",
-    ref = "v1.6.1"
   )
+  # ,list(
+  #   url = "https://github.com/stan-dev/posterior.git",
+  #   ref = "v1.6.1"
+  # )
 )
 
 dir.create(base_dir, recursive = TRUE, showWarnings = FALSE)
@@ -106,10 +78,36 @@ clone_repo <- function(url, ref, dir) {
   }
 }
 
+benchmark_n <- 10
 for (repo in repos) {
-  dir <- repo_dir(repo$url)
+  dir <- sub("\\.git$", "", basename(repo$url))
   clone_repo(repo$url, repo$ref, dir)
-  run_cite(paste0("cite_", dir), file.path(base_dir, dir))
+  benchmark_run(
+    expr_before_benchmark = {
+      library(stanflow)
+    },
+    n = benchmark_n,
+    cite_repo = stan_cite(
+      path = file.path(base_dir, dir),
+      strict = FALSE,
+      quiet = TRUE
+    )
+  )
+}
+
+# touchstone analysis -----------------------------------------------------
+
+# Ensure plot/comment dependencies are available for benchmark_analyze().
+plot_pkgs <- c("ggplot2", "dplyr", "glue")
+missing_plot_pkgs <- plot_pkgs[
+  !vapply(plot_pkgs, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_plot_pkgs) > 0) {
+  stop(
+    "touchstone: missing packages required for plots/comments: ",
+    paste(missing_plot_pkgs, collapse = ", "),
+    call. = FALSE
+  )
 }
 
 # Analyze and report the results
