@@ -6,19 +6,6 @@ concurrency:
 
 on:
   pull_request:
-    paths:
-      # Run benchmarks when files related to cite or funscanr are changed
-      - "R/aaa.R"
-      - "R/citation.R"
-      - "R/funscanr.R"
-      - "data-raw/sysdata.R"
-      - "data-raw/**citations.R"
-      # Benchmarking config and scripts
-      - "touchstone/**"
-      # Workflow configuration
-      - ".github/workflows/touchstone-*.yaml"
-      # Package metadata
-      - "DESCRIPTION"
 
 jobs:
   prepare:
@@ -33,7 +20,7 @@ jobs:
 
       - id: read_touchstone_config
         run: |
-          echo "config=$(cat ./touchstone/config.json | jq -c .)" >> $GITHUB_OUTPUT
+          echo "config=$(jq -c . ./touchstone/config.json)" >> $GITHUB_OUTPUT
 
   build:
     needs: prepare
@@ -52,6 +39,8 @@ jobs:
     steps:
       - uses: lorenzwalthert/touchstone/actions/receive@main
         with:
-          touchstone_ref: "@main"
+          cache-version: 1
+          r-version: ${{ matrix.config.r }}
           extra-repositories: |
             https://production.r-multiverse.org/2025-12-15
+            ${{ matrix.config.rspm }}
