@@ -4,7 +4,7 @@ library(touchstone)
 options(
   repos = c(
     Multiverse = "https://production.r-multiverse.org/2025-12-15",
-    CRAN = "https://packagemanager.posit.co/cran/2025-10-15"
+    CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2025-10-15"
   )
 )
 
