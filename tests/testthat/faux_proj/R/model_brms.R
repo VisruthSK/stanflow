@@ -93,6 +93,7 @@ fit_mix <- brm(
 as_draws(fit)
 posterior::as_draws_df(fit)
 posterior::summarise_draws(fit)
+# jarl-ignore internal_function: test covers handling of internal helpers
 brms:::as_draws(fit_mix)
 posterior::rhat(fit)
 posterior::ess_bulk(fit)
