@@ -88,7 +88,7 @@ for (repo in repos) {
       library(stanflow)
     },
     n = benchmark_n,
-    cite_repo = stan_cite(
+    !!dir := stan_cite(
       path = !!repo_path,
       strict = FALSE,
       quiet = TRUE
