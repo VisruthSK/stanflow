@@ -27,18 +27,21 @@ pin_repos <- function() {
       dir = "ggplot2"
     )
   )
-  
+
   base_dir <- "touchstone/sources"
   dir.create(base_dir, recursive = TRUE, showWarnings = FALSE)
-  
+
   for (repo in repos) {
     repo_path <- file.path(base_dir, repo$dir)
     if (!dir.exists(repo_path)) {
       message("Cloning ", repo$dir, " at ", repo$ref)
-      system2("git", c("clone", "--depth", "1", "--branch", repo$ref, repo$url, repo_path))
+      system2(
+        "git",
+        c("clone", "--depth", "1", "--branch", repo$ref, repo$url, repo_path)
+      )
     }
   }
-  
+
   invisible(base_dir)
 }
 
@@ -50,7 +53,11 @@ benchmark_run(
   expr_before_benchmark = {
     library(stanflow)
   },
-  cite_brms = stan_cite(path = "touchstone/sources/brms", strict = FALSE, quiet = TRUE),
+  cite_brms = stan_cite(
+    path = "touchstone/sources/brms",
+    strict = FALSE,
+    quiet = TRUE
+  ),
   n = 10
 )
 
@@ -58,7 +65,11 @@ benchmark_run(
   expr_before_benchmark = {
     library(stanflow)
   },
-  cite_bayesplot = stan_cite(path = "touchstone/sources/bayesplot", strict = FALSE, quiet = TRUE),
+  cite_bayesplot = stan_cite(
+    path = "touchstone/sources/bayesplot",
+    strict = FALSE,
+    quiet = TRUE
+  ),
   n = 10
 )
 
@@ -66,7 +77,11 @@ benchmark_run(
   expr_before_benchmark = {
     library(stanflow)
   },
-  cite_rstan = stan_cite(path = "touchstone/sources/rstan", strict = FALSE, quiet = TRUE),
+  cite_rstan = stan_cite(
+    path = "touchstone/sources/rstan",
+    strict = FALSE,
+    quiet = TRUE
+  ),
   n = 10
 )
 
@@ -74,7 +89,11 @@ benchmark_run(
   expr_before_benchmark = {
     library(stanflow)
   },
-  cite_ggplot2 = stan_cite(path = "touchstone/sources/ggplot2", strict = FALSE, quiet = TRUE),
+  cite_ggplot2 = stan_cite(
+    path = "touchstone/sources/ggplot2",
+    strict = FALSE,
+    quiet = TRUE
+  ),
   n = 10
 )
 

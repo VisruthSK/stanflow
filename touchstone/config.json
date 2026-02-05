@@ -1,5 +1,8 @@
 {
   "os": "ubuntu-latest",
   "r": "4.4",
-  "rspm": "https://packagemanager.rstudio.com/all/__linux__/focal/2024-05-01"
+  "rspm": "https://packagemanager.rstudio.com/all/__linux__/focal/2024-05-01",
+  "benchmarking_repo": "paul-buerkner/brms",
+  "benchmarking_ref": "v2.22.0",
+  "benchmarking_path": "touchstone/sources/brms"
 }
