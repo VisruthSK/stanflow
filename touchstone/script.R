@@ -1,5 +1,13 @@
 library(touchstone)
 
+# Ensure R-multiverse is available for dependency resolution.
+options(
+  repos = c(
+    Multiverse = "https://community.r-multiverse.org",
+    CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2025-12-31"
+  )
+)
+
 # Install both branches to benchmark
 branch_install()
 
