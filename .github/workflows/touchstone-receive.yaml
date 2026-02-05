@@ -61,6 +61,11 @@ jobs:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: false
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev pkg-config
+
       - name: Pin repos for pak
         run: |
           cat > .github/touchstone.Rprofile <<'EOF'
