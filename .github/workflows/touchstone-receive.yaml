@@ -50,6 +50,38 @@ jobs:
       RENV_CONFIG_REPOS_OVERRIDE: https://production.r-multiverse.org/2025-12-15,${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: lorenzwalthert/touchstone/actions/receive@main
+      - name: Checkout repo
+        uses: actions/checkout@v6
         with:
-          cache-version: 1
+          fetch-depth: 0
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: false
+
+      - name: Pin repos for pak
+        run: |
+          cat > .github/touchstone.Rprofile <<'EOF'
+          options(
+            repos = c(
+              Multiverse = "https://production.r-multiverse.org/2025-12-15",
+              CRAN = "https://packagemanager.posit.co/cran/2025-10-15"
+            ),
+            pkg.use_bioconductor = FALSE
+          )
+          EOF
+          echo "R_PROFILE_USER=$PWD/.github/touchstone.Rprofile" >> $GITHUB_ENV
+
+      - name: Install pak
+        run: |
+          R -q -e 'install.packages("pak")'
+
+      - name: Install package dependencies
+        run: |
+          R -q -e 'pak::pkg_install(c("deps::.", "github::lorenzwalthert/touchstone@v1"), dependencies = "hard")'
+
+      - name: Run touchstone
+        run: |
+          Rscript -e 'touchstone::run_script("touchstone/script.R")'
