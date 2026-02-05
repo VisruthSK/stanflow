@@ -78,9 +78,10 @@ clone_repo <- function(url, ref, dir) {
   }
 }
 
-benchmark_n <- 10
+benchmark_n <- 1
 for (repo in repos) {
   dir <- sub("\\.git$", "", basename(repo$url))
+  repo_path <- file.path(base_dir, dir)
   clone_repo(repo$url, repo$ref, dir)
   benchmark_run(
     expr_before_benchmark = {
@@ -88,7 +89,7 @@ for (repo in repos) {
     },
     n = benchmark_n,
     cite_repo = stan_cite(
-      path = file.path(base_dir, dir),
+      path = !!repo_path,
       strict = FALSE,
       quiet = TRUE
     )
