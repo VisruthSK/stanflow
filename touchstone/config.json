@@ -1,5 +1,5 @@
 {
   "os": "ubuntu-24.04",
   "r": "4.5",
-  "rspm": "https://packagemanager.posit.co/cran/2025-10-15"
+  "rspm": "https://packagemanager.posit.co/cran/__linux__/noble/2025-10-15"
 }
