@@ -38,34 +38,34 @@ branch_install()
 # Clone pinned repositories for benchmarking
 base_dir <- file.path("touchstone", "sources")
 repos <- list(
-  # list(
-  #   url = "https://github.com/paul-buerkner/brms.git",
-  #   ref = "v2.22.0"
-  # ),
-  # list(
-  #   url = "https://github.com/stan-dev/bayesplot.git",
-  #   ref = "v1.15.0"
-  # ),
-  # list(
-  #   url = "https://github.com/stan-dev/rstan.git",
-  #   ref = "v2.32.2"
-  # ),
-  # list(
-  #   url = "https://github.com/tidyverse/ggplot2.git",
-  #   ref = "v4.0.2"
-  # ),
-  # list(
-  #   url = "https://github.com/stan-dev/projpred.git",
-  #   ref = "v2.10.0"
-  # ),
+  list(
+    url = "https://github.com/paul-buerkner/brms.git",
+    ref = "v2.22.0"
+  ),
+  list(
+    url = "https://github.com/stan-dev/bayesplot.git",
+    ref = "v1.15.0"
+  ),
+  list(
+    url = "https://github.com/stan-dev/rstan.git",
+    ref = "v2.32.2"
+  ),
+  list(
+    url = "https://github.com/tidyverse/ggplot2.git",
+    ref = "v4.0.2"
+  ),
+  list(
+    url = "https://github.com/stan-dev/projpred.git",
+    ref = "v2.10.0"
+  ),
   list(
     url = "https://github.com/stan-dev/loo.git",
     ref = "v2.9.0"
+  ),
+  list(
+    url = "https://github.com/stan-dev/posterior.git",
+    ref = "v1.6.1"
   )
-  # ,list(
-  #   url = "https://github.com/stan-dev/posterior.git",
-  #   ref = "v1.6.1"
-  # )
 )
 
 dir.create(base_dir, recursive = TRUE, showWarnings = FALSE)
