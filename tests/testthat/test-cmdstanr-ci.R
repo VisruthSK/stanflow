@@ -16,6 +16,7 @@ test_that("setup_cmdstanr handles missing and existing CmdStan", {
   ))
 
   if (!requireNamespace("cmdstanr", quietly = TRUE)) {
+    # jarl-ignore internal_function: tests internal installer behavior
     stanflow:::install_backend_package(
       "cmdstanr",
       dev = FALSE,

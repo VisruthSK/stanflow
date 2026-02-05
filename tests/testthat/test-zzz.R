@@ -9,6 +9,7 @@ test_that(".onAttach prints conflicts", {
       stanflow_conflicts = function() list(conflict = TRUE),
       stanflow_conflict_message = function(x) "conflict message",
       .package = "stanflow",
+      # jarl-ignore internal_function: tests internal startup hook
       stanflow:::.onAttach()
     )
   )
