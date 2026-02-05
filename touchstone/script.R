@@ -78,7 +78,7 @@ clone_repo <- function(url, ref, dir) {
   }
 }
 
-benchmark_n <- 1
+benchmark_n <- 10
 for (repo in repos) {
   dir <- sub("\\.git$", "", basename(repo$url))
   repo_path <- file.path(base_dir, dir)
