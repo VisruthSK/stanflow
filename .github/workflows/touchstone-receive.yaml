@@ -61,31 +61,16 @@ jobs:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: false
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev pkg-config
+      - name: Install dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: deps::.
+          extra-packages: github::lorenzwalthert/touchstone@v1
+          dependencies: "hard"
 
-      - name: Pin repos for pak
+      - name: Repo status
         run: |
-          cat > .github/touchstone.Rprofile <<'EOF'
-          options(
-            repos = c(
-              Multiverse = "https://production.r-multiverse.org/2025-12-15",
-              CRAN = "https://packagemanager.posit.co/cran/2025-10-15"
-            ),
-            pkg.use_bioconductor = FALSE
-          )
-          EOF
-          echo "R_PROFILE_USER=$PWD/.github/touchstone.Rprofile" >> $GITHUB_ENV
-
-      - name: Install pak
-        run: |
-          R -q -e 'install.packages("pak")'
-
-      - name: Install package dependencies
-        run: |
-          R -q -e 'pak::pkg_install(c("deps::.", "github::lorenzwalthert/touchstone@v1"), dependencies = "hard")'
+          R -q -e 'pak::repo_status()'
 
       - name: Run touchstone
         run: |
