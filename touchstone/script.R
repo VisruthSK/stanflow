@@ -71,19 +71,89 @@ for (repo in repos) {
 }
 
 # Benchmark stan_cite() on the pinned repositories
-for (repo in repos) {
-  benchmark_run(
-    expr_before_benchmark = {
-      library(stanflow)
-    },
-    "cite_{repo$dir}" := stan_cite(
-      path = file.path("touchstone/sources", !!repo$dir),
-      strict = FALSE,
-      quiet = TRUE
-    ),
-    n = 10
-  )
-}
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  cite_brms = stan_cite(
+    path = "touchstone/sources/brms",
+    strict = FALSE,
+    quiet = TRUE
+  ),
+  n = 10
+)
+
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  cite_bayesplot = stan_cite(
+    path = "touchstone/sources/bayesplot",
+    strict = FALSE,
+    quiet = TRUE
+  ),
+  n = 10
+)
+
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  cite_rstan = stan_cite(
+    path = "touchstone/sources/rstan",
+    strict = FALSE,
+    quiet = TRUE
+  ),
+  n = 10
+)
+
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  cite_ggplot2 = stan_cite(
+    path = "touchstone/sources/ggplot2",
+    strict = FALSE,
+    quiet = TRUE
+  ),
+  n = 10
+)
+
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  cite_projpred = stan_cite(
+    path = "touchstone/sources/projpred",
+    strict = FALSE,
+    quiet = TRUE
+  ),
+  n = 10
+)
+
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  cite_loo = stan_cite(
+    path = "touchstone/sources/loo",
+    strict = FALSE,
+    quiet = TRUE
+  ),
+  n = 10
+)
+
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  cite_posterior = stan_cite(
+    path = "touchstone/sources/posterior",
+    strict = FALSE,
+    quiet = TRUE
+  ),
+  n = 10
+)
 
 # Analyze and report the results
 benchmark_analyze()
