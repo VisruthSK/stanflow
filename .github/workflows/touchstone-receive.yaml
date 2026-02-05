@@ -20,9 +20,6 @@ on:
       # Package metadata
       - "DESCRIPTION"
 
-permissions:
-  contents: read
-
 jobs:
   prepare:
     runs-on: ubuntu-latest
@@ -44,7 +41,6 @@ jobs:
           # end of optional handling for multi line json
           echo "config=$content" >> $GITHUB_OUTPUT
 
-
   build:
     needs: prepare
     runs-on: ${{ matrix.config.os }}
@@ -58,15 +54,6 @@ jobs:
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      # Touchstone receives config from touchstone/config.json including:
-      # - benchmarking_repo: Repository to benchmark against
-      # - benchmarking_ref: Git ref/tag of the repository
-      # - benchmarking_path: Local path where repo will be cloned
-      # - r-version: R version to use for benchmarking
       - uses: lorenzwalthert/touchstone/actions/receive@main
         with:
           cache-version: 1
-          benchmarking_repo: ${{ matrix.config.benchmarking_repo }}
-          benchmarking_ref: ${{ matrix.config.benchmarking_ref }}
-          benchmarking_path: ${{ matrix.config.benchmarking_path }}
-          r-version: ${{ matrix.config.r }}
