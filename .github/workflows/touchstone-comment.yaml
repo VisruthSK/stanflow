@@ -23,6 +23,35 @@ jobs:
     if: >
       ${{ github.event.workflow_run.event == 'pull_request' }}
     steps:
-      - uses: lorenzwalthert/touchstone/actions/comment@main
+      - name: Download touchstone PR artifact
+        uses: actions/download-artifact@v4
         with:
+          name: pr
+          path: touchstone/pr-comment
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Build sticky comment body
+        run: |
+          set -euo pipefail
+          info="touchstone/pr-comment/info.txt"
+          out="touchstone/pr-comment/body.txt"
+          sha="${{ github.event.workflow_run.head_sha }}"
+          short_sha="$(echo "$sha" | cut -c1-7)"
+          {
+            cat "$info"
+            echo ""
+            echo "Commit: \`$short_sha\`"
+            echo ""
+            echo "_This comment will be updated on new commits._"
+          } > "$out"
+      - name: Read PR number
+        id: pr
+        run: |
+          set -euo pipefail
+          echo "number=$(cat touchstone/pr-comment/NR)" >> "$GITHUB_OUTPUT"
+      - name: Create or update sticky PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: touchstone
+          path: touchstone/pr-comment/body.txt
+          number: ${{ steps.pr.outputs.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
