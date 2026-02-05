@@ -1,5 +1,8 @@
 name: Continuous Benchmarks (Receive)
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
