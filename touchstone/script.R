@@ -6,10 +6,26 @@ branch_install()
 # Clone pinned repositories for benchmarking
 pin_repos <- function() {
   repos <- list(
-    list(url = "https://github.com/paul-buerkner/brms.git", ref = "v2.22.0", dir = "brms"),
-    list(url = "https://github.com/stan-dev/bayesplot.git", ref = "v1.15.0", dir = "bayesplot"),
-    list(url = "https://github.com/stan-dev/rstan.git", ref = "v2.9.0-3", dir = "rstan"),
-    list(url = "https://github.com/tidyverse/ggplot2.git", ref = "v4.0.2", dir = "ggplot2")
+    list(
+      url = "https://github.com/paul-buerkner/brms.git",
+      ref = "v2.22.0",
+      dir = "brms"
+    ),
+    list(
+      url = "https://github.com/stan-dev/bayesplot.git",
+      ref = "v1.15.0",
+      dir = "bayesplot"
+    ),
+    list(
+      url = "https://github.com/stan-dev/rstan.git",
+      ref = "v2.9.0-3",
+      dir = "rstan"
+    ),
+    list(
+      url = "https://github.com/tidyverse/ggplot2.git",
+      ref = "v4.0.2",
+      dir = "ggplot2"
+    )
   )
   
   base_dir <- "touchstone/sources"
