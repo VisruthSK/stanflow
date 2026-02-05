@@ -41,28 +41,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Remove Additional_repositories for touchstone
-        shell: bash
-        run: |
-          set -euo pipefail
-          awk '
-            BEGIN { skip = 0 }
-            {
-              if (skip) {
-                if ($0 ~ /^[^[:space:]]/) {
-                  skip = 0
-                } else {
-                  next
-                }
-              }
-              if ($0 ~ /^Additional_repositories:/) {
-                skip = 1
-                next
-              }
-              print
-            }
-          ' DESCRIPTION > DESCRIPTION.tmp
-          mv DESCRIPTION.tmp DESCRIPTION
       - uses: lorenzwalthert/touchstone/actions/receive@main
         with:
           r-version: ${{ matrix.config.r }}
