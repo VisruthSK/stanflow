@@ -3,8 +3,8 @@ library(touchstone)
 # Ensure R-multiverse is available for dependency resolution.
 options(
   repos = c(
-    Multiverse = "https://community.r-multiverse.org",
-    CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2025-12-31"
+    Multiverse = "https://production.r-multiverse.org/2025-12-15",
+    CRAN = "https://packagemanager.posit.co/cran/2025-10-15"
   )
 )
 
