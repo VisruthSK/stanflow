@@ -13,7 +13,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/VisruthSK/stanflow/blob/v0.1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/VisruthSK/stanflow/blob/main/DESCRIPTION)
 
 Srimath Kandali V (2026). *stanflow: A Mildly Opinionated Stan Bayesian
 Workflow*. R package version 0.1.0,
