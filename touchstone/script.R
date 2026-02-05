@@ -35,157 +35,82 @@ options(
 # Install both branches to benchmark
 branch_install()
 
+# Benchmark settings
+benchmark_n <- 10
+run_cite <- function(name, path) {
+  do.call(
+    benchmark_run,
+    c(
+      list(
+        expr_before_benchmark = {
+          library(stanflow)
+        },
+        n = benchmark_n
+      ),
+      setNames(
+        list(
+          stan_cite(
+            path = path,
+            strict = FALSE,
+            quiet = TRUE
+          )
+        ),
+        name
+      )
+    )
+  )
+}
+
+repo_dir <- \(url) sub("\\.git$", "", basename(url))
+
 # Clone pinned repositories for benchmarking
+base_dir <- file.path("touchstone", "sources")
 repos <- list(
   list(
     url = "https://github.com/paul-buerkner/brms.git",
-    ref = "v2.22.0",
-    dir = "brms",
-    use_commit = FALSE
+    ref = "v2.22.0"
   ),
   list(
     url = "https://github.com/stan-dev/bayesplot.git",
-    ref = "v1.15.0",
-    dir = "bayesplot",
-    use_commit = FALSE
+    ref = "v1.15.0"
   ),
   list(
     url = "https://github.com/stan-dev/rstan.git",
-    ref = "0e3dd7a97dd8de2d2b923ed43cb9e3a989d4a612",
-    dir = "rstan",
-    use_commit = TRUE
+    ref = "v2.32.2"
   ),
   list(
     url = "https://github.com/tidyverse/ggplot2.git",
-    ref = "v4.0.2",
-    dir = "ggplot2",
-    use_commit = FALSE
+    ref = "v4.0.2"
   ),
   list(
     url = "https://github.com/stan-dev/projpred.git",
-    ref = "v2.10.0",
-    dir = "projpred",
-    use_commit = FALSE
+    ref = "v2.10.0"
   ),
   list(
     url = "https://github.com/stan-dev/loo.git",
-    ref = "v2.9.0",
-    dir = "loo",
-    use_commit = FALSE
+    ref = "v2.9.0"
   ),
   list(
     url = "https://github.com/stan-dev/posterior.git",
-    ref = "v1.6.1",
-    dir = "posterior",
-    use_commit = FALSE
+    ref = "v1.6.1"
   )
 )
 
-base_dir <- "touchstone/sources"
 dir.create(base_dir, recursive = TRUE, showWarnings = FALSE)
 
-for (repo in repos) {
-  repo_path <- file.path(base_dir, repo$dir)
+clone_repo <- function(url, ref, dir) {
+  repo_path <- file.path(base_dir, dir)
   if (!dir.exists(repo_path)) {
-    message("Cloning ", repo$dir, " at ", repo$ref)
-    if (repo$use_commit) {
-      # For commits, clone and checkout
-      system2("git", c("clone", "--depth", "50", repo$url, repo_path))
-      system2("git", c("-C", repo_path, "checkout", repo$ref))
-    } else {
-      # For tags/branches, use --branch
-      system2(
-        "git",
-        c("clone", "--depth", "1", "--branch", repo$ref, repo$url, repo_path)
-      )
-    }
+    message("Cloning ", dir, " at ", ref)
+    system2("git", c("clone", "--depth", "1", "--branch", ref, url, repo_path))
   }
 }
 
-# Benchmark stan_cite() on the pinned repositories
-benchmark_run(
-  expr_before_benchmark = {
-    library(stanflow)
-  },
-  cite_brms = stan_cite(
-    path = "touchstone/sources/brms",
-    strict = FALSE,
-    quiet = TRUE
-  ),
-  n = 10
-)
-
-benchmark_run(
-  expr_before_benchmark = {
-    library(stanflow)
-  },
-  cite_bayesplot = stan_cite(
-    path = "touchstone/sources/bayesplot",
-    strict = FALSE,
-    quiet = TRUE
-  ),
-  n = 10
-)
-
-benchmark_run(
-  expr_before_benchmark = {
-    library(stanflow)
-  },
-  cite_rstan = stan_cite(
-    path = "touchstone/sources/rstan",
-    strict = FALSE,
-    quiet = TRUE
-  ),
-  n = 10
-)
-
-benchmark_run(
-  expr_before_benchmark = {
-    library(stanflow)
-  },
-  cite_ggplot2 = stan_cite(
-    path = "touchstone/sources/ggplot2",
-    strict = FALSE,
-    quiet = TRUE
-  ),
-  n = 10
-)
-
-benchmark_run(
-  expr_before_benchmark = {
-    library(stanflow)
-  },
-  cite_projpred = stan_cite(
-    path = "touchstone/sources/projpred",
-    strict = FALSE,
-    quiet = TRUE
-  ),
-  n = 10
-)
-
-benchmark_run(
-  expr_before_benchmark = {
-    library(stanflow)
-  },
-  cite_loo = stan_cite(
-    path = "touchstone/sources/loo",
-    strict = FALSE,
-    quiet = TRUE
-  ),
-  n = 10
-)
-
-benchmark_run(
-  expr_before_benchmark = {
-    library(stanflow)
-  },
-  cite_posterior = stan_cite(
-    path = "touchstone/sources/posterior",
-    strict = FALSE,
-    quiet = TRUE
-  ),
-  n = 10
-)
+for (repo in repos) {
+  dir <- repo_dir(repo$url)
+  clone_repo(repo$url, repo$ref, dir)
+  run_cite(paste0("cite_", dir), file.path(base_dir, dir))
+}
 
 # Analyze and report the results
 benchmark_analyze()
