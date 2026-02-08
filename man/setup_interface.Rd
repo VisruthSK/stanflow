@@ -41,7 +41,7 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 \item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \code{rstan::rstan_options(auto_write = TRUE)}}
 }
 \value{
-Returns the attached packages invisibly.
+Returns attached package names invisibly.
 }
 \description{
 This function ensures specific Stan interfaces are installed, configured,

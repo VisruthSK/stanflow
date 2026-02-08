@@ -12,8 +12,10 @@ scan_skip_dirs(quiet = getOption("stanflow.quiet", FALSE))
 }
 \description{
 Vector of functions to be ignored when parsing.
+Generated in \code{data-raw/sysdata.R} from exports of base R packages.
 
 Vector of directories skipped when recursively searching
 a project.
+Generated in \code{data-raw/sysdata.R}.
 }
 \keyword{internal}
