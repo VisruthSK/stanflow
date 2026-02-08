@@ -155,7 +155,7 @@ scan_usage <- function(
       }
     }
 
-    if (any(!is_dir)) {
+    if (!all(is_dir)) {
       code_files <- entries[!is_dir]
       code_files <- code_files[
         grepl("\\.(R|Rmd|Qmd)$", code_files, ignore.case = TRUE)
