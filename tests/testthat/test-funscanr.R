@@ -1781,6 +1781,17 @@ test_that("scan_skip_dirs returns configured defaults", {
   )
 })
 
+test_that(".scan_skip_regex escapes metacharacters and matches directory boundaries", {
+  scan_skip_regex <- getFromNamespace(".scan_skip_regex", "stanflow")
+  pattern <- scan_skip_regex(c(".quarto_cache", "renv", "a+b"))
+
+  expect_true(grepl(pattern, "proj/renv/lib/file.R"))
+  expect_true(grepl(pattern, "proj/.quarto_cache/chunk.R"))
+  expect_true(grepl(pattern, "proj/a+b/src/file.R"))
+  expect_false(grepl(pattern, "proj/renvish/lib/file.R"))
+  expect_false(grepl(pattern, "proj/aXb/src/file.R"))
+})
+
 test_that("origin_map is applied even when an ambiguous call is position-resolved", {
   resolve <- getFromNamespace(
     ".resolve_candidates",
