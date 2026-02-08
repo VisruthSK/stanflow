@@ -22,7 +22,7 @@
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
 #' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE)`
-#' @return Returns the attached packages invisibly.
+#' @return Returns attached package names invisibly.
 #' @export
 setup_interface <- function(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
@@ -97,12 +97,13 @@ setup_interface <- function(
     )
   }
 
-  attached_pkgs <- paste0("{.pkg ", interface, "}", collapse = ", ")
-  pkg_count <- cli::qty(length(interface))
+  attached_pkgs <- unique(interface)
+  attached_pkgs_cli <- paste0("{.pkg ", attached_pkgs, "}", collapse = ", ")
+  pkg_count <- cli::qty(length(attached_pkgs))
   pkg_phrase <- cli::pluralize("{pkg_count}{?is/are}")
   cli::cli_alert_success(
     cli::format_inline(
-      "Setup complete. {attached_pkgs} {pkg_phrase} attached; you do not need to run {.code library()}."
+      "Setup complete. {attached_pkgs_cli} {pkg_phrase} attached; you do not need to run {.code library()}."
     )
   )
 

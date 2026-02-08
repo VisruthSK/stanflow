@@ -40,7 +40,7 @@ VignetteBuilder:
     quarto
 Additional_repositories:
     https://community.r-multiverse.org
-    https://mc-stan-org.r-universe.dev
+    https://stan-dev.r-universe.dev
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

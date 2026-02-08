@@ -49,21 +49,7 @@ scan_usage <- function(
   files <- if (length(paths) == 1L && dir_flags) {
     dir_path <- paths[[1L]]
     cli::cli_alert_info("Searching directory {.path {dir_path}}")
-    list.files(
-      dir_path,
-      recursive = TRUE,
-      full.names = TRUE,
-      ignore.case = TRUE,
-      pattern = "\\.(R|Rmd|Qmd)$"
-    ) |>
-      normalizePath(winslash = "/", mustWork = FALSE) |>
-      (\(paths) {
-        if (!length(skip_dirs)) {
-          return(paths)
-        }
-        skip_regex <- .scan_skip_regex(skip_dirs)
-        paths[!grepl(skip_regex, paths)]
-      })()
+    .scan_dir_files(dir_path, skip_dirs)
   } else {
     if (any(dir_flags)) {
       cli::cli_abort(c(
@@ -137,6 +123,56 @@ scan_usage <- function(
     character(1)
   )
   paste0("(^|/)(?:", paste(escaped, collapse = "|"), ")(/|$)")
+}
+
+.scan_dir_files <- function(dir_path, skip_dirs) {
+  files <- character()
+  n <- 0L
+
+  walk <- function(path) {
+    entries <- list.files(
+      path,
+      all.files = TRUE,
+      full.names = TRUE,
+      no.. = TRUE
+    )
+    if (!length(entries)) {
+      return(invisible(NULL))
+    }
+
+    is_dir <- dir.exists(entries)
+
+    if (any(is_dir)) {
+      dirs <- entries[is_dir]
+      if (length(skip_dirs)) {
+        keep <- is.na(fastmatch::fmatch(basename(dirs), skip_dirs))
+        dirs <- dirs[keep]
+      }
+      if (length(dirs)) {
+        for (dir in dirs) {
+          walk(dir)
+        }
+      }
+    }
+
+    if (any(!is_dir)) {
+      code_files <- entries[!is_dir]
+      code_files <- code_files[
+        grepl("\\.(R|Rmd|Qmd)$", code_files, ignore.case = TRUE)
+      ]
+
+      if (length(code_files)) {
+        idx <- seq.int(n + 1L, n + length(code_files))
+        files[idx] <<- code_files
+        n <<- idx[length(idx)]
+      }
+    }
+
+    invisible(NULL)
+  }
+
+  walk(dir_path)
+  normalizePath(files, winslash = "/", mustWork = FALSE)
 }
 
 .collect_unique <- function(hits, field) {
@@ -659,47 +695,23 @@ NULL
 #' Default ignored functions
 #'
 #' Vector of functions to be ignored when parsing.
+#' Generated in `data-raw/sysdata.R` from exports of base R packages.
 #'
 #' @rdname internal_data
 #' @export
 stdlib_funs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
   local_cli_quiet(quiet)
-  # lapply(
-  #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
-  #   getNamespaceExports
-  # ) |>
-  #   unlist(use.names = FALSE) |>
-  #   unique() |>
-  #   sort()
-  cli::cli_alert_info("See the source for how these are generated")
   .stdlib_funs
 }
 
 #' Default skip directories
 #'
 #' Vector of directories skipped when recursively searching
-#' a project.
+#' a project. Generated in `data-raw/sysdata.R`.
 #'
 #' @rdname internal_data
 #' @export
 scan_skip_dirs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
   local_cli_quiet(quiet)
-  # c(
-  #   "renv",
-  #   "packrat",
-  #   "rv",
-  #   ".Rcheck",
-  #   "revdep",
-  #   "_site",
-  #   "_book",
-  #   "_bookdown_files",
-  #   "_freeze",
-  #   ".quarto",
-  #   ".quarto_cache",
-  #   ".knitr_cache",
-  #   "_cache",
-  #   ".cache"
-  # )
-  cli::cli_alert_info("See the source for how these are generated")
   .scan_skip_dirs
 }
