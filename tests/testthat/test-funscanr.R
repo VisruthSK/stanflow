@@ -975,7 +975,8 @@ test_that("scan_usage does not treat requireNamespace(stanflow) as core attachme
 
   expect_true("stanflow" %in% res$packages)
   expect_false(any(
-    res$packages %in% c("bayesplot", "loo", "posterior", "projpred", "shinystan")
+    res$packages %in%
+      c("bayesplot", "loo", "posterior", "projpred", "shinystan")
   ))
   expect_identical(res$functions, character())
 })

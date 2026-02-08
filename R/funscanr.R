@@ -701,6 +701,14 @@ NULL
 #' @export
 stdlib_funs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
   local_cli_quiet(quiet)
+  # lapply(
+  #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
+  #   getNamespaceExports
+  # ) |>
+  #   unlist(use.names = FALSE) |>
+  #   unique() |>
+  #   sort()
+  cli::cli_alert_info("See the source for how these are generated")
   .stdlib_funs
 }
 
@@ -713,5 +721,21 @@ stdlib_funs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
 #' @export
 scan_skip_dirs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
   local_cli_quiet(quiet)
+  # c(
+  #   "renv",
+  #   "packrat",
+  #   "rv",
+  #   ".Rcheck",
+  #   "revdep",
+  #   "_site",
+  #   "_book",
+  #   "_bookdown_files",
+  #   "_freeze",
+  #   ".quarto",
+  #   ".quarto_cache",
+  #   ".knitr_cache",
+  #   "_cache",
+  #   ".cache"
+  # )
   .scan_skip_dirs
 }
