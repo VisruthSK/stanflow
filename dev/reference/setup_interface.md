@@ -69,7 +69,7 @@ setup_interface(
 
 ## Value
 
-Returns the attached packages invisibly.
+Returns attached package names invisibly.
 
 ## Details
 
