@@ -220,6 +220,74 @@ test_that(".scan_tokens ignores language keywords and operators", {
   expect_equal(hits$ambiguous, character())
 })
 
+test_that(".scan_tokens detects cmdstanr R6 methods from the vignette", {
+  export_index <- list(
+    cmdstan_model = "cmdstanr",
+    sample = "cmdstanr",
+    draws = "cmdstanr",
+    sampler_diagnostics = "cmdstanr",
+    diagnostic_summary = "cmdstanr",
+    optimize = "cmdstanr",
+    laplace = "cmdstanr",
+    variational = "cmdstanr",
+    pathfinder = "cmdstanr",
+    save_object = "cmdstanr"
+  )
+  origin_map <- c(
+    "cmdstanr::cmdstan_model" = "cmdstanr",
+    "cmdstanr::sample" = "cmdstanr",
+    "cmdstanr::draws" = "cmdstanr",
+    "cmdstanr::sampler_diagnostics" = "cmdstanr",
+    "cmdstanr::diagnostic_summary" = "cmdstanr",
+    "cmdstanr::optimize" = "cmdstanr",
+    "cmdstanr::laplace" = "cmdstanr",
+    "cmdstanr::variational" = "cmdstanr",
+    "cmdstanr::pathfinder" = "cmdstanr",
+    "cmdstanr::save_object" = "cmdstanr"
+  )
+
+  code <- c(
+    "library(cmdstanr)",
+    "mod <- cmdstan_model('model.stan')",
+    "fit <- mod$sample(data = list(N = 10, y = rnorm(10)))",
+    "fit$draws()",
+    "fit$sampler_diagnostics(format = 'df')",
+    "fit$diagnostic_summary()",
+    "fit$save_object(file = 'fit.RDS')",
+    "mod$optimize(data = list(N = 10, y = rnorm(10)))",
+    "mod$laplace(mode = fit, draws = 100)",
+    "mod$variational(data = list(N = 10, y = rnorm(10)), draws = 100)",
+    "mod$pathfinder(data = list(N = 10, y = rnorm(10)), draws = 100)",
+    "fit$output_files",
+    "fit@metadata"
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    setdiff(stdlib_funs(), c("sample", "optimize")),
+    allowed_packages = "cmdstanr",
+    export_index = export_index,
+    origin_map = origin_map
+  )
+
+  expect_true("cmdstanr" %in% hits$pkgs)
+  expect_equal(
+    hits$keys,
+    c(
+      "cmdstanr::cmdstan_model",
+      "cmdstanr::sample",
+      "cmdstanr::draws",
+      "cmdstanr::sampler_diagnostics",
+      "cmdstanr::diagnostic_summary",
+      "cmdstanr::save_object",
+      "cmdstanr::optimize",
+      "cmdstanr::laplace",
+      "cmdstanr::variational",
+      "cmdstanr::pathfinder"
+    )
+  )
+  expect_identical(hits$ambiguous, character())
+})
 
 test_that(".scan_tokens collapses reexports by origin", {
   export_index <- list(foo = c("pkgA", "pkgB"))
