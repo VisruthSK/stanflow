@@ -358,6 +358,15 @@ scan_usage <- function(
 
     head <- x[[1L]]
     head_name <- if (is.symbol(head)) as.character(head) else NULL
+    member_fun <- .ast_member_fun(head)
+
+    if (
+      !is.null(member_fun) &&
+        is.na(fastmatch::fmatch(member_fun, ignore_unqualified_functions))
+    ) {
+      acc$unqual_funs <- c(acc$unqual_funs, member_fun)
+      acc$unqual_visit_idx <- c(acc$unqual_visit_idx, acc$visit_idx)
+    }
 
     if (!is.null(head_name)) {
       if (!is.na(fastmatch::fmatch(head_name, ns_ops)) && length(x) >= 3L) {
@@ -494,6 +503,29 @@ scan_usage <- function(
   if (is.character(x) && length(x) == 1L) {
     return(x)
   }
+  NULL
+}
+
+.ast_member_fun <- function(head) {
+  if (!is.call(head) || !length(head)) {
+    return(NULL)
+  }
+
+  op <- head[[1L]]
+  if (!is.symbol(op)) {
+    return(NULL)
+  }
+
+  op_name <- as.character(op)
+
+  if (op_name %in% c("$", "@") && length(head) >= 3L) {
+    return(.ast_lit_name(head[[3L]]))
+  }
+
+  if (op_name == "(" && length(head) >= 2L) {
+    return(.ast_member_fun(head[[2L]]))
+  }
+
   NULL
 }
 
