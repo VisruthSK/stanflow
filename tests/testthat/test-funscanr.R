@@ -337,6 +337,117 @@ test_that(".scan_tokens detects cmdstanr R6 methods from the vignette", {
   expect_identical(hits$ambiguous, character())
 })
 
+test_that(".scan_tokens thoroughly detects invoked R6 member methods", {
+  export_index <- list(
+    sample_fit = "pkgA",
+    draws_df = "pkgA",
+    is_alive = "pkgB",
+    terminate = "pkgB",
+    diagnose_fit = "pkgA",
+    collect_metrics = "pkgC",
+    emit_report = "pkgC"
+  )
+  origin_map <- c(
+    "pkgA::sample_fit" = "pkgA",
+    "pkgA::draws_df" = "pkgA",
+    "pkgB::is_alive" = "pkgB",
+    "pkgB::terminate" = "pkgB",
+    "pkgA::diagnose_fit" = "pkgA",
+    "pkgC::collect_metrics" = "pkgC",
+    "pkgC::emit_report" = "pkgC"
+  )
+
+  code <- c(
+    "library(pkgA)",
+    "library(pkgB)",
+    "library(pkgC)",
+    "model$sample_fit(data = list(N = 10))",
+    "fit$draws_df()",
+    "proc$is_alive()",
+    "proc$terminate()",
+    "fit$diagnose_fit()",
+    "monitor$collect_metrics()",
+    "report$emit_report(format = 'html')",
+    "fit$output_files",
+    "proc@private"
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    stdlib_funs(),
+    allowed_packages = c("pkgA", "pkgB", "pkgC"),
+    export_index = export_index,
+    origin_map = origin_map
+  )
+
+  expect_true(all(c("pkgA", "pkgB", "pkgC") %in% hits$pkgs))
+  expect_equal(
+    hits$keys,
+    c(
+      "pkgA::sample_fit",
+      "pkgA::draws_df",
+      "pkgB::is_alive",
+      "pkgB::terminate",
+      "pkgA::diagnose_fit",
+      "pkgC::collect_metrics",
+      "pkgC::emit_report"
+    )
+  )
+  expect_identical(hits$ambiguous, character())
+})
+
+test_that(".scan_tokens resolves ambiguous invoked member methods by attachment order", {
+  code <- c(
+    "library(pkgA)",
+    "library(pkgB)",
+    "library(pkgC)",
+    "obj$train_model(1)"
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    stdlib_funs(),
+    strict = FALSE,
+    allowed_packages = c("pkgA", "pkgB", "pkgC"),
+    export_index = list(train_model = c("pkgA", "pkgB", "pkgC")),
+    origin_map = c(
+      "pkgA::train_model" = "pkgA",
+      "pkgB::train_model" = "pkgB",
+      "pkgC::train_model" = "pkgC"
+    )
+  )
+
+  expect_true(all(c("pkgA", "pkgB", "pkgC") %in% hits$pkgs))
+  expect_equal(hits$keys, "pkgC::train_model")
+  expect_identical(hits$ambiguous, character())
+})
+
+test_that(".scan_tokens records ambiguous invoked member methods in strict mode", {
+  code <- c(
+    "library(pkgA)",
+    "library(pkgB)",
+    "library(pkgC)",
+    "obj$train_model(1)"
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    stdlib_funs(),
+    strict = TRUE,
+    allowed_packages = c("pkgA", "pkgB", "pkgC"),
+    export_index = list(train_model = c("pkgA", "pkgB", "pkgC")),
+    origin_map = c(
+      "pkgA::train_model" = "pkgA",
+      "pkgB::train_model" = "pkgB",
+      "pkgC::train_model" = "pkgC"
+    )
+  )
+
+  expect_true(all(c("pkgA", "pkgB", "pkgC") %in% hits$pkgs))
+  expect_equal(hits$keys, character())
+  expect_equal(hits$ambiguous, "train_model")
+})
+
 test_that(".scan_tokens collapses reexports by origin", {
   export_index <- list(foo = c("pkgA", "pkgB"))
   origin_map <- c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgA")
