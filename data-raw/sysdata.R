@@ -155,9 +155,42 @@ get_origin <- function(pkg, name) {
   sub("^namespace:", "", origin)
 }
 
-# Extraction: Get exported functions for each package
-.stan_exports <- lapply(.stan_pkgs, function(pkg) {
-  getNamespaceExports(pkg) |>
+is_r6_generator <- function(x) {
+  inherits(x, "R6ClassGenerator")
+}
+
+get_r6_generator <- function(pkg, class_name) {
+  asNamespace(pkg) |>
+    (\(ns) {
+      if (!exists(class_name, envir = ns, inherits = FALSE)) {
+        return(NULL)
+      }
+      get(class_name, envir = ns, inherits = FALSE)
+    })() |>
+    (\(obj) if (is_r6_generator(obj)) obj else NULL)()
+}
+
+collect_r6_methods <- function(pkg, export_names) {
+  export_names |>
+    Filter(
+      \(name) {
+        obj <- tryCatch(getExportedValue(pkg, name), error = function(e) NULL)
+        is_r6_generator(obj)
+      },
+      x = _
+    ) |>
+    lapply(\(class_name) get_r6_generator(pkg, class_name)) |>
+    Filter(\(gen) !is.null(gen), x = _) |>
+    lapply(\(gen) names(gen$public_methods)) |>
+    unlist(use.names = FALSE) |>
+    (\(methods) methods[!is.na(methods) & nzchar(methods)])() |>
+    unique()
+}
+
+collect_pkg_funs <- function(pkg) {
+  export_names <- getNamespaceExports(pkg)
+
+  exported_funs <- export_names |>
     Filter(
       \(x) {
         is.function(tryCatch(getExportedValue(pkg, x), error = function(e) {
@@ -166,7 +199,13 @@ get_origin <- function(pkg, name) {
       },
       x = _
     )
-}) |>
+
+  r6_methods <- collect_r6_methods(pkg, export_names)
+  unique(c(exported_funs, r6_methods))
+}
+
+# Extraction: Get exported functions for each package
+.stan_exports <- lapply(.stan_pkgs, collect_pkg_funs) |>
   setNames(.stan_pkgs)
 
 # Indexing: Create inverted index (function -> packages)

@@ -2,6 +2,14 @@ library(cmdstanr)
 
 model <- cmdstan_model("model.stan")
 fit <- model$sample(data = list(N = 10, y = rnorm(10)))
+model$print()
+model$exe_file()
+
+fit$draws(format = "df")
+fit$diagnostic_summary()
+fit$summary()
+
+model$pathfinder(data = list(N = 10, y = rnorm(10)), draws = 100)
 
 cmdstanr::cmdstan_model("model2.stan")
 cmdstanr::write_stan_json(list(N = 5, y = rnorm(5)), "data.json")

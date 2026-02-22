@@ -360,10 +360,9 @@ scan_usage <- function(
     head_name <- if (is.symbol(head)) as.character(head) else NULL
     member_fun <- .ast_member_fun(head)
 
-    if (
-      !is.null(member_fun) &&
-        is.na(fastmatch::fmatch(member_fun, ignore_unqualified_functions))
-    ) {
+    # Member calls (e.g., obj$sample()) are package API methods, not
+    # language-level calls; don't suppress them via stdlib ignore lists.
+    if (!is.null(member_fun)) {
       acc$unqual_funs <- c(acc$unqual_funs, member_fun)
       acc$unqual_visit_idx <- c(acc$unqual_visit_idx, acc$visit_idx)
     }
