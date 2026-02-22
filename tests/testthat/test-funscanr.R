@@ -41,6 +41,69 @@ resolve_origin_key <- function(pkg, fun) {
   paste0(origin, "::", fun)
 }
 
+test_that(".stan_origin_map has complete keys and valid origins", {
+  all_funs <- unlist(.stan_exports, use.names = FALSE)
+  providers <- rep(names(.stan_exports), lengths(.stan_exports))
+  keys <- paste0(providers, "::", all_funs)
+
+  expect_true(length(keys) > 0)
+  expect_true(all(keys %in% names(.stan_origin_map)))
+
+  mapped <- unname(.stan_origin_map[keys])
+  expect_false(anyNA(mapped))
+  expect_true(all(nzchar(mapped)))
+})
+
+test_that("default index resolves an indexed cmdstanr member call", {
+  candidates <- c(
+    "sample",
+    "draws",
+    "sampler_diagnostics",
+    "diagnostic_summary",
+    "save_object",
+    "optimize",
+    "laplace",
+    "variational",
+    "pathfinder"
+  )
+
+  providers <- .stan_export_index[candidates]
+  has_cmdstanr <- vapply(
+    providers,
+    \(x) !is.null(x) && "cmdstanr" %in% x,
+    logical(1)
+  )
+  candidates <- candidates[has_cmdstanr]
+
+  if (!length(candidates)) {
+    skip(
+      "No cmdstanr member methods found in .stan_export_index; regenerate sysdata."
+    )
+  }
+
+  fun <- candidates[[1L]]
+  code <- c(
+    "library(cmdstanr)",
+    paste0("fit$", fun, "()")
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    stdlib_funs(),
+    allowed_packages = .stan_pkgs,
+    export_index = .stan_export_index,
+    origin_map = .stan_origin_map
+  )
+
+  expected_key <- resolve_origin_key("cmdstanr", fun)
+  if (is.na(expected_key)) {
+    expected_key <- paste0("cmdstanr::", fun)
+  }
+
+  expect_true(expected_key %in% hits$keys)
+  expect_true("cmdstanr" %in% hits$pkgs)
+})
+
 test_that(".scan_tokens handles empty or no-code files", {
   expect_equal(
     .scan_tokens("", stdlib_funs()),
@@ -264,7 +327,7 @@ test_that(".scan_tokens detects cmdstanr R6 methods from the vignette", {
 
   hits <- .scan_tokens(
     paste(code, collapse = "\n"),
-    setdiff(stdlib_funs(), c("sample", "optimize")),
+    stdlib_funs(),
     allowed_packages = "cmdstanr",
     export_index = export_index,
     origin_map = origin_map
@@ -310,7 +373,6 @@ test_that(".scan_tokens collapses reexports by origin", {
   expect_equal(hits$keys, "pkgA::foo")
   expect_equal(hits$ambiguous, character())
 })
-
 
 test_that(".scan_tokens records ambiguous origins", {
   fun <- "ess_bulk"
@@ -843,6 +905,12 @@ test_that("scan_usage handles faux_proj directory tree", {
     resolve_origin_key("bayesplot", "mcmc_acf"),
     resolve_origin_key("bayesplot", "pp_check"),
     resolve_origin_key("cmdstanr", "cmdstan_model"),
+    resolve_origin_key("cmdstanr", "print"),
+    resolve_origin_key("cmdstanr", "exe_file"),
+    resolve_origin_key("cmdstanr", "draws"),
+    resolve_origin_key("cmdstanr", "summary"),
+    resolve_origin_key("cmdstanr", "diagnostic_summary"),
+    resolve_origin_key("cmdstanr", "pathfinder"),
     resolve_origin_key("cmdstanr", "read_cmdstan_csv"),
     resolve_origin_key("cmdstanr", "write_stan_json"),
     resolve_origin_key("rstan", "stan_model"),
@@ -865,6 +933,12 @@ test_that("scan_usage handles faux_proj directory tree", {
     "posterior::ess_tail",
     "posterior::summarise_draws",
     "cmdstanr::cmdstan_model",
+    "cmdstanr::print",
+    "cmdstanr::exe_file",
+    "cmdstanr::draws",
+    "cmdstanr::summary",
+    "cmdstanr::diagnostic_summary",
+    "cmdstanr::pathfinder",
     "cmdstanr::read_cmdstan_csv",
     "cmdstanr::write_stan_json",
     "rstan::stan_model",
@@ -907,6 +981,12 @@ test_that("scan_usage handles faux_proj directory tree", {
     resolve_origin_pkg("bayesplot", "mcmc_acf"),
     resolve_origin_pkg("bayesplot", "pp_check"),
     resolve_origin_pkg("cmdstanr", "cmdstan_model"),
+    resolve_origin_pkg("cmdstanr", "print"),
+    resolve_origin_pkg("cmdstanr", "exe_file"),
+    resolve_origin_pkg("cmdstanr", "draws"),
+    resolve_origin_pkg("cmdstanr", "summary"),
+    resolve_origin_pkg("cmdstanr", "diagnostic_summary"),
+    resolve_origin_pkg("cmdstanr", "pathfinder"),
     resolve_origin_pkg("cmdstanr", "read_cmdstan_csv"),
     resolve_origin_pkg("cmdstanr", "write_stan_json"),
     resolve_origin_pkg("rstan", "stan_model"),
