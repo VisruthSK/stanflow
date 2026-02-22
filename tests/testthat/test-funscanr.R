@@ -55,33 +55,12 @@ test_that(".stan_origin_map has complete keys and valid origins", {
 })
 
 test_that("default index resolves an indexed cmdstanr member call", {
-  candidates <- c(
-    "sample",
-    "draws",
-    "sampler_diagnostics",
-    "diagnostic_summary",
-    "save_object",
-    "optimize",
-    "laplace",
-    "variational",
-    "pathfinder"
+  fun <- "sample"
+  expect_true(
+    !is.null(.stan_export_index[[fun]]) &&
+      "cmdstanr" %in% .stan_export_index[[fun]]
   )
 
-  providers <- .stan_export_index[candidates]
-  has_cmdstanr <- vapply(
-    providers,
-    \(x) !is.null(x) && "cmdstanr" %in% x,
-    logical(1)
-  )
-  candidates <- candidates[has_cmdstanr]
-
-  if (!length(candidates)) {
-    skip(
-      "No cmdstanr member methods found in .stan_export_index; regenerate sysdata."
-    )
-  }
-
-  fun <- candidates[[1L]]
   code <- c(
     "library(cmdstanr)",
     paste0("fit$", fun, "()")
