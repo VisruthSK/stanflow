@@ -171,14 +171,30 @@ get_r6_generator <- function(pkg, class_name) {
 }
 
 collect_r6_methods <- function(pkg, export_names) {
-  export_names |>
+  ns <- asNamespace(pkg)
+
+  exported_r6 <- export_names |>
     Filter(
       \(name) {
         obj <- tryCatch(getExportedValue(pkg, name), error = function(e) NULL)
         is_r6_generator(obj)
       },
       x = _
-    ) |>
+    )
+
+  namespace_r6 <- ls(ns, all.names = TRUE) |>
+    Filter(
+      \(name) {
+        obj <- tryCatch(
+          get(name, envir = ns, inherits = FALSE),
+          error = function(e) NULL
+        )
+        is_r6_generator(obj)
+      },
+      x = _
+    )
+
+  unique(c(exported_r6, namespace_r6)) |>
     lapply(\(class_name) get_r6_generator(pkg, class_name)) |>
     Filter(\(gen) !is.null(gen), x = _) |>
     lapply(\(gen) names(gen$public_methods)) |>
@@ -228,8 +244,6 @@ keys <- paste0(all_stan_pkgs, "::", all_funs)
 )]
 names(.stan_origin_map) <- keys
 
-.date_generated <- Sys.Date()
-
 save(
   .stan_exports,
   .stan_export_index,
@@ -240,7 +254,6 @@ save(
   .stdlib_funs,
   .stan_pkg_versions,
   .scan_skip_dirs,
-  .date_generated,
   file = "R/sysdata.rda",
   compress = "xz"
 )
