@@ -13,6 +13,7 @@ force_local_snapshots <- function() {
 # Bind internal helpers/data so tests can call them directly.
 .scan_tokens <- bind_internal(".scan_tokens")
 .extract_code <- bind_internal(".extract_code")
+.ast_member_fun <- bind_internal(".ast_member_fun")
 .stan_exports <- bind_internal(".stan_exports")
 .stan_export_index <- bind_internal(".stan_export_index")
 .stan_origin_map <- bind_internal(".stan_origin_map")
@@ -92,6 +93,11 @@ test_that(".scan_tokens handles empty or no-code files", {
     .scan_tokens("# just a comment", stdlib_funs()),
     list(pkgs = character(), keys = character(), ambiguous = character())
   )
+})
+
+test_that(".ast_member_fun returns NULL when call operator is not a symbol", {
+  malformed <- as.call(list(1, quote(fit), quote(sample)))
+  expect_null(.ast_member_fun(malformed))
 })
 
 test_that(".scan_tokens handles non-Stan library calls", {
