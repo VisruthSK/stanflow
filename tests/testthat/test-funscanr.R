@@ -861,6 +861,19 @@ test_that("scan_usage handles faux_proj directory tree", {
   faux_path <- testthat::test_path("faux_proj")
   res <- scan_usage(faux_path)
 
+  expected_cmdstanr_funs <- sort(c(
+    "cmdstanr::cmdstan_model",
+    "cmdstanr::sample",
+    "cmdstanr::print",
+    "cmdstanr::exe_file",
+    "cmdstanr::draws",
+    "cmdstanr::summary",
+    "cmdstanr::diagnostic_summary",
+    "cmdstanr::pathfinder",
+    "cmdstanr::read_cmdstan_csv",
+    "cmdstanr::write_stan_json"
+  ))
+
   expected_keys <- unique(na.omit(c(
     resolve_origin_key("brms", "bf"),
     resolve_origin_key("brms", "set_prior"),
@@ -989,6 +1002,21 @@ test_that("scan_usage handles faux_proj directory tree", {
         "recipes::recipe"
       )
   ))
+
+  detected_cmdstanr_funs <- sort(res$functions[grepl(
+    "^cmdstanr::",
+    res$functions
+  )])
+  expect_equal(detected_cmdstanr_funs, expected_cmdstanr_funs)
+
+  force_local_snapshots()
+  expect_snapshot_value(
+    list(
+      packages = res$packages,
+      functions = res$functions
+    ),
+    style = "json2"
+  )
 })
 
 test_that("scan_usage attributes unqualified calls only in files attaching Stan packages", {
