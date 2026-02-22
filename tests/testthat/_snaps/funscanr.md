@@ -71,6 +71,31 @@
     attr(,"class")
     [1] "scan_usage"
 
+# scan_usage handles faux_proj directory tree
+
+    {
+      "type": "list",
+      "attributes": {
+        "names": {
+          "type": "character",
+          "attributes": {},
+          "value": ["packages", "functions"]
+        }
+      },
+      "value": [
+        {
+          "type": "character",
+          "attributes": {},
+          "value": ["bayesplot", "brms", "cmdstanr", "loo", "posterior", "projpred", "rstan", "rstanarm", "shinystan"]
+        },
+        {
+          "type": "character",
+          "attributes": {},
+          "value": ["bayesplot::mcmc_acf", "bayesplot::mcmc_areas", "bayesplot::mcmc_intervals", "bayesplot::mcmc_rank_hist", "bayesplot::mcmc_trace", "bayesplot::pp_check", "bayesplot::ppc_bars", "bayesplot::ppc_error_hist", "brms::as_draws", "brms::bf", "brms::brm", "brms::conditional_effects", "brms::get_prior", "brms::mixture", "brms::set_prior", "cmdstanr::cmdstan_model", "cmdstanr::diagnostic_summary", "cmdstanr::draws", "cmdstanr::exe_file", "cmdstanr::pathfinder", "cmdstanr::print", "cmdstanr::read_cmdstan_csv", "cmdstanr::sample", "cmdstanr::summary", "cmdstanr::write_stan_json", "loo::loo", "loo::loo_compare", "posterior::as_draws", "posterior::as_draws_cmdstanr", "posterior::as_draws_df", "posterior::as_draws_matrix", "posterior::ess_bulk", "posterior::ess_tail", "posterior::mcse_mean", "posterior::rhat", "posterior::subset_draws", "posterior::summarise_draws", "projpred::cv_varsel", "rstan::extract", "rstan::stan_model", "rstanarm::logit", "shinystan::launch_shinystan"]
+        }
+      ]
+    }
+
 # scan_usage errors on multiple directories
 
     `path` must be a single directory or a vector of files.

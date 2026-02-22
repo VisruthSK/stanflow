@@ -11,8 +11,8 @@ fit$summary()
 
 model$pathfinder(data = list(N = 10, y = rnorm(10)), draws = 100)
 
-cmdstanr::cmdstan_model("model2.stan")
-cmdstanr::write_stan_json(list(N = 5, y = rnorm(5)), "data.json")
+cmdstan_model("model2.stan")
+write_stan_json(list(N = 5, y = rnorm(5)), "data.json")
 
 posterior::as_draws_cmdstanr(fit)
 posterior::subset_draws(fit, 1:10)
