@@ -17,3 +17,5 @@
 ^vignettes/*_files$
 ^\.covrignore$
 ^data-raw$
+^AGENTS\.md$
+^touchstone$
