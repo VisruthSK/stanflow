@@ -15,7 +15,6 @@ Vector of functions to be ignored when parsing.
 Generated in \code{data-raw/sysdata.R} from exports of base R packages.
 
 Vector of directories skipped when recursively searching
-a project.
-Generated in \code{data-raw/sysdata.R}.
+a project. Generated in \code{data-raw/sysdata.R}.
 }
 \keyword{internal}

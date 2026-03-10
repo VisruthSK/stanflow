@@ -141,3 +141,67 @@ test_that("all package citations exist", {
     expect_true(any(grepl(pkg, citations, fixed = TRUE)))
   }
 })
+
+test_that("cmdstanr function citations follow cmdstanr docs", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "cmdstanr.R"),
+    c(
+      "library(cmdstanr)",
+      "mod <- cmdstan_model('model.stan')",
+      "fit <- mod$sample(data = list(N = 10, y = rnorm(10)))",
+      "fit$summary()",
+      "fit$lp_approx()",
+      "fit$loo(moment_match = TRUE)",
+      "mod$optimize(data = list(N = 10, y = rnorm(10)))",
+      "mod$laplace(mode = fit, draws = 100)",
+      "mod$variational(data = list(N = 10, y = rnorm(10)), draws = 100)",
+      "mod$pathfinder(data = list(N = 10, y = rnorm(10)), draws = 100)"
+    )
+  )
+
+  citations <- stan_cite(path, format = "bibtex")
+
+  expect_true(any(grepl("The No-U-Turn Sampler", citations, fixed = TRUE)))
+  expect_true(any(grepl(
+    "Automatic differentiation variational inference",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Pathfinder: parallel quasi-Newton variational inference",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Yes, but did it work?: Evaluating variational inference",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Rank-normalization, folding, and localization",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Comparison of MCMC effective sample size estimators",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Pareto smoothed importance sampling",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Implicitly adaptive importance sampling",
+    citations,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl("Stan Reference Manual", citations, fixed = TRUE)))
+})
