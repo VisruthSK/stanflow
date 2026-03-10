@@ -48,6 +48,7 @@ stanflow_update(recursive = TRUE)
 You can also check if stanflow's direct dependencies are up to date using `flow_check()`.
 
 ```{r}
+#| eval: false
 flow_check(check_updates = TRUE)
 ```
 
