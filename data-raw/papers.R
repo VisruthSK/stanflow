@@ -118,6 +118,15 @@ stan_users_guide <- bibentry(
   url = "https://mc-stan.org/users/documentation/"
 )
 
+stan_reference_manual <- bibentry(
+  bibtype = "Manual",
+  key = "stan-reference-manual",
+  title = "Stan Reference Manual",
+  author = person("Stan Development Team"),
+  year = "2026",
+  url = "https://mc-stan.org/docs/reference-manual/"
+)
+
 sailynoja2021 <- bibentry(
   bibtype = "Misc",
   key = "sailynoja-2021-uniformity",
@@ -572,6 +581,41 @@ yao2018_vi <- bibentry(
   volume = "80",
   pages = "5581--5590",
   note = "PMLR"
+)
+
+kucukelbir2017_advi <- bibentry(
+  bibtype = "Article",
+  key = "kucukelbir-2017-advi",
+  title = "Automatic differentiation variational inference",
+  author = c(
+    person("Alp", "Kucukelbir"),
+    person("Dustin", "Tran"),
+    person("Rajesh", "Ranganath"),
+    person("Andrew", "Gelman"),
+    person("David", "Blei")
+  ),
+  journal = "Journal of Machine Learning Research",
+  year = "2017",
+  volume = "18",
+  number = "14",
+  pages = "1--45"
+)
+
+zhang2022_pathfinder <- bibentry(
+  bibtype = "Article",
+  key = "zhang-2022-pathfinder",
+  title = "Pathfinder: parallel quasi-Newton variational inference",
+  author = c(
+    person("Lu", "Zhang"),
+    person("Bob", "Carpenter"),
+    person("Andrew", "Gelman"),
+    person("Aki", "Vehtari")
+  ),
+  journal = "Journal of Machine Learning Research",
+  year = "2022",
+  volume = "23",
+  number = "306",
+  pages = "1--49"
 )
 
 tastle2007_dissent <- bibentry(
