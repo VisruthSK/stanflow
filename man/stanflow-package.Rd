@@ -11,18 +11,18 @@ Streamlines access to the Stan ecosystem by attaching core workflow packages, su
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://visruthsk.github.io/stanflow/}
+  \item \url{https://stanflow.visruth.com/}
   \item Report bugs at \url{https://github.com/VisruthSK/stanflow/issues/}
 }
 
 }
 \author{
-\strong{Maintainer}: Visruth Srimath Kandali \email{public@visruth.com} (\href{https://orcid.org/0009-0005-9097-0688}{ORCID})
+\strong{Maintainer}: Visruth Srimath Kandali \email{public@visruth.com} (\href{https://orcid.org/0009-0005-9097-0688}{ORCID}) [copyright holder]
 
 Other contributors:
 \itemize{
   \item Jonah Gabry [contributor]
-  \item tidyverse authors (Some code adapted from tidyverse package (MIT). See LICENSE.note) [copyright holder]
+  \item Posit Software, PBC (Copyright holder for code adapted from tidyverse package (MIT); see LICENSE.note) [copyright holder]
 }
 
 }

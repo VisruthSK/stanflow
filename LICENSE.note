@@ -1,9 +1,46 @@
-This package is licensed under the BSD 3-Clause license.
+stanflow is distributed under the BSD 3-Clause license.
 
-The following files include code adapted from the tidyverse package (MIT):
-- R/utils.R (same_library, invert, is_attached)
-- R/conflicts.R (stanflow_conflicts and helpers)
-- R/update.R (stanflow_deps, stanflow_update)
-- R/load.R (startup attach messaging helpers)
-- R/logo.R (stan_logo, stanflow_logo)
-- R/zzz.R (.onAttach)
+Some files contain code copied or adapted from the tidyverse package, which is
+distributed under the MIT License. Those tidyverse-derived portions remain
+subject to the original MIT copyright and permission notice reproduced below.
+These portions include both near-verbatim copies and modified adaptations that
+replace tidyverse helpers with base-R equivalents.
+
+The tidyverse source files reviewed for these attributions were taken from:
+https://github.com/tidyverse/tidyverse/tree/0231aafbc56914ee5371dd6c7b60677f168d7154
+
+MIT-licensed tidyverse-derived components:
+- R/utils.R: wrapped_startup() and invert() adapted from tidyverse/R/utils.R;
+  .same_library() adapted from tidyverse/R/attach.R; is_attached() adapted from
+  tidyverse/R/zzz.R
+- R/conflicts.R: stanflow_conflicts(), stanflow_conflict_message(),
+  print.stanflow_conflicts(), confirm_conflict(), and ls_env() adapted from
+  tidyverse/R/conflicts.R
+- R/update.R: stanflow_deps() and stanflow_update() adapted from
+  tidyverse/R/update.R
+- R/load.R: core_attach_message(), message_packages(), .find_unloaded(), and
+  .package_version_h() adapted from tidyverse/R/attach.R
+- R/logo.R: stanflow_logo() adapted from tidyverse/R/logo.R
+- R/zzz.R: .onAttach() adapted from tidyverse/R/zzz.R
+
+Upstream tidyverse MIT notice (reproduced verbatim):
+
+Copyright (c) 2024 tidyverse authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

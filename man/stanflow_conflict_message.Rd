@@ -13,6 +13,6 @@ stanflow_conflict_message(x)
 Character vector of the conflict message to print.
 }
 \description{
-Pulled from tidyverse. Builds the conflict message.
+Adapted from the helper code behind \code{\link[tidyverse:tidyverse_conflicts]{tidyverse::tidyverse_conflicts()}}.
 }
 \keyword{internal}

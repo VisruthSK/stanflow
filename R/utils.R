@@ -1,5 +1,10 @@
 # Portions of this file are adapted from the tidyverse package.
-# See LICENSE.note for details.
+# Copyright (c) 2024 tidyverse authors.
+# License: MIT; full notice preserved in LICENSE.note.
+# Sources:
+# - https://github.com/tidyverse/tidyverse/blob/0231aafbc56914ee5371dd6c7b60677f168d7154/R/utils.R
+# - https://github.com/tidyverse/tidyverse/blob/0231aafbc56914ee5371dd6c7b60677f168d7154/R/attach.R
+# - https://github.com/tidyverse/tidyverse/blob/0231aafbc56914ee5371dd6c7b60677f168d7154/R/zzz.R
 
 # nocov start
 compliance_imports <- \() {
