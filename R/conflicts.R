@@ -1,5 +1,7 @@
 # Portions of this file are adapted from the tidyverse package.
-# See LICENSE.note for details.
+# Copyright (c) 2024 tidyverse authors.
+# License: MIT; full notice preserved in LICENSE.note.
+# Source: https://github.com/tidyverse/tidyverse/blob/0231aafbc56914ee5371dd6c7b60677f168d7154/R/conflicts.R
 
 #' Conflicts between stanflow and other packages
 #'
@@ -8,6 +10,8 @@
 #'
 #' There are several conflicts that are deliberately ignored: `diag`,
 #' `drop`, `match`, `\%in\%`, `mad`, `sd`, and `var` from posterior.
+#'
+#' Adapted from [tidyverse::tidyverse_conflicts()] for stanflow's package set.
 #'
 #' @export
 #' @param only Defaults to `NULL`. Set this to a character vector to restrict to conflicts only
@@ -50,7 +54,7 @@ print.stanflow_conflicts <- function(x, ...) {
 
 #' Generate conflict message
 #'
-#' Pulled from tidyverse. Builds the conflict message.
+#' Adapted from the helper code behind [tidyverse::tidyverse_conflicts()].
 #'
 #' @param x A named list describing function-name conflicts.
 #' @return Character vector of the conflict message to print.

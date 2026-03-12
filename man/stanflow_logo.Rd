@@ -10,7 +10,7 @@ stanflow_logo()
 Invisibly returns the character vector that was printed.
 }
 \description{
-Print the stanflow ASCII art logo
+Adapted from \code{\link[tidyverse:tidyverse_logo]{tidyverse::tidyverse_logo()}}.
 }
 \examples{
 stanflow_logo()
