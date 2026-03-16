@@ -2,6 +2,7 @@
 
 Checks for outdated Stan workflow packages and installs updates. This
 function requires an interactive R session and will error otherwise.
+Adapted from `tidyverse::tidyverse_update()`.
 
 ## Usage
 

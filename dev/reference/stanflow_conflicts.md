@@ -22,6 +22,9 @@ stanflow_conflicts(only = NULL)
 There are several conflicts that are deliberately ignored: `diag`,
 `drop`, `match`, `\%in\%`, `mad`, `sd`, and `var` from posterior.
 
+Adapted from `tidyverse::tidyverse_conflicts()` for stanflow's package
+set.
+
 ## Examples
 
 ``` r

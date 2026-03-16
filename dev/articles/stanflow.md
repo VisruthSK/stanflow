@@ -122,7 +122,6 @@ setup_interface(
 #> /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here
 #>   127 |     struct _GLIBCXX17_DEPRECATED iterator
 #>       |                                  ^~~~~~~~
-#> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
 #> In file included from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:22:
 #> ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:749:21: warning: ‘template<class _Category, class _Tp, class _Distance, class _Pointer, class _Reference> struct std::iterator’ is deprecated [-Wdeprecated-declarations]
 #>   749 |         public std::iterator<std::forward_iterator_tag,Value> {
@@ -141,6 +140,8 @@ setup_interface(
 #> /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here
 #>   127 |     struct _GLIBCXX17_DEPRECATED iterator
 #>       |                                  ^~~~~~~~
+#> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
+#> 
 #> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
 #> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.38.0
 #> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.38.0
@@ -232,7 +233,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1539052 secs
+#> Time difference of 0.156666 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
@@ -333,7 +334,7 @@ citations
 #>   author = {{R Core Team}},
 #>   organization = {R Foundation for Statistical Computing},
 #>   address = {Vienna, Austria},
-#>   year = {2025},
+#>   year = {2026},
 #>   url = {https://www.R-project.org/},
 #> }
 ```

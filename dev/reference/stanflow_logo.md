@@ -1,6 +1,6 @@
 # Print the stanflow ASCII art logo
 
-Print the stanflow ASCII art logo
+Adapted from `tidyverse::tidyverse_logo()`.
 
 ## Usage
 
