@@ -12,6 +12,7 @@ run_update_with <- function(deps_df, update_fun, check = NULL) {
       deps_df
     },
     with_mocked_bindings(
+      menu = function(...) 1,
       install.packages = function(...) invisible(NULL),
       update_fun(),
       .package = "utils"
@@ -66,6 +67,77 @@ test_that("stanflow_update lists behind packages", {
     }
   )
 
+  expect_identical(result, behind)
+})
+
+test_that("stanflow_update aborts when user declines interactive update", {
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org"),
+    stanflow.force_interactive = TRUE
+  ))
+
+  behind <- data.frame(
+    package = c("cmdstanr", "posterior"),
+    remote = c("1.2.0", "1.6.0"),
+    local = c("1.1.0", "1.5.0"),
+    behind = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+
+  with_mocked_bindings(
+    stanflow_deps = function(...) behind,
+    with_mocked_bindings(
+      menu = function(...) 2,
+      install.packages = function(...) stop("should not reach install"),
+      expect_error(
+        stanflow_update(),
+        "Update aborted by user"
+      ),
+      .package = "utils"
+    ),
+    .package = "stanflow"
+  )
+})
+
+test_that("stanflow_update installs when user accepts interactive prompt", {
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org"),
+    stanflow.force_interactive = TRUE
+  ))
+
+  behind <- data.frame(
+    package = c("cmdstanr", "posterior"),
+    remote = c("1.2.0", "1.6.0"),
+    local = c("1.1.0", "1.5.0"),
+    behind = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  called <- list()
+
+  result <- with_mocked_bindings(
+    stanflow_deps = function(...) behind,
+    with_mocked_bindings(
+      menu = function(choices, title) {
+        called$choices <<- choices
+        called$title <<- title
+        1
+      },
+      install.packages = function(pkg, repos, quiet) {
+        called$pkg <<- pkg
+        called$repos <<- repos
+        called$quiet <<- quiet
+        invisible(NULL)
+      },
+      stanflow_update(),
+      .package = "utils"
+    ),
+    .package = "stanflow"
+  )
+
+  expect_identical(called$choices, c("Yes", "No"))
+  expect_identical(called$title, "Update packages from R-multiverse (Stable)?")
+  expect_identical(called$pkg, behind$package)
+  expect_true(isTRUE(called$quiet))
   expect_identical(result, behind)
 })
 
@@ -387,6 +459,7 @@ test_that("stanflow_update reports packages that need reinstall after warnings",
   output <- with_mocked_bindings(
     stanflow_deps = function(...) behind,
     with_mocked_bindings(
+      menu = function(...) 1,
       install.packages = function(...) {
         warning("cannot remove prior installation of package 'cmdstanr'")
         warning("some other warning")
