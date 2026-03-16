@@ -11,9 +11,11 @@ cache: true
 ---
 
 <!-- badges: start -->
+[![codecov](https://codecov.io/gh/VisruthSK/stanflow/branch/main/graph/badge.svg)](https://codecov.io/github/VisruthSK/stanflow?branch=main)
 [![R-CMD-check](https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/pkgdown.yaml)
 [![check-interfaces](https://github.com/VisruthSK/stanflow/actions/workflows/interfaces.yaml/badge.svg)](https://github.com/VisruthSK/stanflow/actions/workflows/interfaces.yaml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/VisruthSK/stanflow)
 <!-- badges: end -->
 
 NB: `stanflow` is currently under active development--breaking changes may be made without warning, until a proper release (see the v1.0.0 milestone). `stanflow` will join `stan-dev` once stable as well.
