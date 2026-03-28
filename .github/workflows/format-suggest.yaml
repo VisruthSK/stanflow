@@ -36,7 +36,7 @@ jobs:
         uses: posit-dev/setup-air@v1
 
       - name: Jarl format
-        uses: etiennebacher/setup-jarl@v0.1.0
+        uses: etiennebacher/setup-jarl@v0.1.1
         with:
           args: "check --fix"
 
