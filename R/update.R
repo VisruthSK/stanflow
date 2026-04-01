@@ -232,6 +232,17 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
   )
   cli::cat_line()
 
+  if (is_interactive_session()) {
+    title <- if (dev) {
+      "Update packages from Stan Universe (Dev)?"
+    } else {
+      "Update packages from R-multiverse (Stable)?"
+    }
+    if (utils::menu(c("Yes", "No"), title = title) != 1) {
+      cli::cli_abort("Update aborted by user.")
+    }
+  }
+
   repos <- stan_repos(dev)
 
   pkgs_to_report <- if (getOption("stanflow.testing", FALSE)) {
