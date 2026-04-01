@@ -730,8 +730,7 @@ NULL
 #'
 #' @rdname internal_data
 #' @export
-stdlib_funs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
-  local_cli_quiet(quiet)
+stdlib_funs <- function() {
   # lapply(
   #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
   #   getNamespaceExports
@@ -739,7 +738,6 @@ stdlib_funs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
   #   unlist(use.names = FALSE) |>
   #   unique() |>
   #   sort()
-  cli::cli_alert_info("See the source for how these are generated")
   .stdlib_funs
 }
 
@@ -750,8 +748,7 @@ stdlib_funs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
 #'
 #' @rdname internal_data
 #' @export
-scan_skip_dirs <- function(quiet = getOption("stanflow.quiet", FALSE)) {
-  local_cli_quiet(quiet)
+scan_skip_dirs <- function() {
   # c(
   #   "renv",
   #   "packrat",
