@@ -9,7 +9,7 @@ Generated in `data-raw/sysdata.R`.
 ## Usage
 
 ``` r
-stdlib_funs(quiet = getOption("stanflow.quiet", FALSE))
+stdlib_funs()
 
-scan_skip_dirs(quiet = getOption("stanflow.quiet", FALSE))
+scan_skip_dirs()
 ```

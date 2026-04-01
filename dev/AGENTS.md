@@ -21,4 +21,5 @@ functionally blocked.
   2.  `jarl check . --fix --allow-dirty`
   3.  `devtools::document()`
   4.  `devtools::check()`
-  5.  Report `covr::package_coverage()`
+  5.  Report
+      [`covr::package_coverage()`](http://covr.r-lib.org/reference/package_coverage.md)
