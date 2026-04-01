@@ -17,6 +17,8 @@ and other loaded packages.
 \details{
 There are several conflicts that are deliberately ignored: \code{diag},
 \code{drop}, \code{match}, \verb{\\\%in\\\%}, \code{mad}, \code{sd}, and \code{var} from posterior.
+
+Adapted from \code{\link[tidyverse:tidyverse_conflicts]{tidyverse::tidyverse_conflicts()}} for stanflow's package set.
 }
 \examples{
 stanflow_conflicts()

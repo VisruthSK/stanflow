@@ -1,5 +1,7 @@
 # Portions of this file are adapted from the tidyverse package.
-# See LICENSE.note for details.
+# Copyright (c) 2024 tidyverse authors.
+# License: MIT; full notice preserved in LICENSE.note.
+# Source: https://github.com/tidyverse/tidyverse/blob/0231aafbc56914ee5371dd6c7b60677f168d7154/R/update.R
 
 #' List all stanflow dependencies
 #'
@@ -7,6 +9,8 @@
 #' Returns a data frame of Stan workflow packages and their local/remote versions.
 #' When `check_updates = FALSE`, remote versions are not queried and the `remote`
 #' and `behind` columns are `NA` and `FALSE`, respectively.
+#'
+#' Adapted from [tidyverse::tidyverse_deps()].
 #'
 #' @param recursive If `TRUE`, will also list dependencies of dependencies. When
 #'   `check_updates = TRUE`, the recursive traversal follows only "strong"
@@ -177,6 +181,7 @@ stanflow_deps <- function(
 #' @description
 #' Checks for outdated Stan workflow packages and installs updates. This function
 #' requires an interactive R session and will error otherwise.
+#' Adapted from [tidyverse::tidyverse_update()].
 #'
 #' @return Invisibly returns a data frame of outdated packages (same columns as
 #' \code{\link{stanflow_deps}}). Returns \code{NULL} invisibly when no updates are

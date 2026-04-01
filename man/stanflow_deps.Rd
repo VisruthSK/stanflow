@@ -32,6 +32,8 @@ A data frame with columns:
 Returns a data frame of Stan workflow packages and their local/remote versions.
 When \code{check_updates = FALSE}, remote versions are not queried and the \code{remote}
 and \code{behind} columns are \code{NA} and \code{FALSE}, respectively.
+
+Adapted from \code{\link[tidyverse:tidyverse_deps]{tidyverse::tidyverse_deps()}}.
 }
 \examples{
 \dontrun{
