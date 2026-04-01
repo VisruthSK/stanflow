@@ -2,6 +2,7 @@
 # See LICENSE.note for details.
 
 # nocov start
+# jarl-ignore unused_function: needed to justify importing these packages
 compliance_imports <- \() {
   bayesplot::abline_01
   loo::compare
