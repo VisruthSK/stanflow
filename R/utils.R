@@ -7,6 +7,7 @@
 # - https://github.com/tidyverse/tidyverse/blob/0231aafbc56914ee5371dd6c7b60677f168d7154/R/zzz.R
 
 # nocov start
+# jarl-ignore unused_function: needed to justify importing these packages
 compliance_imports <- \() {
   bayesplot::abline_01
   loo::compare
