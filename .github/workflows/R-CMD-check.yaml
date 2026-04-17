@@ -44,16 +44,11 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
-          use-public-rspm: false
-          extra-repositories: |
-            https://community.r-multiverse.org
-            https://stan-dev.r-universe.dev
-            https://packagemanager.posit.co/cran/latest
-            https://cloud.r-project.org
+          use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, github::stan-dev/cmdstanr
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
