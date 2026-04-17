@@ -62,7 +62,6 @@ clone_repo <- function(url, ref, dir) {
   }
 }
 
-benchmark_n <- 10
 for (repo in repos) {
   dir <- sub("\\.git$", "", basename(repo$url))
   repo_path <- file.path(base_dir, dir)
@@ -71,27 +70,12 @@ for (repo in repos) {
     expr_before_benchmark = {
       library(stanflow)
     },
-    n = benchmark_n,
+    n = 30,
     !!dir := stan_cite(
       path = !!repo_path,
       strict = FALSE,
       quiet = TRUE
     )
-  )
-}
-
-# touchstone analysis -----------------------------------------------------
-
-# Ensure plot/comment dependencies are available for benchmark_analyze().
-plot_pkgs <- c("ggplot2", "dplyr", "glue")
-missing_plot_pkgs <- plot_pkgs[
-  !vapply(plot_pkgs, requireNamespace, logical(1), quietly = TRUE)
-]
-if (length(missing_plot_pkgs) > 0) {
-  stop(
-    "touchstone: missing packages required for plots/comments: ",
-    paste(missing_plot_pkgs, collapse = ", "),
-    call. = FALSE
   )
 }
 
