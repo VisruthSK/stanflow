@@ -13,12 +13,13 @@ library(stanflow)
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1
+#> ✔ posterior 1.7.0
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
 #> • cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 stan_logo()
 #>            G08GLG80G           
@@ -51,16 +52,18 @@ flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
+#> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
 #> • cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 stanflow_conflicts()
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
@@ -148,14 +151,15 @@ flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
+#> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.23.0     • rstan    2.32.7
 #> ✔ cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ brms::ar()      masks stats::ar()
-#> ✖ brms::do_call() masks projpred::do_call()
-#> ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()
+#> ✖ brms::ar()          masks stats::ar()
+#> ✖ brms::do_call()     masks projpred::do_call()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ brms::rhat()        masks posterior::rhat(), bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
@@ -232,7 +236,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1585155 secs
+#> Time difference of 0.1426113 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
@@ -265,8 +269,8 @@ citations
 #> @Manual{posterior,
 #>   title = {Tools for Working with Posterior Distributions},
 #>   author = {Paul-Christian Bürkner and Jonah Gabry and Matthew Kay and Aki Vehtari},
-#>   year = {2025},
-#>   note = {R package version 1.6.1, https://discourse.mc-stan.org},
+#>   year = {2026},
+#>   note = {R package version 1.7.0, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/posterior/},
 #> }
 #> 

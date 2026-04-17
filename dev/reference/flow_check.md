@@ -31,11 +31,12 @@ flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
 #> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
+#> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
 #> • cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```

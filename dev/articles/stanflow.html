@@ -115,12 +115,13 @@
 <span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──</span></span>
 <span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
 <span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1</span></span>
+<span><span class="co">#&gt; ✔ posterior 1.7.0</span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
 <span><span class="co">#&gt; • brms     2.23.0     • rstan    2.32.7</span></span>
 <span><span class="co">#&gt; • cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat()   masks bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
 <span><span class="fu"><a href="../reference/stan_logo.html">stan_logo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            G08GLG80G           </span></span>
@@ -148,16 +149,18 @@
 <span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──</span></span>
 <span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
 <span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.7.0      </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
 <span><span class="co">#&gt; • brms     2.23.0     • rstan    2.32.7</span></span>
 <span><span class="co">#&gt; • cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat()   masks bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
 <span><span class="fu"><a href="../reference/stanflow_conflicts.html">stanflow_conflicts</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat()   masks bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="keep-the-flow-fresh">Keep the flow fresh<a class="anchor" aria-label="anchor" href="#keep-the-flow-fresh"></a>
@@ -233,14 +236,15 @@
 <span><span class="co">#&gt; ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──</span></span>
 <span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
 <span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.7.0      </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
 <span><span class="co">#&gt; ✔ brms     2.23.0     • rstan    2.32.7</span></span>
 <span><span class="co">#&gt; ✔ cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ brms::ar()      masks stats::ar()</span></span>
-<span><span class="co">#&gt; ✖ brms::do_call() masks projpred::do_call()</span></span>
-<span><span class="co">#&gt; ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ brms::ar()          masks stats::ar()</span></span>
+<span><span class="co">#&gt; ✖ brms::do_call()     masks projpred::do_call()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ brms::rhat()        masks posterior::rhat(), bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span></code></pre></div>
 </div>
 <p>If you prefer <code>RStan</code>, you could load it alongside <code>brms</code>.</p>
@@ -310,7 +314,7 @@
 <span><span class="va">citations</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_cite.html">stan_cite</a></span><span class="op">(</span><span class="st">"stanflow.qmd"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">start</span></span>
-<span><span class="co">#&gt; Time difference of 0.1585155 secs</span></span>
+<span><span class="co">#&gt; Time difference of 0.1426113 secs</span></span>
 <span><span class="va">citations</span></span>
 <span><span class="co">#&gt; @Manual{bayesplot,</span></span>
 <span><span class="co">#&gt;   title = {Plotting for Bayesian Models},</span></span>
@@ -343,8 +347,8 @@
 <span><span class="co">#&gt; @Manual{posterior,</span></span>
 <span><span class="co">#&gt;   title = {Tools for Working with Posterior Distributions},</span></span>
 <span><span class="co">#&gt;   author = {Paul-Christian Bürkner and Jonah Gabry and Matthew Kay and Aki Vehtari},</span></span>
-<span><span class="co">#&gt;   year = {2025},</span></span>
-<span><span class="co">#&gt;   note = {R package version 1.6.1, https://discourse.mc-stan.org},</span></span>
+<span><span class="co">#&gt;   year = {2026},</span></span>
+<span><span class="co">#&gt;   note = {R package version 1.7.0, https://discourse.mc-stan.org},</span></span>
 <span><span class="co">#&gt;   url = {https://mc-stan.org/posterior/},</span></span>
 <span><span class="co">#&gt; }</span></span>
 <span><span class="co">#&gt; </span></span>
