@@ -19,7 +19,7 @@ test_that("setup_interface adds cmdstanr when brms_backend = cmdstanr", {
     interface = "brms",
     brms_backend = "cmdstanr",
     cores = 2,
-    quiet = FALSE
+    quiet = TRUE
   )
 
   expect_equal(libraries, c("brms", "cmdstanr"))
@@ -154,7 +154,7 @@ test_that("setup_interface is silent when quiet = TRUE", {
     .package = "stanflow"
   )
 
-  output <- testthat::capture_messages(
+  output <- capture_messages(
     setup_interface(
       interface = "brms",
       brms_backend = "rstan",
@@ -175,13 +175,13 @@ test_that("setup_interface defaults to stanflow.quiet option", {
   )
 
   withr::local_options(list(stanflow.quiet = TRUE))
-  silent <- testthat::capture_messages(
+  silent <- capture_messages(
     setup_interface(interface = "brms", brms_backend = "rstan", cores = 2)
   )
   expect_equal(silent, character())
 
   withr::local_options(list(stanflow.quiet = FALSE))
-  noisy <- testthat::capture_messages(
+  noisy <- capture_messages(
     setup_interface(interface = "brms", brms_backend = "rstan", cores = 2)
   )
   expect_true(length(noisy) > 0)
@@ -447,7 +447,7 @@ test_that("setup_cmdstanr is silent when quiet = TRUE", {
     .package = "base"
   )
 
-  output <- testthat::capture_messages(
+  output <- capture_messages(
     setup_cmdstanr(
       quiet = TRUE,
       force = FALSE,
@@ -496,7 +496,7 @@ test_that("setup_interface warns when brms_backend adds cmdstanr", {
     setup_brms = function(...) invisible(NULL),
     .package = "stanflow"
   )
-  expect_snapshot_output(
+  expect_snapshot(
     setup_interface(
       interface = c("brms"),
       brms_backend = "cmdstanr",

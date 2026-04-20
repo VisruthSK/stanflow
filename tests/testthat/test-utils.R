@@ -69,7 +69,7 @@ test_that("local_cli_quiet suppresses cli messages within caller", {
       cli::cli_alert_info("hello from cli")
       invisible(NULL)
     }
-    testthat::capture_messages(f())
+    capture_messages(f())
   }
 
   expect_equal(capture(TRUE), character())
@@ -82,9 +82,9 @@ test_that("local_cli_quiet restores cli output after caller exits", {
     cli::cli_alert_info("silenced")
     invisible(NULL)
   }
-  testthat::capture_messages(f())
+  capture_messages(f())
 
-  out <- testthat::capture_messages(cli::cli_alert_info("audible"))
+  out <- capture_messages(cli::cli_alert_info("audible"))
   expect_match(out, "audible")
 })
 

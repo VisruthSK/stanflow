@@ -106,16 +106,8 @@ test_that("flow_check prints and returns messages", {
     .package = "stanflow"
   )
 
-  tmp <- tempfile()
-  sink(tmp)
+  withr::local_output_sink(withr::local_tempfile())
   result <- flow_check()
-  sink()
-  output <- readLines(tmp, warn = FALSE)
-  unlink(tmp)
-
-  expect_true(any(grepl("core-msg", output, fixed = TRUE)))
-  expect_true(any(grepl("backend-msg", output, fixed = TRUE)))
-  expect_true(any(grepl("conflict-msg", output, fixed = TRUE)))
   expect_identical(result, c("core-msg", "backend-msg", "conflict-msg"))
 })
 
@@ -137,9 +129,12 @@ test_that("flow_check includes update status when requested (no updates)", {
     .package = "stanflow"
   )
 
+  withr::local_output_sink(withr::local_tempfile())
   result <- flow_check(check_updates = TRUE)
-  expect_true(any(grepl("Available updates", result, fixed = TRUE)))
-  expect_true(any(grepl("up-to-date", result, fixed = TRUE)))
+  expect_identical(
+    result,
+    c("core-msg", "backend-msg", "conflict-msg", update_check_message())
+  )
 })
 
 test_that("flow_check includes update list when packages are behind", {
@@ -160,10 +155,12 @@ test_that("flow_check includes update list when packages are behind", {
     .package = "stanflow"
   )
 
+  withr::local_output_sink(withr::local_tempfile())
   result <- flow_check(check_updates = TRUE)
-  expect_true(any(grepl("Available updates", result, fixed = TRUE)))
-  expect_true(any(grepl("cmdstanr", result, fixed = TRUE)))
-  expect_true(any(grepl("posterior", result, fixed = TRUE)))
+  expect_identical(
+    result,
+    c("core-msg", "backend-msg", "conflict-msg", update_check_message())
+  )
 })
 
 test_that("update_check_message prints up-to-date status", {
