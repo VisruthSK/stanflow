@@ -53,3 +53,14 @@ The setup functions are exported (e.g., \code{setup_brms()}) for transparency.
 Each function has some side effects, mainly setting \code{mc.cores}, see the function
 for specifics.
 }
+\examples{
+\dontrun{
+options(mc.cores = 2)
+setup_interface("cmdstanr", quiet = TRUE)
+setup_interface(
+  c("brms", "cmdstanr"),
+  brms_backend = "cmdstanr",
+  quiet = TRUE
+)
+}
+}

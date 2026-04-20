@@ -15,3 +15,7 @@ Character vector of repository URLs.
 \description{
 Stan package repositories
 }
+\examples{
+stan_repos()
+stan_repos(dev = TRUE)
+}

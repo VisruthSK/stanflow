@@ -25,3 +25,8 @@ Configures \code{brms} to use available cores and sets the backend.
 Prefer \code{setup_interface()} for user-facing setup since it performs argument
 validation and defaults; \code{setup_brms()} assumes inputs are already checked.
 }
+\examples{
+\dontrun{
+setup_brms(quiet = TRUE, brms_backend = "cmdstanr", cores = 2)
+}
+}

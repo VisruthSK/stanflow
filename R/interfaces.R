@@ -24,6 +24,16 @@
 #' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE)`
 #' @return Returns attached package names invisibly.
 #' @export
+#' @examples
+#' \dontrun{
+#' options(mc.cores = 2)
+#' setup_interface("cmdstanr", quiet = TRUE)
+#' setup_interface(
+#'   c("brms", "cmdstanr"),
+#'   brms_backend = "cmdstanr",
+#'   quiet = TRUE
+#' )
+#' }
 setup_interface <- function(
   interface = c("brms", "cmdstanr", "rstan", "rstanarm"),
   cores = getOption("mc.cores"),
@@ -160,6 +170,16 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
 #' @return Returns `TRUE` invisibly when no install/upgrade is needed.
 #'   Otherwise, returns `NULL` invisibly after installation.
 #' @export
+#' @examples
+#' \dontrun{
+#' setup_cmdstanr(
+#'   quiet = TRUE,
+#'   force = TRUE,
+#'   reinstall = FALSE,
+#'   check_updates = FALSE,
+#'   cores = 2
+#' )
+#' }
 setup_cmdstanr <- function(
   quiet,
   force,
@@ -308,6 +328,10 @@ setup_cmdstanr <- function(
 #' @inheritParams setup_interface
 #' @return Returns `NULL` invisibly.
 #' @export
+#' @examples
+#' \dontrun{
+#' setup_rstan(quiet = TRUE, cores = 2, rstan_auto_write = TRUE)
+#' }
 setup_rstan <- function(quiet, cores, rstan_auto_write) {
   local_cli_quiet(quiet)
 
@@ -330,6 +354,10 @@ setup_rstan <- function(quiet, cores, rstan_auto_write) {
 #' @inheritParams setup_interface
 #' @return Returns `NULL` invisibly.
 #' @export
+#' @examples
+#' \dontrun{
+#' setup_brms(quiet = TRUE, brms_backend = "cmdstanr", cores = 2)
+#' }
 setup_brms <- function(quiet, brms_backend, cores) {
   local_cli_quiet(quiet)
   brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
@@ -352,6 +380,10 @@ setup_brms <- function(quiet, brms_backend, cores) {
 #' @inheritParams setup_interface
 #' @return Returns `NULL` invisibly.
 #' @export
+#' @examples
+#' \dontrun{
+#' setup_rstanarm(quiet = TRUE, cores = 2)
+#' }
 setup_rstanarm <- function(quiet, cores) {
   local_cli_quiet(quiet)
 

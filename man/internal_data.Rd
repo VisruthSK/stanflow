@@ -17,4 +17,8 @@ Generated in \code{data-raw/sysdata.R} from exports of base R packages.
 Vector of directories skipped when recursively searching
 a project. Generated in \code{data-raw/sysdata.R}.
 }
+\examples{
+head(stdlib_funs())
+scan_skip_dirs()
+}
 \keyword{internal}

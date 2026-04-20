@@ -1,4 +1,4 @@
-#' Find used Functions and Packages
+#' Find used functions and packages
 #'
 #' This function is primarily exported for developers, and
 #' is almost entirely divested from `stanflow`, except for
@@ -31,6 +31,23 @@
 #'   directory. Defaults to `.scan_skip_dirs`.
 #' @return A list of packages, resolved functions, and ambiguous function calls.
 #' @export
+#' @examples
+#' path <- tempfile(fileext = ".R")
+#' writeLines(
+#'   c(
+#'     "# one messy analysis file",
+#'     "library(posterior)",
+#'     "requireNamespace(\"brms\")",
+#'     "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+#'     "draws <- as_draws(list(mu = rnorm(10)))",
+#'     "posterior::rhat(draws)",
+#'     "brms::mixture(0.4)",
+#'     "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+#'   ),
+#'   path
+#' )
+#' scan_usage(path, quiet = TRUE)
+#' unlink(path)
 scan_usage <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
@@ -728,6 +745,8 @@ NULL
 #'
 #' @rdname internal_data
 #' @export
+#' @examples
+#' head(stdlib_funs())
 stdlib_funs <- function() {
   # lapply(
   #   c("base", "stats", "utils", "graphics", "grDevices", "methods"),
@@ -746,6 +765,8 @@ stdlib_funs <- function() {
 #'
 #' @rdname internal_data
 #' @export
+#' @examples
+#' scan_skip_dirs()
 scan_skip_dirs <- function() {
   # c(
   #   "renv",

@@ -49,3 +49,23 @@ all recognized as attaching a package.
 The parsing is handled by \code{scan_usage()}; \code{stan_cite()} owns
 the citation lookups.
 }
+\examples{
+path <- tempfile(fileext = ".R")
+writeLines(
+  c(
+    "# one messy analysis file",
+    "library(posterior)",
+    "requireNamespace(\"brms\")",
+    "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+    "draws <- as_draws(list(mu = rnorm(10)))",
+    "posterior::rhat(draws)",
+    "brms::mixture(0.4)",
+    "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+  ),
+  path
+)
+
+stan_cite(path, quiet = TRUE)
+stan_cite(path, format = "bibentry", quiet = TRUE)
+unlink(path)
+}

@@ -23,3 +23,8 @@ Configures \code{rstan} to use available cores and write compiled models to disk
 Prefer \code{setup_interface()} for user-facing setup since it performs argument
 validation and defaults; \code{setup_rstan()} assumes inputs are already checked.
 }
+\examples{
+\dontrun{
+setup_rstan(quiet = TRUE, cores = 2, rstan_auto_write = TRUE)
+}
+}

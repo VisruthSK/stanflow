@@ -5,8 +5,7 @@
 
 #' Conflicts between stanflow and other packages
 #'
-#' This function lists all the conflicts between packages in stanflow
-#' and other loaded packages.
+#' List conflicts between stanflow packages and other attached packages.
 #'
 #' There are several conflicts that are deliberately ignored: `diag`,
 #' `drop`, `match`, `\%in\%`, `mad`, `sd`, and `var` from posterior.
@@ -43,7 +42,17 @@ stanflow_conflicts <- function(only = NULL) {
   conflict_funs
 }
 
+#' Print `stanflow_conflicts`
+#'
+#' @param x A `stanflow_conflicts` object, usually from [stanflow_conflicts()].
+#' @param ... Unused. Included for consistency with [base::print()].
+#' @return Invisibly returns `x`.
+#' @rdname stanflow_conflicts
+#' @method print stanflow_conflicts
 #' @export
+#' @examples
+#' conflicts <- stanflow_conflicts()
+#' print(conflicts)
 print.stanflow_conflicts <- function(x, ...) {
   message <- stanflow_conflict_message(x)
   if (!is.null(message)) {
