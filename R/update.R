@@ -42,76 +42,23 @@ stanflow_deps <- function(
   dev = FALSE,
   check_updates = TRUE
 ) {
-  pkgs <- NULL
-  if (check_updates) {
-    pkgs <- tryCatch(
-      utils::available.packages(repos = stan_repos(dev)),
-      error = function(e) {
-        cli::cli_abort(
-          c(
-            "Unable to reach repositories to check for updates.",
-            "x" = "Package metadata could not be downloaded."
-          )
-        )
-      }
-    )
-  }
+  pkgs <- if (check_updates) .available_packages(dev) else NULL
 
-  if (!is.null(pkgs)) {
-    pkg_deps <- tools::package_dependencies(
+  pkg_deps <- if (is.null(pkgs)) {
+    .description_deps(recursive = recursive, db = utils::installed.packages())
+  } else {
+    tools::package_dependencies(
       "stanflow",
       pkgs,
       which = "most",
       recursive = if (recursive) "strong" else FALSE
-    )
-  } else {
-    pkg_deps <- utils::packageDescription("stanflow") |>
-      with(paste(Depends, Imports, Suggests, sep = ",")) |>
-      strsplit(",") |>
-      unlist(use.names = FALSE) |>
-      gsub("\\s*\\(.*?\\)", "", x = _) |>
-      trimws() |>
-      Filter(function(x) x != "" && x != "R", x = _) |>
-      (\(deps) {
-        if (!recursive) {
-          return(deps)
-        }
-        tools::package_dependencies(
-          deps,
-          utils::installed.packages(),
-          recursive = TRUE
-        ) |>
-          unlist(use.names = FALSE) |>
-          c(deps)
-      })()
+    )[["stanflow"]]
   }
 
-  if (
-    length(pkg_deps) == 0 ||
-      all(lengths(pkg_deps) == 0) ||
-      all(is.na(unlist(pkg_deps)))
-  ) {
+  if (is.null(pkg_deps) || length(pkg_deps) == 0 || all(is.na(pkg_deps))) {
     # TODO: Remove once stanflow is published to a repo used by available.packages()
-    pkg_deps <- utils::packageDescription("stanflow") |>
-      with(paste(Depends, Imports, Suggests, sep = ",")) |>
-      strsplit(",") |>
-      unlist(use.names = FALSE) |>
-      gsub("\\s*\\(.*?\\)", "", x = _) |>
-      trimws() |>
-      Filter(function(x) x != "" && x != "R", x = _) |>
-      (\(deps) {
-        if (!recursive) {
-          return(deps)
-        }
-        tools::package_dependencies(deps, pkgs, recursive = TRUE) |>
-          unlist(use.names = FALSE) |>
-          c(deps)
-      })()
+    pkg_deps <- .description_deps(recursive = recursive, db = pkgs)
   }
-
-  pkg_deps <- pkg_deps |>
-    unlist() |>
-    unique()
 
   ignored <- c(
     "base",
@@ -128,9 +75,16 @@ stanflow_deps <- function(
     "tools",
     "tcltk",
     "utils",
-    "cli"
+    # non-Stan dependencies
+    "cli",
+    "fastmatch",
+    "withr"
   )
-  pkg_deps <- setdiff(pkg_deps, ignored)
+
+  pkg_deps <- pkg_deps |>
+    unlist() |>
+    unique() |>
+    setdiff(ignored)
 
   repo_ver <- if (is.null(pkgs)) {
     rep(NA_character_, length(pkg_deps))
@@ -287,4 +241,66 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
   }
 
   invisible(behind)
+}
+
+#' Fetch repository package metadata for update checks
+#'
+#' @description
+#' Wraps [utils::available.packages()] for `stanflow` update checks and converts
+#' repository access failures into a package-specific error message.
+#'
+#' @param dev Logical. Whether to query the Stan development repository via
+#'   [stan_repos()].
+#'
+#' @return A package database matrix from [utils::available.packages()].
+#' @keywords internal
+.available_packages <- function(dev) {
+  tryCatch(
+    utils::available.packages(repos = stan_repos(dev)),
+    error = function(e) {
+      cli::cli_abort(
+        c(
+          "Unable to reach repositories to check for updates.",
+          "x" = "Package metadata could not be downloaded."
+        )
+      )
+    }
+  )
+}
+
+#' Parse stanflow dependencies from DESCRIPTION
+#'
+#' @description
+#' Reads the `stanflow` package metadata and returns dependency names from
+#' `Depends`, `Imports`, and `Suggests`, dropping version constraints and the
+#' `R` dependency.
+#'
+#' When `recursive = TRUE`, transitive dependencies are resolved with
+#' [tools::package_dependencies()] using the supplied package database.
+#'
+#' @param recursive Logical. Whether to include transitive dependencies.
+#' @param db A package database suitable for [tools::package_dependencies()],
+#'   usually from [utils::available.packages()] or
+#'   [utils::installed.packages()].
+#'
+#' @return A character vector of package names.
+#' @keywords internal
+.description_deps <- function(recursive, db) {
+  utils::packageDescription("stanflow") |>
+    with(paste(Depends, Imports, Suggests, sep = ",")) |>
+    strsplit(",") |>
+    unlist(use.names = FALSE) |>
+    gsub("\\s*\\(.*?\\)", "", x = _) |>
+    trimws() |>
+    Filter(\(x) nzchar(x) && x != "R", x = _) |>
+    (\(deps) {
+      if (!recursive) {
+        return(deps)
+      }
+      c(
+        deps,
+        tools::package_dependencies(deps, db, recursive = TRUE) |>
+          unlist(use.names = FALSE)
+      )
+    })()
 }
