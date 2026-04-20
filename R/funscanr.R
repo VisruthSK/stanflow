@@ -714,8 +714,6 @@ scan_usage <- function(
   list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
 }
 
-# TODO: is this the best way to expose these values?
-
 #' Ignored functions/directories used by scanner
 #'
 #' @name internal_data

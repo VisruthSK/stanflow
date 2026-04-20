@@ -33,6 +33,7 @@ if (length(missing) > 0) {
 
 .stan_citation_pkgs <- new.env(parent = emptyenv())
 .stan_citation_funs <- new.env(parent = emptyenv())
+.stan_citation_pkg_extras <- new.env(parent = emptyenv())
 .stan_citation_pkgs$brms <- c(
   bibentry(
     bibtype = "Article",
@@ -129,6 +130,8 @@ assign_citation <- function(pkg, funs, entries) {
 }
 
 source("data-raw/papers.R")
+.stan_citation_pkg_extras$bayesplot <- gabry2019_vis
+.stan_citation_pkg_extras$posterior <- vehtari2021_rhat
 source("data-raw/bayesplot-citations.R")
 source("data-raw/brms-citations.R")
 source("data-raw/cmdstanr-citations.R")
@@ -250,6 +253,7 @@ save(
   .stan_origin_map,
   .stan_citation_pkgs,
   .stan_citation_funs,
+  .stan_citation_pkg_extras,
   .stan_pkgs,
   .stdlib_funs,
   .stan_pkg_versions,
