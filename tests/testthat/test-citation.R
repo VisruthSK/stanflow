@@ -142,6 +142,16 @@ test_that("all package citations exist", {
   }
 })
 
+test_that("package citations use generated paper entries", {
+  pkg_cite <- getFromNamespace(".pkg_cite", "stanflow")
+
+  bayesplot_bibtex <- utils::toBibtex(pkg_cite("bayesplot"))
+  posterior_bibtex <- utils::toBibtex(pkg_cite("posterior"))
+
+  expect_true(any(grepl("@Article\\{gabry-2019-vis,", bayesplot_bibtex)))
+  expect_true(any(grepl("@Article\\{vehtari-2021-rhat,", posterior_bibtex)))
+})
+
 test_that("cmdstanr function citations follow cmdstanr docs", {
   tmp <- withr::local_tempdir()
   path <- write_file(

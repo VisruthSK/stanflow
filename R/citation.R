@@ -55,7 +55,7 @@ stan_cite <- function(
     (\(k) {
       c(
         # Build package citations by first looking them up in the `.stan_citation_pkgs`
-        # environment generated in `data-raw/sysdata.R`, then appealing to `.build_pkg_citation()`.
+        # environment generated in `data-raw/sysdata.R`, then appealing to `.pkg_cite()`.
         packages = mget(
           k$pkgs,
           envir = .stan_citation_pkgs,
@@ -64,7 +64,7 @@ stan_cite <- function(
         ) |>
           Map(
             \(pkg, entry) {
-              if (is.null(entry)) .build_pkg_citation(pkg) else entry
+              if (is.null(entry)) .pkg_cite(pkg) else entry
             },
             pkg = k$pkgs,
             entry = _
@@ -99,82 +99,37 @@ stan_cite <- function(
 #' Build Stan package bibentry citations
 #'
 #' Helper function to build standardized package citations.
-#' This mostly matches how each Stan R package wants to be
-#' cited.
+#' This mostly matches how each Stan R package wants to be cited.
+#' Some Stan packages have additional paper citations generated in
+#' `data-raw/sysdata.R` and stored in `.stan_citation_pkg_extras`.
 #'
 #' @param pkg Stan package name as a character scalar.
-#' @return A bibentry for citing that package.
+#' @return Vector of bibentries for citing that package.
 #' @keywords internal
 .pkg_cite <- function(pkg) {
-  meta <- packageDescription(pkg)
-  utils::bibentry(
-    bibtype = "Manual",
-    key = pkg,
-    title = meta[["Title"]],
-    author = citation(meta[["Package"]])[[1]]$author,
-    year = sub("-.*", "", meta[["Date"]]),
-    note = sprintf(
-      "R package version %s, https://discourse.mc-stan.org",
-      meta$Version
-    ),
-    # rstan url will point to rstan package site instead of main Stan site here.
-    url = sprintf("https://mc-stan.org/%s/", pkg)
-  )
-}
-
-#' Cite Stan Packages
-#'
-#' Build the appropriate citation for R packages, including papers
-#' needed to cite the package. Equivalent to `.pkg_cite()` for most packages.
-#'
-#' Bayesplot and Posterior have papers in addition to their "typical" software
-#' citation that should be cited when using the package, which is why this exists.
-#'
-#' @param pkg Stan package name as a character scalar.
-#' @return Vector of bibentries to properly cite the provided Stan package
-#' @keywords internal
-.build_pkg_citation <- function(pkg) {
-  # TODO: the two papers are used in papers.R already, reference those instead of rebuilding?
-  c(
-    .pkg_cite(pkg),
-    switch(
-      pkg,
-      bayesplot = utils::bibentry(
-        bibtype = "Article",
-        key = "bayesplot-2019",
-        title = "Visualization in Bayesian workflow",
-        author = c(
-          person("Jonah", "Gabry"),
-          person("Daniel", "Simpson"),
-          person("Aki", "Vehtari"),
-          person("Michael", "Betancourt"),
-          person("Andrew", "Gelman")
+  pkg |>
+    packageDescription() |>
+    (\(meta) {
+      c(
+        utils::bibentry(
+          bibtype = "Manual",
+          key = pkg,
+          title = meta[["Title"]],
+          author = citation(meta[["Package"]])[[1]]$author,
+          year = sub("-.*", "", meta[["Date"]]),
+          note = sprintf(
+            "R package version %s, https://discourse.mc-stan.org",
+            meta$Version
+          ),
+          # rstan url will point to rstan package site instead of main Stan site here.
+          url = sprintf("https://mc-stan.org/%s/", pkg)
         ),
-        year = "2019",
-        journal = "J. R. Stat. Soc. A",
-        volume = 182,
-        issue = 2,
-        pages = "389-402",
-        doi = "10.1111/rssa.12378"
-      ),
-      posterior = utils::bibentry(
-        bibtype = "Article",
-        key = "rhat-2021",
-        title = "Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)",
-        author = c(
-          person("Aki", "Vehtari"),
-          person("Andrew", "Gelman"),
-          person("Daniel", "Simpson"),
-          person("Bob", "Carpenter"),
-          person("Paul-Christian", "B\\\"urkner")
-        ),
-        journal = "Bayesian Analysis",
-        year = "2021",
-        volume = "16",
-        number = "2",
-        pages = "667-718"
-      ),
-      NULL
-    )
-  )
+        mget(
+          pkg,
+          envir = .stan_citation_pkg_extras,
+          inherits = TRUE,
+          ifnotfound = list(NULL)
+        )[[1L]]
+      )
+    })()
 }

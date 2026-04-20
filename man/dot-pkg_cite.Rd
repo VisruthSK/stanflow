@@ -10,11 +10,12 @@
 \item{pkg}{Stan package name as a character scalar.}
 }
 \value{
-A bibentry for citing that package.
+Vector of bibentries for citing that package.
 }
 \description{
 Helper function to build standardized package citations.
-This mostly matches how each Stan R package wants to be
-cited.
+This mostly matches how each Stan R package wants to be cited.
+Some Stan packages have additional paper citations generated in
+\code{data-raw/sysdata.R} and stored in \code{.stan_citation_pkg_extras}.
 }
 \keyword{internal}
