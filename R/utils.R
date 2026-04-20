@@ -42,6 +42,9 @@ wrapped_startup <- function(msg, ...) {
 #' @param dev Include the development r-universe repo--don't use this unless you need the latest commits.
 #' @return Character vector of repository URLs.
 #' @export
+#' @examples
+#' stan_repos()
+#' stan_repos(dev = TRUE)
 stan_repos <- function(dev = FALSE) {
   if (dev) {
     c(StanRUniverse = "https://stan-dev.r-universe.dev", getOption("repos"))

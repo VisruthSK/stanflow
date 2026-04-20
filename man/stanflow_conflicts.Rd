@@ -2,17 +2,26 @@
 % Please edit documentation in R/conflicts.R
 \name{stanflow_conflicts}
 \alias{stanflow_conflicts}
+\alias{print.stanflow_conflicts}
 \title{Conflicts between stanflow and other packages}
 \usage{
 stanflow_conflicts(only = NULL)
+
+\method{print}{stanflow_conflicts}(x, ...)
 }
 \arguments{
 \item{only}{Defaults to \code{NULL}. Set this to a character vector to restrict to conflicts only
 between the provided packages and loaded stanflow packages.}
+
+\item{x}{A \code{stanflow_conflicts} object, usually from \code{\link[=stanflow_conflicts]{stanflow_conflicts()}}.}
+
+\item{...}{Unused. Included for consistency with \code{\link[base:print]{base::print()}}.}
+}
+\value{
+Invisibly returns \code{x}.
 }
 \description{
-This function lists all the conflicts between packages in stanflow
-and other loaded packages.
+List conflicts between stanflow packages and other attached packages.
 }
 \details{
 There are several conflicts that are deliberately ignored: \code{diag},
@@ -23,4 +32,6 @@ Adapted from \code{\link[tidyverse:tidyverse_conflicts]{tidyverse::tidyverse_con
 \examples{
 stanflow_conflicts()
 stanflow_conflicts(c("base"))
+conflicts <- stanflow_conflicts()
+print(conflicts)
 }

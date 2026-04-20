@@ -2,7 +2,7 @@
 % Please edit documentation in R/funscanr.R
 \name{scan_usage}
 \alias{scan_usage}
-\title{Find used Functions and Packages}
+\title{Find used functions and packages}
 \usage{
 scan_usage(
   path = ".",
@@ -64,4 +64,22 @@ attached via \code{library()} or \code{require()} in the same file. Attaching
 \code{{stanflow}} is hardcoded as attaching its core packages (\code{bayesplot}, \code{loo},
 \code{posterior}, \code{projpred}, \code{shinystan}). Known reexports are remapped to their
 origin packages; missing mappings fall back to the resolved package.
+}
+\examples{
+path <- tempfile(fileext = ".R")
+writeLines(
+  c(
+    "# one messy analysis file",
+    "library(posterior)",
+    "requireNamespace(\"brms\")",
+    "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+    "draws <- as_draws(list(mu = rnorm(10)))",
+    "posterior::rhat(draws)",
+    "brms::mixture(0.4)",
+    "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+  ),
+  path
+)
+scan_usage(path, quiet = TRUE)
+unlink(path)
 }

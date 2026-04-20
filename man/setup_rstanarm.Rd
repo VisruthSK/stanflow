@@ -21,3 +21,8 @@ Configures \code{rstanarm} to use available cores.
 Prefer \code{setup_interface()} for user-facing setup since it performs argument
 validation and defaults; \code{setup_rstanarm()} assumes inputs are already checked.
 }
+\examples{
+\dontrun{
+setup_rstanarm(quiet = TRUE, cores = 2)
+}
+}

@@ -29,3 +29,14 @@ CmdStan if needed. Prefer \code{setup_interface()} for user-facing setup since
 it performs argument validation and defaults; \code{setup_cmdstanr()} assumes
 inputs are already checked.
 }
+\examples{
+\dontrun{
+setup_cmdstanr(
+  quiet = TRUE,
+  force = TRUE,
+  reinstall = FALSE,
+  check_updates = FALSE,
+  cores = 2
+)
+}
+}
