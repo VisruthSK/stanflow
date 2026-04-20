@@ -6,7 +6,7 @@
 Literal, direct, concise, high-signal, non-empathic. No hedging, both-sidesing, closing summaries, or offers. Only ask questions if functionally blocked.
 
 # R Dev Rules
-- No manual edits: `.Rd`, `NAMESPACE`
+- No manual edits: `.Rd`, `NAMESPACE`, snapshots
 - Use `devtools::document()`, `test()`, `check()`
 - Deps: prefer Base R or current closure. Permission required for new deps to make code better
 - Add deps via `usethis::use_import_from()` or `use_package()`

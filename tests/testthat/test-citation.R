@@ -46,12 +46,12 @@ test_that("stan_cite returns bibtex or bibentry", {
     year = "2021"
   )
 
-  bibtex <- stan_cite(path)
+  bibtex <- stan_cite(path, quiet = TRUE)
   expect_true(is.character(bibtex))
   expect_true(any(grepl("Posterior", bibtex, fixed = TRUE)))
   expect_true(any(grepl("As Draws", bibtex, fixed = TRUE)))
 
-  bibentry <- stan_cite(path, format = "bibentry")
+  bibentry <- stan_cite(path, format = "bibentry", quiet = TRUE)
   expect_true(inherits(bibentry, "bibentry"))
   expect_true(any(grepl("Posterior", utils::toBibtex(bibentry), fixed = TRUE)))
 })
@@ -60,7 +60,7 @@ test_that("stan_cite always cites stanflow and R", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
 
-  citations <- stan_cite(path, format = "bibtex")
+  citations <- stan_cite(path, format = "bibtex", quiet = TRUE)
 
   expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
   expect_true(
@@ -83,7 +83,7 @@ test_that("stan_cite returns empty when no citations are found", {
     .package = "base"
   )
 
-  out <- stan_cite(path, format = "bibtex")
+  out <- stan_cite(path, format = "bibtex", quiet = TRUE)
   expect_identical(out, character())
 })
 
@@ -91,12 +91,12 @@ test_that("stan_cite quiet suppresses cli messages", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
 
-  noisy <- testthat::capture_messages(
+  noisy <- capture_messages(
     stan_cite(path, format = "bibtex", quiet = FALSE)
   )
   expect_true(length(noisy) > 0)
 
-  silent <- testthat::capture_messages(
+  silent <- capture_messages(
     stan_cite(path, format = "bibtex", quiet = TRUE)
   )
   expect_equal(silent, character())
@@ -107,11 +107,11 @@ test_that("stan_cite defaults to stanflow.quiet option", {
   path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
 
   withr::local_options(list(stanflow.quiet = TRUE))
-  silent <- testthat::capture_messages(stan_cite(path, format = "bibtex"))
+  silent <- capture_messages(stan_cite(path, format = "bibtex"))
   expect_equal(silent, character())
 
   withr::local_options(list(stanflow.quiet = FALSE))
-  noisy <- testthat::capture_messages(stan_cite(path, format = "bibtex"))
+  noisy <- capture_messages(stan_cite(path, format = "bibtex"))
   expect_true(length(noisy) > 0)
 })
 
@@ -135,7 +135,7 @@ test_that("all package citations exist", {
     )
   )
 
-  citations <- stan_cite(path, format = "bibtex")
+  citations <- stan_cite(path, format = "bibtex", quiet = TRUE)
   expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
   for (pkg in expected) {
     expect_true(any(grepl(pkg, citations, fixed = TRUE)))
@@ -160,7 +160,7 @@ test_that("cmdstanr function citations follow cmdstanr docs", {
     )
   )
 
-  citations <- stan_cite(path, format = "bibtex")
+  citations <- stan_cite(path, format = "bibtex", quiet = TRUE)
 
   expect_true(any(grepl("The No-U-Turn Sampler", citations, fixed = TRUE)))
   expect_true(any(grepl(

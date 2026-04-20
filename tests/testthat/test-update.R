@@ -55,16 +55,10 @@ test_that("stanflow_update lists behind packages", {
     run_update_with(behind, function() stanflow_update())
   )
 
+  withr::local_output_sink(withr::local_tempfile())
   result <- run_update_with(
     behind,
-    function() {
-      tmp <- tempfile()
-      sink(tmp)
-      out <- stanflow_update()
-      sink()
-      unlink(tmp)
-      out
-    }
+    function() stanflow_update()
   )
 
   expect_identical(result, behind)
@@ -84,6 +78,7 @@ test_that("stanflow_update aborts when user declines interactive update", {
     stringsAsFactors = FALSE
   )
 
+  withr::local_output_sink(withr::local_tempfile())
   with_mocked_bindings(
     stanflow_deps = function(...) behind,
     with_mocked_bindings(
@@ -114,6 +109,7 @@ test_that("stanflow_update installs when user accepts interactive prompt", {
   )
   called <- list()
 
+  withr::local_output_sink(withr::local_tempfile())
   result <- with_mocked_bindings(
     stanflow_deps = function(...) behind,
     with_mocked_bindings(
@@ -422,16 +418,10 @@ test_that("stanflow_update surfaces transitive dependencies (loo -> matrixStats)
     )
   )
 
+  withr::local_output_sink(withr::local_tempfile())
   result <- run_update_with(
     recursive,
-    function() {
-      tmp <- tempfile()
-      sink(tmp)
-      out <- stanflow_update(recursive = TRUE)
-      sink()
-      unlink(tmp)
-      out
-    },
+    function() stanflow_update(recursive = TRUE),
     check = function(recursive_flag, dev_flag) {
       expect_true(recursive_flag)
       expect_false(dev_flag)
@@ -456,23 +446,23 @@ test_that("stanflow_update reports packages that need reinstall after warnings",
     stringsAsFactors = FALSE
   )
 
-  output <- with_mocked_bindings(
-    stanflow_deps = function(...) behind,
+  expect_snapshot_output(
     with_mocked_bindings(
-      menu = function(...) 1,
-      install.packages = function(...) {
-        warning("cannot remove prior installation of package 'cmdstanr'")
-        warning("some other warning")
-        warning("cannot remove prior installation of package 'cmdstanr'")
-        warning("cannot remove prior installation of package 'posterior'")
-      },
-      capture.output(suppressWarnings(stanflow_update())),
-      .package = "utils"
-    ),
-    .package = "stanflow"
+      stanflow_deps = function(...) behind,
+      with_mocked_bindings(
+        menu = function(...) 1,
+        install.packages = function(...) {
+          warning("cannot remove prior installation of package 'cmdstanr'")
+          warning("some other warning")
+          warning("cannot remove prior installation of package 'cmdstanr'")
+          warning("cannot remove prior installation of package 'posterior'")
+        },
+        suppressWarnings(stanflow_update()),
+        .package = "utils"
+      ),
+      .package = "stanflow"
+    )
   )
-
-  expect_snapshot_output(cat(output, sep = "\n"))
 })
 
 test_that("stanflow_update uses Stan universe when dev = TRUE", {
@@ -499,16 +489,10 @@ test_that("stanflow_update uses Stan universe when dev = TRUE", {
     )
   )
 
+  withr::local_output_sink(withr::local_tempfile())
   result <- run_update_with(
     behind,
-    function() {
-      tmp <- tempfile()
-      sink(tmp)
-      out <- stanflow_update(dev = TRUE)
-      sink()
-      unlink(tmp)
-      out
-    },
+    function() stanflow_update(dev = TRUE),
     check = function(recursive_flag, dev_flag) {
       expect_false(recursive_flag)
       expect_true(dev_flag)

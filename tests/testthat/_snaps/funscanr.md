@@ -101,14 +101,6 @@
     `path` must be a single directory or a vector of files.
     x Mixed directories and files or multiple directories are not supported.
 
-# scan_usage alerts full paths for file vectors
-
-    
-
-# scan_usage alerts full paths for directories
-
-    
-
 # scan_usage errors when mixing directories and files
 
     `path` must be a single directory or a vector of files.

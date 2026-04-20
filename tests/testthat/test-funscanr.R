@@ -667,7 +667,7 @@ test_that("scan_usage handles a single file path", {
       "as_draws(1)"
     )
   )
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
   expect_true(inherits(res, "scan_usage"))
   expect_equal(res$packages, "posterior")
   expect_equal(res$functions, "posterior::as_draws")
@@ -693,7 +693,7 @@ test_that("scan_usage handles modern syntax and Windows line endings", {
     useBytes = TRUE
   )
 
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
   expect_true("posterior" %in% res$packages)
   expect_equal(res$functions, expected_key)
 })
@@ -708,7 +708,7 @@ test_that("scan_usage aborts on parse errors in strict mode", {
   )
 
   expect_error(
-    scan_usage(path, strict = TRUE),
+    scan_usage(path, strict = TRUE, quiet = TRUE),
     "Failed to parse"
   )
 })
@@ -760,7 +760,7 @@ test_that("scan_usage strict aborts on ambiguous unqualified calls", {
     )
   )
 
-  expect_snapshot_error(scan_usage(path, strict = TRUE))
+  expect_snapshot_error(scan_usage(path, strict = TRUE, quiet = TRUE))
 })
 
 test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
@@ -811,7 +811,7 @@ test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
     )
   )
 
-  expect_snapshot_error(scan_usage(path, strict = TRUE))
+  expect_snapshot_error(scan_usage(path, strict = TRUE, quiet = TRUE))
 })
 
 test_that("scan_usage warns on ambiguous calls in non-strict mode", {
@@ -830,6 +830,7 @@ test_that("scan_usage warns on ambiguous calls in non-strict mode", {
     res <- scan_usage(
       path,
       strict = FALSE,
+      quiet = TRUE,
       allowed_packages = c("pkgA", "pkgB"),
       export_index = list(foo = c("pkgA", "pkgB")),
       origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
@@ -917,7 +918,7 @@ test_that("scan_usage returns empty results for non-Stan files", {
       "x"
     )
   )
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
   expect_equal(res$packages, character())
   expect_equal(res$functions, character())
 })
@@ -933,7 +934,7 @@ test_that("scan_usage ignores unqualified Stan exports without attachment", {
     file.path(tmp, "plain.R"),
     "mixture(1)"
   )
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
   expect_equal(res$packages, character())
   expect_equal(res$functions, character())
 })
@@ -955,7 +956,7 @@ test_that("scan_usage supports multiple file paths", {
     )
   )
 
-  res <- scan_usage(c(path1, path2))
+  res <- scan_usage(c(path1, path2), quiet = TRUE)
 
   expected_keys <- unique(na.omit(c(
     resolve_origin_key("posterior", "as_draws"),
@@ -975,8 +976,8 @@ test_that("scan_usage supports multiple file paths", {
 test_that("scan_usage handles faux_proj directory tree", {
   skip_if_not_installed("knitr")
 
-  faux_path <- testthat::test_path("faux_proj")
-  res <- scan_usage(faux_path)
+  faux_path <- test_path("faux_proj")
+  res <- scan_usage(faux_path, quiet = TRUE)
 
   expected_cmdstanr_funs <- sort(c(
     "cmdstanr::cmdstan_model",
@@ -1160,7 +1161,7 @@ test_that("scan_usage attributes unqualified calls only in files attaching Stan 
     )
   )
 
-  res <- scan_usage(c(path1, path2))
+  res <- scan_usage(c(path1, path2), quiet = TRUE)
 
   expected_key <- resolve_origin_key("brms", "mixture")
   expected_functions <- if (is.na(expected_key)) character() else expected_key
@@ -1185,7 +1186,7 @@ test_that("scan_usage treats stanflow attachment as core packages", {
     )
   )
 
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
 
   expected_keys <- unique(na.omit(c(
     resolve_origin_key("posterior", "as_draws_df"),
@@ -1216,7 +1217,7 @@ test_that("scan_usage treats require(stanflow) as core attachment", {
     )
   )
 
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
 
   expected_keys <- unique(na.omit(c(
     resolve_origin_key("posterior", "as_draws_df"),
@@ -1243,7 +1244,7 @@ test_that("scan_usage does not treat requireNamespace(stanflow) as core attachme
     )
   )
 
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
 
   expect_true("stanflow" %in% res$packages)
   expect_false(any(
@@ -1271,7 +1272,7 @@ test_that("scan_usage handles stanflow attachment in qmd", {
     )
   )
 
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
 
   expected_key <- resolve_origin_key("loo", "loo")
   expected_keys <- if (is.na(expected_key)) character() else expected_key
@@ -1301,7 +1302,7 @@ test_that("scan_usage keeps namespaced calls when unqualified calls are ignored"
     )
   )
 
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
 
   expect_true(setequal(res$functions, paste0("brms::", fun)))
   expect_true("brms" %in% res$packages)
@@ -1362,7 +1363,7 @@ test_that("scan_usage handles projects with renv/packrat and real R folder", {
       "logit(1)"
     )
   )
-  res <- scan_usage(tmp)
+  res <- scan_usage(tmp, quiet = TRUE)
 
   expected_keys <- unique(na.omit(c(
     resolve_origin_key("posterior", "as_draws"),
@@ -1392,7 +1393,7 @@ test_that("scan_usage captures ::: calls without counting unqualified usage", {
     )
   )
 
-  res <- scan_usage(path)
+  res <- scan_usage(path, quiet = TRUE)
 
   expect_true(setequal(res$functions, "brms::as_draws"))
   expect_true("brms" %in% res$packages)
@@ -1405,7 +1406,7 @@ test_that("scan_usage errors on multiple directories", {
   dir.create(dir1)
   dir.create(dir2)
 
-  expect_snapshot_error(scan_usage(c(dir1, dir2)))
+  expect_snapshot_error(scan_usage(c(dir1, dir2), quiet = TRUE))
 })
 
 test_that("scan_usage alerts full paths for file vectors", {
@@ -1425,10 +1426,8 @@ test_that("scan_usage alerts full paths for file vectors", {
     )
   )
 
-  res <- NULL
-  expect_snapshot_output({
-    res <- scan_usage(c(path1, path2))
-  })
+  withr::local_output_sink(withr::local_tempfile())
+  res <- scan_usage(c(path1, path2), quiet = TRUE)
 
   expected_pkgs <- unique(na.omit(c(
     "posterior",
@@ -1452,10 +1451,8 @@ test_that("scan_usage alerts full paths for directories", {
     )
   )
 
-  res <- NULL
-  expect_snapshot_output({
-    res <- scan_usage(dir_path)
-  })
+  withr::local_output_sink(withr::local_tempfile())
+  res <- scan_usage(dir_path, quiet = TRUE)
 
   expected_pkgs <- unique(na.omit(c(
     "brms",
@@ -1477,7 +1474,7 @@ test_that("scan_usage errors when mixing directories and files", {
     )
   )
 
-  expect_snapshot_error(scan_usage(c(dir_path, file_path)))
+  expect_snapshot_error(scan_usage(c(dir_path, file_path), quiet = TRUE))
 })
 
 test_that("scan_usage scans directories with mixed inputs", {
@@ -1517,7 +1514,7 @@ test_that("scan_usage scans directories with mixed inputs", {
   )
   res <- NULL
   expect_warning(
-    res <- scan_usage(tmp),
+    res <- scan_usage(tmp, quiet = TRUE),
     "Failed to parse"
   )
 
@@ -1555,7 +1552,7 @@ test_that("scan_usage skips default directories", {
     "1 + 1"
   )
 
-  res <- scan_usage(tmp)
+  res <- scan_usage(tmp, quiet = TRUE)
 
   expect_equal(res$packages, character())
   expect_equal(res$functions, character())
@@ -1577,8 +1574,8 @@ test_that("scan_usage respects custom skip_dirs", {
     "1 + 1"
   )
 
-  res_default <- scan_usage(tmp)
-  res_custom <- scan_usage(tmp, skip_dirs = "vendor")
+  res_default <- scan_usage(tmp, quiet = TRUE)
+  res_custom <- scan_usage(tmp, skip_dirs = "vendor", quiet = TRUE)
 
   expected_key <- resolve_origin_key("brms", "fixef")
   expected_functions <- if (is.na(expected_key)) character() else expected_key
@@ -1605,7 +1602,7 @@ test_that("scan_usage does not skip similar directory names", {
     )
   )
 
-  res <- scan_usage(tmp)
+  res <- scan_usage(tmp, quiet = TRUE)
 
   expect_true(setequal(res$packages, "rstanarm"))
   expect_true(setequal(res$functions, "rstanarm::logit"))
@@ -1627,7 +1624,7 @@ test_that("scan_usage skip_dirs match nested directories", {
     "1 + 1"
   )
 
-  res <- scan_usage(tmp)
+  res <- scan_usage(tmp, quiet = TRUE)
 
   expect_equal(res$packages, character())
   expect_equal(res$functions, character())
@@ -1645,7 +1642,7 @@ test_that("scan_usage keeps exact file inputs regardless of skip_dirs", {
     )
   )
 
-  res <- scan_usage(file_path)
+  res <- scan_usage(file_path, quiet = TRUE)
 
   expect_true(setequal(res$packages, "posterior"))
   expect_true(setequal(res$functions, "posterior::as_draws"))
@@ -1663,7 +1660,7 @@ test_that("scan_usage handles empty skip_dirs without filtering", {
     )
   )
 
-  res <- scan_usage(tmp, skip_dirs = character())
+  res <- scan_usage(tmp, skip_dirs = character(), quiet = TRUE)
 
   expect_true(setequal(res$packages, "rstan"))
   expect_true(setequal(res$functions, "rstan::extract"))
@@ -1688,7 +1685,7 @@ test_that("scan_usage skips dotted caches but not filenames", {
     )
   )
 
-  res <- scan_usage(tmp)
+  res <- scan_usage(tmp, quiet = TRUE)
 
   expect_true(setequal(res$packages, "cmdstanr"))
   expect_true(setequal(res$functions, "cmdstanr::cmdstan_model"))
@@ -1697,7 +1694,7 @@ test_that("scan_usage skips dotted caches but not filenames", {
 test_that("scan_usage returns empty vectors for empty directories", {
   tmp <- withr::local_tempdir()
   expect_error(
-    scan_usage(tmp),
+    scan_usage(tmp, quiet = TRUE),
     "No files found"
   )
 })
@@ -1712,7 +1709,7 @@ test_that("scan_usage ignores non-R files in directories", {
     )
   )
   expect_error(
-    scan_usage(tmp),
+    scan_usage(tmp, quiet = TRUE),
     "No files found"
   )
 })
@@ -2122,10 +2119,10 @@ test_that("scan_usage quiet suppresses cli messages", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
 
-  noisy <- testthat::capture_messages(scan_usage(path, quiet = FALSE))
+  noisy <- capture_messages(scan_usage(path, quiet = FALSE))
   expect_true(length(noisy) > 0)
 
-  silent <- testthat::capture_messages(scan_usage(path, quiet = TRUE))
+  silent <- capture_messages(scan_usage(path, quiet = TRUE))
   expect_equal(silent, character())
 })
 
@@ -2134,10 +2131,10 @@ test_that("scan_usage defaults to stanflow.quiet option", {
   path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
 
   withr::local_options(list(stanflow.quiet = TRUE))
-  silent <- testthat::capture_messages(scan_usage(path))
+  silent <- capture_messages(scan_usage(path))
   expect_equal(silent, character())
 
   withr::local_options(list(stanflow.quiet = FALSE))
-  noisy <- testthat::capture_messages(scan_usage(path))
+  noisy <- capture_messages(scan_usage(path))
   expect_true(length(noisy) > 0)
 })
