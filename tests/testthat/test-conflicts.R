@@ -83,9 +83,10 @@ test_that("print.stanflow_conflicts returns input invisibly", {
     class = "stanflow_conflicts"
   )
 
-  withr::local_output_sink(withr::local_tempfile())
-  res <- print(conflicts)
-  expect_identical(res, conflicts)
+  expect_snapshot_output({
+    res <- print(conflicts)
+    expect_identical(res, conflicts)
+  })
 })
 
 test_that("confirm_conflict ignores non-function objects", {
