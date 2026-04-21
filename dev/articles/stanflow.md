@@ -236,7 +236,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1504488 secs
+#> Time difference of 0.1523061 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
