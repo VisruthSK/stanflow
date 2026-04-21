@@ -188,16 +188,14 @@ scan_usage <- function(
   if (ext == "r") {
     return(paste(readLines(file, warn = FALSE), collapse = "\n"))
   }
-
-  tmp <- tempfile(fileext = ".R")
-  on.exit(unlink(tmp), add = TRUE)
-
   if (!requireNamespace("knitr", quietly = TRUE)) {
     cli::cli_abort(c(
       "Package {.pkg knitr} is required to parse R Markdown ({.file .Rmd}) or Quarto ({.file .qmd}) files.",
       "i" = "Please install it with {.code install.packages('knitr')}."
     ))
   }
+
+  tmp <- withr::local_tempfile(fileext = ".R")
   knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
 
   paste(readLines(tmp, warn = FALSE), collapse = "\n")

@@ -1,29 +1,5 @@
 library(touchstone)
 
-# In CI, ignore Additional_repositories from DESCRIPTION
-if (Sys.getenv("GITHUB_ACTIONS") == "true") {
-  ns <- asNamespace("remotes")
-  if (exists("load_pkg_description", envir = ns, inherits = FALSE)) {
-    locked <- bindingIsLocked("load_pkg_description", ns)
-    if (locked) {
-      unlockBinding("load_pkg_description", ns)
-    }
-    orig <- get("load_pkg_description", envir = ns)
-    assign(
-      "load_pkg_description",
-      function(path) {
-        desc <- orig(path)
-        desc$additional_repositories <- NULL
-        desc
-      },
-      envir = ns
-    )
-    if (locked) {
-      lockBinding("load_pkg_description", ns)
-    }
-  }
-}
-
 # Install both branches to benchmark
 branch_install()
 
