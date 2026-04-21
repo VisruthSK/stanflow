@@ -3,6 +3,16 @@ name: check-interfaces
 on:
   push:
     branches: [main]
+    paths:
+      - ".github/workflows/interfaces.yaml"
+      - "DESCRIPTION"
+      - "NAMESPACE"
+      - "R/interfaces.R"
+      - "R/utils.R"
+      - "tests/testthat/helper-interfaces-ci.R"
+      - "tests/testthat/test-interfaces.R"
+      - "tests/testthat/test-interfaces-*-ci.R"
+      - "tests/testthat/test-cmdstanr-ci.R"
   pull_request:
     paths:
       - ".github/workflows/interfaces.yaml"
@@ -10,6 +20,8 @@ on:
       - "NAMESPACE"
       - "R/interfaces.R"
       - "R/utils.R"
+      - "tests/testthat/helper-interfaces-ci.R"
+      - "tests/testthat/test-interfaces.R"
       - "tests/testthat/test-interfaces-*-ci.R"
       - "tests/testthat/test-cmdstanr-ci.R"
   workflow_dispatch:

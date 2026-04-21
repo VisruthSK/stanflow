@@ -53,7 +53,7 @@ scan_usage <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
   strict = FALSE,
-  skip_dirs = .scan_skip_dirs,
+  skip_dirs = unique(c(".git", .scan_skip_dirs)),
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map,
