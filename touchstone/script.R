@@ -5,30 +5,22 @@ branch_install()
 
 # Clone pinned repositories for benchmarking
 base_dir <- file.path("touchstone", "sources")
+dir.create(base_dir, recursive = TRUE, showWarnings = FALSE)
+
 repos <- list(
-  list(
-    url = "https://github.com/paul-buerkner/brms.git",
-    ref = "v2.22.0"
-  ),
-  list(
-    url = "https://github.com/stan-dev/rstan.git",
-    ref = "v2.32.2"
-  ),
   list(
     url = "https://github.com/tidyverse/ggplot2.git",
     ref = "v4.0.2"
   ),
   list(
-    url = "https://github.com/stan-dev/projpred.git",
-    ref = "v2.10.0"
+    url = "https://github.com/ASKurz/Statistical_Rethinking_with_brms_ggplot2_and_the_tidyverse.git",
+    ref = "1.4.0"
   ),
   list(
     url = "https://github.com/stan-dev/loo.git",
     ref = "v2.9.0"
   )
 )
-
-dir.create(base_dir, recursive = TRUE, showWarnings = FALSE)
 
 clone_repo <- function(url, ref, dir) {
   repo_path <- file.path(base_dir, dir)
