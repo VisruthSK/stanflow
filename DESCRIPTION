@@ -23,7 +23,6 @@ Imports:
     bayesplot,
     cli,
     fastmatch,
-    fs,
     loo,
     posterior,
     projpred,

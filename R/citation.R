@@ -51,7 +51,7 @@ stan_cite <- function(
   path = ".",
   strict = TRUE,
   format = c("bibtex", "bibentry"),
-  skip_dirs = unique(c(".git", .scan_skip_dirs)),
+  skip_dirs = .scan_skip_dirs,
   ignore_unqualified_functions = .stdlib_funs,
   quiet = getOption("stanflow.quiet", FALSE)
 ) {

@@ -53,7 +53,7 @@ scan_usage <- function(
   path = ".",
   ignore_unqualified_functions = .stdlib_funs,
   strict = FALSE,
-  skip_dirs = unique(c(".git", .scan_skip_dirs)),
+  skip_dirs = .scan_skip_dirs,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map,
@@ -61,8 +61,8 @@ scan_usage <- function(
 ) {
   local_cli_quiet(quiet)
 
-  paths <- as.character(fs::path_tidy(fs::path_real(path)))
-  dir_flags <- fs::dir_exists(paths)
+  paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
+  dir_flags <- dir.exists(paths)
 
   files <- if (length(paths) == 1L && dir_flags) {
     dir_path <- paths[[1L]]
@@ -141,17 +141,22 @@ scan_usage <- function(
 }
 
 .scan_dir_walk <- function(path, skip_dirs, file_cb) {
-  entries <- as.character(fs::dir_ls(path, all = TRUE, fail = FALSE))
+  entries <- list.files(
+    path,
+    all.files = TRUE,
+    full.names = TRUE,
+    no.. = TRUE
+  )
   if (!length(entries)) {
     return(invisible(NULL))
   }
 
-  is_dir <- fs::dir_exists(entries)
+  is_dir <- dir.exists(entries)
 
   if (any(is_dir)) {
     dirs <- entries[is_dir]
     if (length(skip_dirs)) {
-      keep <- is.na(fastmatch::fmatch(fs::path_file(dirs), skip_dirs))
+      keep <- is.na(fastmatch::fmatch(basename(dirs), skip_dirs))
       dirs <- dirs[keep]
     }
     if (length(dirs)) {
@@ -169,7 +174,7 @@ scan_usage <- function(
 }
 
 .scan_dir_files <- function(dir_path, skip_dirs) {
-  dir_path <- as.character(fs::path_tidy(fs::path_real(dir_path)))
+  dir_path <- normalizePath(dir_path, winslash = "/", mustWork = TRUE)
   files <- character()
   n <- 0L
 
@@ -180,14 +185,14 @@ scan_usage <- function(
     }
 
     idx <- seq.int(n + 1L, n + length(code_files))
-    files[idx] <<- as.character(code_files)
+    files[idx] <<- code_files
     n <<- idx[length(idx)]
 
     invisible(NULL)
   }
 
   .scan_dir_walk(dir_path, skip_dirs, add_code_files)
-  as.character(fs::path_tidy(fs::path_norm(files)))
+  normalizePath(files, winslash = "/", mustWork = FALSE)
 }
 
 .collect_unique <- function(hits, field) {
@@ -199,7 +204,9 @@ scan_usage <- function(
 }
 
 .extract_code <- function(file) {
-  ext <- tolower(fs::path_ext(file))
+  ext <- file |>
+    sub(".*\\.", "", x = _) |>
+    tolower()
 
   if (!ext %in% c("r", "rmd", "qmd")) {
     cli::cli_abort(c(
