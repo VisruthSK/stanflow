@@ -29,7 +29,6 @@ jobs:
           - { os: macos-15-intel, r: "release" }
           - { os: windows-latest, r: "devel" }
           - { os: windows-latest, r: "release" }
-          - { os: windows-2022, r: "4.2" }
           - { os: windows-latest, r: "oldrel" }
           - { os: ubuntu-latest, r: "devel" }
           - { os: ubuntu-latest, r: "release" }
