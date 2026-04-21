@@ -39,6 +39,7 @@ jobs:
       R_REPOS: https://production.r-multiverse.org/2025-12-15,${{ matrix.config.rspm }}
       RENV_CONFIG_REPOS_OVERRIDE: https://production.r-multiverse.org/2025-12-15,${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      USE_BUNDLED_LIBUV: 1
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
