@@ -3,24 +3,6 @@
     Unsupported file extension: "txt".
     i Supported extensions are '.R', '.Rmd', and '.qmd'.
 
-# scan_usage strict aborts on ambiguous unqualified calls
-
-    Cannot reliably detect which packages some functions are from.
-    x Ambiguous functions: `ess_bulk()`, `rhat()`
-    i Please namespace them (`pkg::function()`) and rerun or set `strict = FALSE`.
-
-# scan_usage warns about multiple ambiguous calls in strict mode
-
-    Cannot reliably detect which packages some functions are from.
-    x Ambiguous functions: `ess_bulk()`, `rhat()`
-    i Please namespace them (`pkg::function()`) and rerun or set `strict = FALSE`.
-
-# scan_usage warns on ambiguous calls in non-strict mode
-
-    Cannot reliably detect which packages some functions are from.
-    x Ambiguous functions: `foo()`
-    i Please namespace them (`pkg::function()`) and rerun or set `strict = FALSE`.
-
 # print.scan_usage shows functions with no packages
 
     $packages

@@ -407,7 +407,6 @@ test_that(".scan_tokens resolves ambiguous invoked member methods by attachment 
   hits <- .scan_tokens(
     paste(code, collapse = "\n"),
     stdlib_funs(),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB", "pkgC"),
     export_index = list(train_model = c("pkgA", "pkgB", "pkgC")),
     origin_map = c(
@@ -422,7 +421,7 @@ test_that(".scan_tokens resolves ambiguous invoked member methods by attachment 
   expect_identical(hits$ambiguous, character())
 })
 
-test_that(".scan_tokens records ambiguous invoked member methods in strict mode", {
+test_that(".scan_tokens resolves attachment-ordered member methods in strict mode", {
   code <- c(
     "library(pkgA)",
     "library(pkgB)",
@@ -433,7 +432,31 @@ test_that(".scan_tokens records ambiguous invoked member methods in strict mode"
   hits <- .scan_tokens(
     paste(code, collapse = "\n"),
     stdlib_funs(),
-    strict = TRUE,
+    allowed_packages = c("pkgA", "pkgB", "pkgC"),
+    export_index = list(train_model = c("pkgA", "pkgB", "pkgC")),
+    origin_map = c(
+      "pkgA::train_model" = "pkgA",
+      "pkgB::train_model" = "pkgB",
+      "pkgC::train_model" = "pkgC"
+    )
+  )
+
+  expect_true(all(c("pkgA", "pkgB", "pkgC") %in% hits$pkgs))
+  expect_equal(hits$keys, "pkgC::train_model")
+  expect_identical(hits$ambiguous, character())
+})
+
+test_that(".scan_tokens keeps invoked member methods ambiguous in strict mode when no attachment resolves them", {
+  code <- c(
+    "obj$train_model(1)",
+    "library(pkgA)",
+    "library(pkgB)",
+    "library(pkgC)"
+  )
+
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    stdlib_funs(),
     allowed_packages = c("pkgA", "pkgB", "pkgC"),
     export_index = list(train_model = c("pkgA", "pkgB", "pkgC")),
     origin_map = c(
@@ -491,11 +514,10 @@ test_that(".scan_tokens records ambiguous origins", {
     skip("No ambiguous functions found in installed packages.")
   }
 
-  code <- c(paste0("library(", pkgs, ")"), paste0(fun, "(1)"))
+  code <- c(paste0(fun, "(1)"), paste0("library(", pkgs, ")"))
   hits <- .scan_tokens(
     paste(code, collapse = "\n"),
     stdlib_funs(),
-    strict = TRUE
   )
 
   expect_equal(hits$keys, character())
@@ -698,7 +720,7 @@ test_that("scan_usage handles modern syntax and Windows line endings", {
   expect_equal(res$functions, expected_key)
 })
 
-test_that("scan_usage aborts on parse errors in strict mode", {
+test_that("scan_usage warns on parse errors in strict mode", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "bad.R"),
@@ -707,111 +729,145 @@ test_that("scan_usage aborts on parse errors in strict mode", {
     )
   )
 
-  expect_error(
+  warn <- NULL
+  res <- withCallingHandlers(
     scan_usage(path, strict = TRUE, quiet = TRUE),
-    "Failed to parse"
+    warning = function(w) {
+      warn <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    }
   )
+
+  expect_match(warn, "Failed to parse")
+  expect_identical(res$packages, character())
+  expect_identical(res$functions, character())
+  expect_identical(res$ambiguous, character())
 })
 
-test_that("scan_usage strict aborts on ambiguous unqualified calls", {
-  funs <- c("rhat", "ess_bulk")
-
-  get_fun_pkgs <- function(fun) {
-    pkgs <- names(Filter(function(x) fun %in% x, .stan_exports))
-    pkgs[vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
-  }
-
-  needs <- vapply(
-    funs,
-    function(fun) {
-      pkgs <- names(Filter(function(x) fun %in% x, .stan_exports))
-
-      pkgs <- pkgs[vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
-
-      origins <- vapply(
-        pkgs,
-        function(pkg) {
-          .stan_origin_map[[paste0(pkg, "::", fun)]]
-        },
-        character(1)
-      )
-
-      length(unique(origins[!is.na(origins)])) > 1
-    },
-    logical(1)
-  )
-
-  if (!all(needs)) {
-    skip("Ambiguous functions not available in installed packages.")
-  }
-
-  lib_pkgs <- unique(unlist(lapply(funs, get_fun_pkgs)))
-  if (length(lib_pkgs) < 2) {
-    skip("Ambiguous functions not available in installed packages.")
-  }
-
+test_that("scan_usage strict aborts on unresolved unqualified calls", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "strict.R"),
     c(
-      paste0("library(", lib_pkgs, ")"),
-      "rhat(1)",
-      "ess_bulk(1)"
+      "foo(1)",
+      "library(pkgA)",
+      "library(pkgB)"
     )
   )
 
-  expect_snapshot_error(scan_usage(path, strict = TRUE, quiet = TRUE))
+  expect_error(
+    scan_usage(
+      path,
+      strict = TRUE,
+      quiet = TRUE,
+      allowed_packages = c("pkgA", "pkgB"),
+      export_index = list(foo = c("pkgA", "pkgB")),
+      origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+    ),
+    "Ambiguous functions"
+  )
 })
 
-test_that("scan_usage warns about multiple ambiguous calls in strict mode", {
-  force_local_snapshots()
-  funs <- c("rhat", "ess_bulk")
-
-  get_fun_pkgs <- function(fun) {
-    pkgs <- names(Filter(function(x) fun %in% x, .stan_exports))
-    pkgs[vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
-  }
-
-  needs <- vapply(
-    funs,
-    function(fun) {
-      pkgs <- names(Filter(function(x) fun %in% x, .stan_exports))
-
-      pkgs <- pkgs[vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
-
-      origins <- vapply(
-        pkgs,
-        function(pkg) {
-          .stan_origin_map[[paste0(pkg, "::", fun)]]
-        },
-        character(1)
-      )
-
-      length(unique(origins[!is.na(origins)])) > 1
-    },
-    logical(1)
+test_that("scan_usage strict respects attachment order when the winner is known", {
+  path <- write_file(
+    file.path(withr::local_tempdir(), "strict-order.R"),
+    c(
+      "library(pkgA)",
+      "library(pkgB)",
+      "foo(1)"
+    )
   )
 
-  if (!all(needs)) {
-    skip("Ambiguous functions not available in installed packages.")
-  }
+  warns <- character()
+  res <- withCallingHandlers(
+    scan_usage(
+      path,
+      strict = TRUE,
+      quiet = TRUE,
+      allowed_packages = c("pkgA", "pkgB"),
+      export_index = list(foo = c("pkgA", "pkgB")),
+      origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+    ),
+    warning = function(w) {
+      warns <<- c(warns, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
 
-  lib_pkgs <- unique(unlist(lapply(funs, get_fun_pkgs)))
-  if (length(lib_pkgs) < 2) {
-    skip("Ambiguous functions not available in installed packages.")
-  }
+  expect_identical(warns, character())
+  expect_true(all(c("pkgA", "pkgB") %in% res$packages))
+  expect_equal(res$functions, "pkgB::foo")
+  expect_identical(res$ambiguous, character())
+})
 
+test_that("scan_usage strict remaps a later-attached reexporter to the origin package", {
+  path <- write_file(
+    file.path(withr::local_tempdir(), "strict-reexport.R"),
+    c(
+      "library(pkgA)",
+      "library(pkgB)",
+      "foo(1)"
+    )
+  )
+
+  warns <- character()
+  res <- withCallingHandlers(
+    scan_usage(
+      path,
+      strict = TRUE,
+      quiet = TRUE,
+      allowed_packages = c("pkgA", "pkgB"),
+      export_index = list(foo = c("pkgA", "pkgB")),
+      origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgA")
+    ),
+    warning = function(w) {
+      warns <<- c(warns, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  expect_identical(warns, character())
+  expect_true(all(c("pkgA", "pkgB") %in% res$packages))
+  expect_equal(res$functions, "pkgA::foo")
+  expect_identical(res$ambiguous, character())
+})
+
+test_that("scan_usage strict aborts on every unresolved unqualified call", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "strict.R"),
     c(
-      paste0("library(", lib_pkgs, ")"),
-      "rhat(1)",
-      "ess_bulk(1)"
+      "foo(1)",
+      "bar(1)",
+      "library(pkgA)",
+      "library(pkgB)",
+      "library(pkgC)"
     )
   )
 
-  expect_snapshot_error(scan_usage(path, strict = TRUE, quiet = TRUE))
+  err <- tryCatch(
+    scan_usage(
+      path,
+      strict = TRUE,
+      quiet = TRUE,
+      allowed_packages = c("pkgA", "pkgB", "pkgC"),
+      export_index = list(
+        foo = c("pkgA", "pkgB"),
+        bar = c("pkgB", "pkgC")
+      ),
+      origin_map = c(
+        "pkgA::foo" = "pkgA",
+        "pkgB::foo" = "pkgB",
+        "pkgB::bar" = "pkgB",
+        "pkgC::bar" = "pkgC"
+      )
+    ),
+    error = identity
+  )
+
+  expect_s3_class(err, "error")
+  expect_match(conditionMessage(err), "foo")
+  expect_match(conditionMessage(err), "bar")
 })
 
 test_that("scan_usage warns on ambiguous calls in non-strict mode", {
@@ -825,17 +881,23 @@ test_that("scan_usage warns on ambiguous calls in non-strict mode", {
     )
   )
 
-  res <- NULL
-  expect_snapshot_warning({
-    res <- scan_usage(
+  warn <- NULL
+  res <- withCallingHandlers(
+    scan_usage(
       path,
       strict = FALSE,
       quiet = TRUE,
       allowed_packages = c("pkgA", "pkgB"),
       export_index = list(foo = c("pkgA", "pkgB")),
       origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
-    )
-  })
+    ),
+    warning = function(w) {
+      warn <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_match(warn, "Ambiguous functions")
+  expect_match(warn, "foo")
   expect_true(all(c("pkgA", "pkgB") %in% res$packages))
   expect_identical(res$functions, character())
   expect_equal(res$ambiguous, "foo")
@@ -1860,8 +1922,7 @@ test_that(".resolve_candidates returns empty when no Stan candidates exist", {
 
   out <- resolve_candidates(
     unqual = list(funs = fun, idx = 1L),
-    lib_data = NULL,
-    strict = FALSE
+    lib_data = NULL
   )
 
   # triggers the `!any(has_candidates)` early return
@@ -1876,7 +1937,6 @@ test_that(".resolve_candidates returns empty when no packages allowed", {
   out <- resolve_candidates(
     unqual = list(funs = "as_draws", idx = 1L),
     lib_data = NULL,
-    strict = FALSE,
     allowed_packages = character()
   )
 
@@ -1896,7 +1956,6 @@ test_that(".resolve_candidates labels package ambiguity in non-strict mode", {
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
     ),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB"),
     export_index = list(foo = c("pkgA", "pkgB")),
     origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
@@ -1918,7 +1977,6 @@ test_that(".resolve_candidates applies origin_map for resolved ambiguity", {
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
     ),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB"),
     export_index = list(foo = c("pkgA", "pkgB")),
     origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgA")
@@ -1940,7 +1998,6 @@ test_that(".resolve_candidates fills missing origin_map entries positionally", {
       is_attach = c(TRUE, TRUE, TRUE),
       stringsAsFactors = FALSE
     ),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB", "pkgC"),
     export_index = list(
       fa = "pkgA",
@@ -1966,7 +2023,6 @@ test_that(".resolve_candidates keeps ambiguity when no attach position precedes 
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
     ),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB"),
     export_index = list(foo = c("pkgA", "pkgB")),
     origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
@@ -1988,7 +2044,6 @@ test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
       is_attach = c(TRUE, TRUE, TRUE),
       stringsAsFactors = FALSE
     ),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB", "pkgC"),
     export_index = list(foo = c("pkgB", "pkgC")),
     origin_map = c("pkgB::foo" = "pkgB", "pkgC::foo" = "pkgC")
@@ -1999,7 +2054,7 @@ test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
   expect_identical(out$keys, character())
 })
 
-test_that(".resolve_candidates clears ambiguity when one call is resolved", {
+test_that(".resolve_candidates keeps ambiguity when one call remains unresolved", {
   resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
 
   out <- resolve_candidates(
@@ -2010,13 +2065,12 @@ test_that(".resolve_candidates clears ambiguity when one call is resolved", {
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
     ),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB"),
     export_index = list(foo = c("pkgA", "pkgB")),
     origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
   )
 
-  expect_equal(out$ambiguous, character())
+  expect_equal(out$ambiguous, "foo")
   expect_equal(out$pkgs, "pkgA")
   expect_equal(out$keys, "pkgA::foo")
 })
@@ -2032,10 +2086,76 @@ test_that(".resolve_candidates falls back when origin_map points to disallowed p
       is_attach = c(TRUE, TRUE),
       stringsAsFactors = FALSE
     ),
-    strict = FALSE,
     allowed_packages = c("pkgA", "pkgB"),
     export_index = list(foo = c("pkgA", "pkgB")),
     origin_map = c("pkgB::foo" = "pkgX")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, "pkgA")
+  expect_identical(out$keys, "pkgA::foo")
+})
+
+test_that(".resolve_candidates resolves attachment-ordered calls", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 3L),
+    lib_data = data.frame(
+      visit_idx = c(1L, 2L),
+      pkg = c("pkgA", "pkgB"),
+      is_attach = c(TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, "pkgB")
+  expect_identical(out$keys, "pkgB::foo")
+})
+
+test_that(".resolve_candidates treats same-origin providers as unambiguous", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 2L),
+    lib_data = data.frame(
+      visit_idx = c(1L, 2L),
+      pkg = c("pkgA", "pkgB"),
+      is_attach = c(TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    allowed_packages = c("origin", "pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "origin", "pkgB::foo" = "origin")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, "origin")
+  expect_identical(out$keys, "origin::foo")
+})
+
+test_that(".resolve_candidates falls back to the resolved provider when its mapped origin is disallowed", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 4L),
+    lib_data = data.frame(
+      visit_idx = c(1L, 2L, 3L),
+      pkg = c("pkgA", "pkgC", "pkgB"),
+      is_attach = c(TRUE, TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    allowed_packages = c("pkgA", "pkgB", "pkgC"),
+    export_index = list(foo = c("pkgA", "pkgB", "pkgC")),
+    origin_map = c(
+      "pkgA::foo" = "pkgA",
+      "pkgB::foo" = "pkgX",
+      "pkgC::foo" = "pkgC"
+    )
   )
 
   expect_identical(out$ambiguous, character())
@@ -2085,7 +2205,6 @@ test_that("origin_map is applied even when an ambiguous call is position-resolve
   r1 <- resolve(
     unqual = unqual1,
     lib_data = lib1,
-    strict = FALSE,
     allowed_packages = allowed_packages,
     export_index = export_index,
     origin_map = origin_map
@@ -2105,7 +2224,6 @@ test_that("origin_map is applied even when an ambiguous call is position-resolve
   r2 <- resolve(
     unqual = unqual2,
     lib_data = lib2,
-    strict = FALSE,
     allowed_packages = allowed_packages,
     export_index = export_index,
     origin_map = origin_map

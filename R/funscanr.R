@@ -15,12 +15,13 @@
 #' Unqualified function calls are only attributed when a Stan package is
 #' attached via `library()` or `require()` in the same file. Attaching
 #' `{stanflow}` is hardcoded as attaching its core packages (`bayesplot`, `loo`,
-#' `posterior`, `projpred`, `shinystan`). Known reexports are remapped to their
-#' origin packages; missing mappings fall back to the resolved package.
+#' `posterior`, `projpred`, `shinystan`). When multiple attached Stan packages
+#' export the same unqualified function, attachment order is respected: the
+#' most recently attached matching package whose attachment appears before the
+#' call is treated as the winner. Known reexports are remapped to their origin
+#' packages; missing mappings fall back to the resolved package.
 #'
 #' @inheritParams stan_cite
-#' @param strict If `TRUE`, only count unqualified function calls that resolve
-#'   to a single Stan package.
 #' @param allowed_packages Character vector of package namespaces to attribute
 #'   to Stan usage. Defaults to `.stan_pkgs`.
 #' @param export_index Named list mapping function names to packages. Defaults
@@ -98,7 +99,6 @@ scan_usage <- function(
           .extract_code() |>
           .scan_tokens(
             ignore_unqualified_functions = ignore_unqualified_functions,
-            strict = strict,
             allowed_packages = allowed_packages,
             export_index = export_index,
             origin_map = origin_map,
@@ -109,8 +109,6 @@ scan_usage <- function(
 
   ambiguous <- .collect_unique(hits, "ambiguous")
   if (length(ambiguous)) {
-    funs <- cli::cli_vec(ambiguous)
-
     msg <- c(
       "Cannot reliably detect which packages some functions are from.",
       "x" = paste0(
@@ -143,53 +141,28 @@ scan_usage <- function(
 }
 
 .scan_dir_files <- function(dir_path, skip_dirs) {
-  files <- character()
-  n <- 0L
+  dir_path <- normalizePath(dir_path, winslash = "/", mustWork = TRUE)
+  files <- list.files(
+    dir_path,
+    recursive = TRUE,
+    pattern = "\\.(R|Rmd|Qmd)$",
+    ignore.case = TRUE,
+    all.files = TRUE,
+    full.names = TRUE,
+    no.. = TRUE
+  )
+  files <- normalizePath(
+    files[!dir.exists(files)],
+    winslash = "/",
+    mustWork = FALSE
+  )
 
-  walk <- function(path) {
-    entries <- list.files(
-      path,
-      all.files = TRUE,
-      full.names = TRUE,
-      no.. = TRUE
-    )
-    if (!length(entries)) {
-      return(invisible(NULL))
-    }
-
-    is_dir <- dir.exists(entries)
-
-    if (any(is_dir)) {
-      dirs <- entries[is_dir]
-      if (length(skip_dirs)) {
-        keep <- is.na(fastmatch::fmatch(basename(dirs), skip_dirs))
-        dirs <- dirs[keep]
-      }
-      if (length(dirs)) {
-        for (dir in dirs) {
-          walk(dir)
-        }
-      }
-    }
-
-    if (!all(is_dir)) {
-      code_files <- entries[!is_dir]
-      code_files <- code_files[
-        grepl("\\.(R|Rmd|Qmd)$", code_files, ignore.case = TRUE)
-      ]
-
-      if (length(code_files)) {
-        idx <- seq.int(n + 1L, n + length(code_files))
-        files[idx] <<- code_files
-        n <<- idx[length(idx)]
-      }
-    }
-
-    invisible(NULL)
+  if (length(skip_dirs) && length(files)) {
+    rel_files <- sub(paste0("^", dir_path, "/?"), "", files)
+    files <- files[!grepl(.scan_skip_regex(skip_dirs), rel_files)]
   }
 
-  walk(dir_path)
-  normalizePath(files, winslash = "/", mustWork = FALSE)
+  files
 }
 
 .collect_unique <- function(hits, field) {
@@ -219,15 +192,13 @@ scan_usage <- function(
   tmp <- tempfile(fileext = ".R")
   on.exit(unlink(tmp), add = TRUE)
 
-  if (ext == "rmd" || ext == "qmd") {
-    if (!requireNamespace("knitr", quietly = TRUE)) {
-      cli::cli_abort(c(
-        "Package {.pkg knitr} is required to parse R Markdown ({.file .Rmd}) or Quarto ({.file .qmd}) files.",
-        "i" = "Please install it with {.code install.packages('knitr')}."
-      ))
-    }
-    knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
+  if (!requireNamespace("knitr", quietly = TRUE)) {
+    cli::cli_abort(c(
+      "Package {.pkg knitr} is required to parse R Markdown ({.file .Rmd}) or Quarto ({.file .qmd}) files.",
+      "i" = "Please install it with {.code install.packages('knitr')}."
+    ))
   }
+  knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
 
   paste(readLines(tmp, warn = FALSE), collapse = "\n")
 }
@@ -235,7 +206,6 @@ scan_usage <- function(
 .scan_tokens <- function(
   code,
   ignore_unqualified_functions,
-  strict = FALSE,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map,
@@ -256,11 +226,7 @@ scan_usage <- function(
       "Failed to parse {.path {path_label}}.",
       "x" = "Syntax error in file."
     )
-    if (strict) {
-      cli::cli_abort(msg)
-    } else {
-      cli::cli_warn(msg)
-    }
+    cli::cli_warn(msg)
     return(empty)
   }
 
@@ -343,7 +309,6 @@ scan_usage <- function(
   resolved <- .resolve_candidates(
     list(funs = acc$unqual_funs, idx = acc$unqual_visit_idx),
     lib_data,
-    strict,
     allowed_packages,
     export_index,
     origin_map
@@ -459,11 +424,11 @@ scan_usage <- function(
         ignore_heads
       )
     }
-    n <- length(x)
-    if (n >= 2L) {
-      for (i in 2L:n) {
+    children <- as.list(x)[-1L]
+    if (length(children)) {
+      for (i in seq_along(children)) {
         .ast_walk(
-          x[[i]],
+          children[[i]],
           acc,
           ignore_unqualified_functions,
           lib_funs,
@@ -477,23 +442,7 @@ scan_usage <- function(
     return(invisible(NULL))
   }
 
-  if (is.expression(x)) {
-    for (i in seq_along(x)) {
-      .ast_walk(
-        x[[i]],
-        acc,
-        ignore_unqualified_functions,
-        lib_funs,
-        allowed_packages,
-        ns_ops,
-        use_heads,
-        ignore_heads
-      )
-    }
-    return(invisible(NULL))
-  }
-
-  if (is.pairlist(x) || is.list(x)) {
+  if (is.expression(x) || is.pairlist(x) || is.list(x)) {
     for (i in seq_along(x)) {
       .ast_walk(
         x[[i]],
@@ -582,13 +531,14 @@ scan_usage <- function(
     if (
       !is.null(head_name) && !is.na(fastmatch::fmatch(head_name, use_heads))
     ) {
-      funs <- character()
-      if (length(x) >= 2L) {
-        for (i in 2L:length(x)) {
-          funs <- c(funs, .ast_collect_use_funs(x[[i]], use_heads))
-        }
+      args <- as.list(x)[-1L]
+      if (!length(args)) {
+        return(character())
       }
-      return(funs)
+      return(unlist(
+        lapply(args, .ast_collect_use_funs, use_heads = use_heads),
+        use.names = FALSE
+      ))
     }
   }
 
@@ -621,10 +571,28 @@ scan_usage <- function(
   funs[nzchar(funs)]
 }
 
+.origin_pkg <- function(
+  pkg,
+  fun,
+  origin_map = .stan_origin_map
+) {
+  origin <- unname(origin_map[paste0(pkg, "::", fun)])
+  if (is.na(origin)) pkg else origin
+}
+
+.resolve_origin_pkg <- function(
+  pkg,
+  fun,
+  origin_map = .stan_origin_map,
+  allowed_packages = .stan_pkgs
+) {
+  origin <- .origin_pkg(pkg, fun, origin_map)
+  if (is.na(fastmatch::fmatch(origin, allowed_packages))) pkg else origin
+}
+
 .resolve_candidates <- function(
   unqual,
   lib_data,
-  strict,
   allowed_packages = .stan_pkgs,
   export_index = .stan_export_index,
   origin_map = .stan_origin_map
@@ -660,72 +628,83 @@ scan_usage <- function(
   funs <- unqual$funs[has_candidates]
   candidates_list <- candidates_list[has_candidates]
 
-  is_ambiguous <- lengths(candidates_list) > 1
+  origins_list <- Map(
+    function(cands, fun) {
+      origins <- vapply(
+        cands,
+        .origin_pkg,
+        character(1),
+        fun = fun,
+        origin_map = origin_map
+      )
+      origins[!is.na(fastmatch::fmatch(origins, allowed_packages))]
+    },
+    candidates_list,
+    funs
+  )
+
+  has_origins <- lengths(origins_list) > 0L
+  if (!any(has_origins)) {
+    return(empty)
+  }
+
+  idx <- idx[has_origins]
+  funs <- funs[has_origins]
+  candidates_list <- candidates_list[has_origins]
+  origins_list <- origins_list[has_origins]
+
+  origin_candidates <- lapply(origins_list, unique)
+
+  is_ambiguous <- lengths(origin_candidates) > 1
 
   pkgs <- character()
   keys <- character()
   ambiguous <- character()
 
   if (!all(is_ambiguous)) {
-    best_pkgs0 <- unlist(candidates_list[!is_ambiguous], use.names = FALSE)
+    best_pkgs0 <- unlist(origin_candidates[!is_ambiguous], use.names = FALSE)
     funs0 <- funs[!is_ambiguous]
-    keys0 <- paste0(best_pkgs0, "::", funs0)
-
-    origin0 <- unname(origin_map[keys0])
-    origin0[is.na(origin0)] <- best_pkgs0[is.na(origin0)]
-
-    keep <- !is.na(fastmatch::fmatch(origin0, allowed_packages))
-    if (any(keep)) {
-      pkgs <- c(pkgs, origin0[keep])
-      keys <- c(keys, paste0(origin0[keep], "::", funs0[keep]))
-    }
+    pkgs <- c(pkgs, best_pkgs0)
+    keys <- c(keys, paste0(best_pkgs0, "::", funs0))
   }
 
   if (any(is_ambiguous)) {
     ambig_idx <- idx[is_ambiguous]
     ambig_funs <- funs[is_ambiguous]
     ambig_cands <- candidates_list[is_ambiguous]
-    ambiguous <- sort(unique(ambig_funs))
+    intervals <- findInterval(ambig_idx, attached_visit_idx)
+    resolved <- logical(length(ambig_idx))
 
-    if (!strict) {
-      intervals <- findInterval(ambig_idx, attached_visit_idx)
-      resolved <- logical(length(ambig_idx))
+    for (i in seq_along(ambig_idx)) {
+      k <- intervals[i]
+      cands <- ambig_cands[[i]]
 
-      for (i in seq_along(ambig_idx)) {
-        k <- intervals[i]
-        cands <- ambig_cands[[i]]
-
-        if (k == 0) {
+      if (k == 0) {
+        resolved[i] <- FALSE
+      } else {
+        attached_before <- attached_pkgs[seq_len(k)]
+        matches <- fastmatch::fmatch(cands, attached_before)
+        if (all(is.na(matches))) {
           resolved[i] <- FALSE
         } else {
-          attached_before <- attached_pkgs[seq_len(k)]
-          matches <- fastmatch::fmatch(cands, attached_before)
-          if (all(is.na(matches))) {
-            resolved[i] <- FALSE
-          } else {
-            pkg <- cands[which.max(ifelse(is.na(matches), -1L, matches))]
-            resolved[i] <- TRUE
-          }
-        }
-
-        if (resolved[i]) {
-          key <- paste0(pkg, "::", ambig_funs[i])
-          origin <- unname(origin_map[key])
-          if (
-            is.na(origin) || is.na(fastmatch::fmatch(origin, allowed_packages))
-          ) {
-            origin <- pkg
-          }
-
-          pkgs <- c(pkgs, origin)
-          keys <- c(keys, paste0(origin, "::", ambig_funs[i]))
+          pkg <- cands[which.max(ifelse(is.na(matches), -1L, matches))]
+          resolved[i] <- TRUE
         }
       }
 
-      if (length(ambiguous)) {
-        ambiguous <- setdiff(ambiguous, unique(ambig_funs[resolved]))
+      if (resolved[i]) {
+        origin <- .resolve_origin_pkg(
+          pkg,
+          ambig_funs[i],
+          origin_map,
+          allowed_packages
+        )
+        pkgs <- c(pkgs, origin)
+        keys <- c(keys, paste0(origin, "::", ambig_funs[i]))
       }
     }
+
+    ambiguous <- sort(unique(ambig_funs[!resolved]))
   }
 
   list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
