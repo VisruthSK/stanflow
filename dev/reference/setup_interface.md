@@ -77,3 +77,17 @@ The setup functions are exported (e.g.,
 [`setup_brms()`](https://visruthsk.github.io/stanflow/dev/reference/setup_brms.md))
 for transparency. Each function has some side effects, mainly setting
 `mc.cores`, see the function for specifics.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+options(mc.cores = 2)
+setup_interface("cmdstanr", quiet = TRUE)
+setup_interface(
+  c("brms", "cmdstanr"),
+  brms_backend = "cmdstanr",
+  quiet = TRUE
+)
+} # }
+```

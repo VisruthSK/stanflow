@@ -1,7 +1,9 @@
 # Build Stan package bibentry citations
 
 Helper function to build standardized package citations. This mostly
-matches how each Stan R package wants to be cited.
+matches how each Stan R package wants to be cited. Some Stan packages
+have additional paper citations generated in `data-raw/sysdata.R` and
+stored in `.stan_citation_pkg_extras`.
 
 ## Usage
 
@@ -17,4 +19,4 @@ matches how each Stan R package wants to be cited.
 
 ## Value
 
-A bibentry for citing that package.
+Vector of bibentries for citing that package.

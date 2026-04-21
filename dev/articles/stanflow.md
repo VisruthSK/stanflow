@@ -236,7 +236,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.128262 secs
+#> Time difference of 0.1504488 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
@@ -246,14 +246,13 @@ citations
 #>   url = {https://mc-stan.org/bayesplot/},
 #> }
 #> 
-#> @Article{bayesplot-2019,
+#> @Article{gabry-2019-vis,
 #>   title = {Visualization in Bayesian workflow},
 #>   author = {Jonah Gabry and Daniel Simpson and Aki Vehtari and Michael Betancourt and Andrew Gelman},
-#>   year = {2019},
 #>   journal = {J. R. Stat. Soc. A},
+#>   year = {2019},
 #>   volume = {182},
-#>   issue = {2},
-#>   pages = {389-402},
+#>   pages = {389--402},
 #>   doi = {10.1111/rssa.12378},
 #> }
 #> 
@@ -274,14 +273,15 @@ citations
 #>   url = {https://mc-stan.org/posterior/},
 #> }
 #> 
-#> @Article{rhat-2021,
-#>   title = {Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)},
-#>   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\"urkner},
+#> @Article{vehtari-2021-rhat,
+#>   title = {Rank-normalization, folding, and localization: An improved R-hat for assessing convergence of MCMC (with discussion)},
+#>   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\u00fcrkner},
 #>   journal = {Bayesian Analysis},
 #>   year = {2021},
 #>   volume = {16},
 #>   number = {2},
-#>   pages = {667-718},
+#>   pages = {667--718},
+#>   doi = {10.1214/20-BA1221},
 #> }
 #> 
 #> @Manual{projpred,

@@ -107,8 +107,10 @@ files (.R/.Rmd/.qmd).</p></dd>
 
 
 <dt id="arg-strict">strict<a class="anchor" aria-label="anchor" href="#arg-strict"></a></dt>
-<dd><p>If <code>TRUE</code> (default), only count unqualified function calls that resolve
-to a single Stan package.</p></dd>
+<dd><p>If <code>TRUE</code> (default), only count unqualified function calls
+whose origin can be determined exactly from the static scan, including
+attachment-order tie-breaks when the winner is unambiguous from the file.
+Unresolved calls are warned about and omitted.</p></dd>
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
@@ -142,6 +144,140 @@ they are namespaced.</p></dd>
 the citation lookups.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".R"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"# one messy analysis file"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"library(posterior)"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"requireNamespace(\"brms\")"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"draws &lt;- as_draws(list(mu = rnorm(10)))"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"posterior::rhat(draws)"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"brms::mixture(0.4)"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"cmdstanr::write_stan_json(list(N = 3), \"data.json\")"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="va">path</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">stan_cite</span><span class="op">(</span><span class="va">path</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Article{,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {{brms}: An {R} Package for {Bayesian} Multilevel Models Using {Stan}},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {Paul-Christian B\u00fcrkner},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   journal = {Journal of Statistical Software},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2017},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   volume = {80},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   number = {1},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pages = {1--28},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   doi = {10.18637/jss.v080.i01},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   encoding = {UTF-8},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Article{,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {Advanced {Bayesian} Multilevel Modeling with the {R} Package {brms}},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {Paul-Christian B\u00fcrkner},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   journal = {The R Journal},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2018},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   volume = {10},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   number = {1},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pages = {395--411},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   doi = {10.32614/RJ-2018-017},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   encoding = {UTF-8},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Article{,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {Bayesian Item Response Modeling in {R} with {brms} and {Stan}},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {Paul-Christian B\u00fcrkner},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   journal = {Journal of Statistical Software},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2021},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   volume = {100},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   number = {5},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pages = {1--54},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   doi = {10.18637/jss.v100.i05},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   encoding = {UTF-8},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Manual{cmdstanr,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {R Interface to 'CmdStan'},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {Jonah Gabry and Rok Češnovar and Andrew Johnson and Steve Bronder},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2025},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   note = {R package version 0.9.0, https://discourse.mc-stan.org},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   url = {https://mc-stan.org/cmdstanr/},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Manual{posterior,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {Tools for Working with Posterior Distributions},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {Paul-Christian Bürkner and Jonah Gabry and Matthew Kay and Aki Vehtari},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2026},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   note = {R package version 1.7.0, https://discourse.mc-stan.org},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   url = {https://mc-stan.org/posterior/},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Article{vehtari-2021-rhat,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {Rank-normalization, folding, and localization: An improved R-hat for assessing convergence of MCMC (with discussion)},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\u00fcrkner},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   journal = {Bayesian Analysis},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2021},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   volume = {16},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   number = {2},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pages = {667--718},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   doi = {10.1214/20-BA1221},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Manual{stanflow,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {A Mildly Opinionated Stan Bayesian Workflow},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {Visruth {Srimath Kandali}},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2026},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   note = {R package version 0.1.0.9000, https://discourse.mc-stan.org},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   url = {https://mc-stan.org/stanflow/},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> @Manual{,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   title = {R: A Language and Environment for Statistical Computing},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   author = {{R Core Team}},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   organization = {R Foundation for Statistical Computing},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   address = {Vienna, Austria},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year = {2026},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   url = {https://www.R-project.org/},</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-in"><span><span class="fu">stan_cite</span><span class="op">(</span><span class="va">path</span>, format <span class="op">=</span> <span class="st">"bibentry"</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B\u00fcrkner P (2017). “brms: An R Package for Bayesian Multilevel</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Models Using Stan.” _Journal of Statistical Software_, *80*(1), 1-28.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> doi:10.18637/jss.v080.i01 &lt;https://doi.org/10.18637/jss.v080.i01&gt;.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B\u00fcrkner P (2018). “Advanced Bayesian Multilevel Modeling with the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> R Package brms.” _The R Journal_, *10*(1), 395-411.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> doi:10.32614/RJ-2018-017 &lt;https://doi.org/10.32614/RJ-2018-017&gt;.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B\u00fcrkner P (2021). “Bayesian Item Response Modeling in R with brms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> and Stan.” _Journal of Statistical Software_, *100*(5), 1-54.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> doi:10.18637/jss.v100.i05 &lt;https://doi.org/10.18637/jss.v100.i05&gt;.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gabry J, Češnovar R, Johnson A, Bronder S (2025). _R Interface to</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'CmdStan'_. R package version 0.9.0, https://discourse.mc-stan.org,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;https://mc-stan.org/cmdstanr/&gt;.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bürkner P, Gabry J, Kay M, Vehtari A (2026). _Tools for Working with</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Posterior Distributions_. R package version 1.7.0,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> https://discourse.mc-stan.org, &lt;https://mc-stan.org/posterior/&gt;.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Vehtari A, Gelman A, Simpson D, Carpenter B, B\u00fcrkner P (2021).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> “Rank-normalization, folding, and localization: An improved R-hat for</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> assessing convergence of MCMC (with discussion).” _Bayesian Analysis_,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> *16*(2), 667-718. doi:10.1214/20-BA1221</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;https://doi.org/10.1214/20-BA1221&gt;.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Srimath Kandali V (2026). _A Mildly Opinionated Stan Bayesian</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Workflow_. R package version 0.1.0.9000, https://discourse.mc-stan.org,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;https://mc-stan.org/stanflow/&gt;.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> R Core Team (2026). _R: A Language and Environment for Statistical</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Computing_. R Foundation for Statistical Computing, Vienna, Austria.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;https://www.R-project.org/&gt;.</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

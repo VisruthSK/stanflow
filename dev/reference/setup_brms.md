@@ -32,3 +32,11 @@ setup_brms(quiet, brms_backend, cores)
 ## Value
 
 Returns `NULL` invisibly.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+setup_brms(quiet = TRUE, brms_backend = "cmdstanr", cores = 2)
+} # }
+```

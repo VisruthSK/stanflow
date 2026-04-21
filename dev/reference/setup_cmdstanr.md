@@ -40,3 +40,17 @@ setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
 
 Returns `TRUE` invisibly when no install/upgrade is needed. Otherwise,
 returns `NULL` invisibly after installation.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+setup_cmdstanr(
+  quiet = TRUE,
+  force = TRUE,
+  reinstall = FALSE,
+  check_updates = FALSE,
+  cores = 2
+)
+} # }
+```

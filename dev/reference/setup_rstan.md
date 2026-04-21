@@ -32,3 +32,11 @@ setup_rstan(quiet, cores, rstan_auto_write)
 ## Value
 
 Returns `NULL` invisibly.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+setup_rstan(quiet = TRUE, cores = 2, rstan_auto_write = TRUE)
+} # }
+```

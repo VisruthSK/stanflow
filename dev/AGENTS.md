@@ -11,7 +11,7 @@ functionally blocked.
 
 # R Dev Rules
 
-- No manual edits: `.Rd`, `NAMESPACE`
+- No manual edits: `.Rd`, `NAMESPACE`, snapshots
 - Use `devtools::document()`, `test()`, `check()`
 - Deps: prefer Base R or current closure. Permission required for new
   deps to make code better

@@ -1,4 +1,4 @@
-# Find used Functions and Packages
+# Find used functions and packages
 
 This function is primarily exported for developers, and is almost
 entirely divested from `stanflow`, except for defaults and `{stanflow}`
@@ -37,8 +37,10 @@ scan_usage(
 
 - strict:
 
-  If `TRUE`, only count unqualified function calls that resolve to a
-  single Stan package.
+  If `TRUE` (default), only count unqualified function calls whose
+  origin can be determined exactly from the static scan, including
+  attachment-order tie-breaks when the winner is unambiguous from the
+  file. Unresolved calls are warned about and omitted.
 
 - skip_dirs:
 
@@ -85,6 +87,43 @@ Unqualified function calls are only attributed when a Stan package is
 attached via [`library()`](https://rdrr.io/r/base/library.html) or
 [`require()`](https://rdrr.io/r/base/library.html) in the same file.
 Attaching `{stanflow}` is hardcoded as attaching its core packages
-(`bayesplot`, `loo`, `posterior`, `projpred`, `shinystan`). Known
-reexports are remapped to their origin packages; missing mappings fall
-back to the resolved package.
+(`bayesplot`, `loo`, `posterior`, `projpred`, `shinystan`). When
+multiple attached Stan packages export the same unqualified function,
+attachment order is respected: the most recently attached matching
+package whose attachment appears before the call is treated as the
+winner. Known reexports are remapped to their origin packages; missing
+mappings fall back to the resolved package.
+
+## Examples
+
+``` r
+path <- tempfile(fileext = ".R")
+writeLines(
+  c(
+    "# one messy analysis file",
+    "library(posterior)",
+    "requireNamespace(\"brms\")",
+    "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+    "draws <- as_draws(list(mu = rnorm(10)))",
+    "posterior::rhat(draws)",
+    "brms::mixture(0.4)",
+    "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+  ),
+  path
+)
+scan_usage(path, quiet = TRUE)
+#> $packages
+#> [1] "brms"      "cmdstanr"  "posterior"
+#> 
+#> $functions
+#> [1] "brms::mixture"             "cmdstanr::cmdstan_model"  
+#> [3] "cmdstanr::write_stan_json" "posterior::as_draws"      
+#> [5] "posterior::rhat"          
+#> 
+#> $ambiguous
+#> character(0)
+#> 
+#> attr(,"class")
+#> [1] "scan_usage"
+unlink(path)
+```

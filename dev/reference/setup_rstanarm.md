@@ -26,3 +26,11 @@ setup_rstanarm(quiet, cores)
 ## Value
 
 Returns `NULL` invisibly.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+setup_rstanarm(quiet = TRUE, cores = 2)
+} # }
+```
