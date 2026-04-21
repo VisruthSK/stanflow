@@ -14,14 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: read
+      contents: write
       pull-requests: write
     if: ${{ github.event.workflow_run.event == 'pull_request' }}
     steps:
-      - name: Download Touchstone artifact
-        id: download
+      - uses: actions/checkout@v6
+
+      - name: Download Touchstone comment artifact
+        id: download_comment
         uses: actions/download-artifact@v8
         with:
           name: pr
+          path: ./pr
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Download Touchstone plot artifact
+        id: download_plots
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: visual-benchmarks
+          path: ./plots
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -31,9 +46,44 @@ jobs:
         id: pr
         shell: bash
         run: |
-          number="$(tr -cd '0-9' < ./NR)"
+          number="$(tr -cd '0-9' < ./pr/NR)"
           test -n "$number"
           echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Publish Touchstone plots
+        if: ${{ steps.download_plots.outcome == 'success' }}
+        uses: JamesIves/github-pages-deploy-action@v4.8.0
+        with:
+          branch: touchstone-plots
+          folder: plots
+          target-folder: pr-${{ steps.pr.outputs.number }}
+          commit-message: touchstone plots for PR #${{ steps.pr.outputs.number }}
+          clean: false
+
+      - name: Build comment body
+        shell: bash
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+
+          cp ./pr/info.txt ./comment.txt
+
+          if ! compgen -G "./plots/*.png" > /dev/null; then
+            exit 0
+          fi
+
+          {
+            printf '\n\n<details>\n<summary>Plots</summary>\n\n'
+
+            for plot in ./plots/*.png; do
+              file="$(basename "$plot")"
+              label="${file%.png}"
+              printf '![%s](../blob/touchstone-plots/pr-%s/%s?raw=true)\n\n' "$label" "$PR_NUMBER" "$file"
+            done
+
+            printf '</details>\n'
+          } >> ./comment.txt
 
       - name: Create or update sticky PR comment
         id: comment
@@ -42,5 +92,4 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           number_force: ${{ steps.pr.outputs.number }}
           header: touchstone
-          path: ./info.txt
-          skip_unchanged: true
+          path: ./comment.txt
