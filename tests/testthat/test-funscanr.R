@@ -4,6 +4,7 @@ write_file <- \(path, lines) {
 }
 
 bind_internal <- \(name) getFromNamespace(name, "stanflow")
+scan_usage_generic <- getExportedValue("stanflow", "scan_usage")
 
 # Run snapshot expectations in non-interactive sessions.
 force_local_snapshots <- function() {
@@ -11,12 +12,97 @@ force_local_snapshots <- function() {
 }
 
 # Bind internal helpers/data so tests can call them directly.
-.scan_tokens <- bind_internal(".scan_tokens")
+.scan_tokens_impl <- bind_internal(".scan_tokens")
+.scan_treesitter <- bind_internal(".scan_treesitter")
+.scan_capture <- bind_internal(".scan_capture")
+.scan_matches <- bind_internal(".scan_matches")
+.scan_name <- bind_internal(".scan_name")
 .extract_code <- bind_internal(".extract_code")
+.resolve_candidates_impl <- bind_internal(".resolve_candidates")
 .stan_exports <- bind_internal(".stan_exports")
 .stan_export_index <- bind_internal(".stan_export_index")
 .stan_origin_map <- bind_internal(".stan_origin_map")
+.stan_resolver_index <- bind_internal(".stan_resolver_index")
 .stan_pkgs <- bind_internal(".stan_pkgs")
+core <- bind_internal("core")
+
+scan_usage <- function(
+  path = ".",
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map,
+  ...
+) {
+  scan_usage_generic(
+    path = path,
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map,
+    ...
+  )
+}
+
+.scan_tokens <- function(
+  code,
+  ignore_unqualified_functions,
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map,
+  resolver_index = NULL,
+  metapackages = NULL,
+  file_path = NULL
+) {
+  if (is.null(resolver_index)) {
+    resolver_index <- if (
+      identical(export_index, .stan_export_index) &&
+        identical(origin_map, .stan_origin_map)
+    ) {
+      .stan_resolver_index
+    } else {
+      NULL
+    }
+  }
+
+  .scan_tokens_impl(
+    code = code,
+    ignore_unqualified_functions = ignore_unqualified_functions,
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map,
+    resolver_index = resolver_index,
+    metapackages = metapackages,
+    file_path = file_path
+  )
+}
+
+resolve_candidates <- function(
+  unqual,
+  lib_data,
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map,
+  resolver_index = NULL
+) {
+  if (is.null(resolver_index)) {
+    resolver_index <- if (
+      identical(export_index, .stan_export_index) &&
+        identical(origin_map, .stan_origin_map)
+    ) {
+      .stan_resolver_index
+    } else {
+      NULL
+    }
+  }
+
+  .resolve_candidates_impl(
+    unqual = unqual,
+    lib_data = lib_data,
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map,
+    resolver_index = resolver_index
+  )
+}
 
 resolve_origin_pkg <- function(pkg, fun) {
   key <- paste0(pkg, "::", fun)
@@ -102,6 +188,32 @@ test_that(".scan_tokens handles empty or no-code files", {
     ),
     list(pkgs = character(), keys = character(), ambiguous = character())
   )
+})
+
+test_that(".scan_tokens handles unnamed export indexes on non-empty code", {
+  hits <- .scan_tokens(
+    "posterior::as_draws(1)",
+    stdlib_funs(),
+    allowed_packages = "posterior",
+    export_index = unname(list("posterior")),
+    origin_map = c("posterior::as_draws" = "posterior")
+  )
+
+  expect_identical(hits$pkgs, "posterior")
+  expect_identical(hits$keys, "posterior::as_draws")
+  expect_identical(hits$ambiguous, character())
+})
+
+test_that("tree-sitter helper functions handle missing and unsupported nodes", {
+  scan_state <- .scan_treesitter()
+  root <- treesitter::tree_root_node(
+    treesitter::parser_parse(scan_state$parser, "foo()")
+  )
+  match <- .scan_matches(root, scan_state$plain_calls, "call")[[1]]
+
+  expect_null(.scan_capture(match, "missing"))
+  expect_null(.scan_name(NULL))
+  expect_null(.scan_name(.scan_capture(match, "call")))
 })
 
 test_that(".scan_tokens handles non-Stan library calls", {
@@ -1226,7 +1338,37 @@ test_that("scan_usage attributes unqualified calls only in files attaching Stan 
   expect_true(setequal(res$functions, expected_functions))
 })
 
-test_that("scan_usage treats stanflow attachment as core packages", {
+test_that("scan_usage requires explicit resolver data", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "stanflow-default.R"),
+    c(
+      "library(stanflow)",
+      "loo(matrix(1))"
+    )
+  )
+
+  expect_error(scan_usage_generic(path, quiet = TRUE))
+})
+
+test_that("scan_usage does not expand stanflow without metapackages", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "stanflow-default.R"),
+    c(
+      "library(stanflow)",
+      "loo(matrix(1))"
+    )
+  )
+
+  res <- scan_usage(path, quiet = TRUE, metapackages = NULL)
+  expect_true("stanflow" %in% res$packages)
+  expect_false("loo" %in% res$packages)
+  expect_identical(res$functions, character())
+  expect_identical(res$ambiguous, character())
+})
+
+test_that("scan_usage can expand stanflow when metapackages are provided", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "stanflow.R"),
@@ -1238,7 +1380,11 @@ test_that("scan_usage treats stanflow attachment as core packages", {
     )
   )
 
-  res <- scan_usage(path, quiet = TRUE)
+  res <- scan_usage(
+    path,
+    quiet = TRUE,
+    metapackages = list(stanflow = core)
+  )
 
   expected_keys <- unique(na.omit(c(
     resolve_origin_key("posterior", "as_draws_df"),
@@ -1258,7 +1404,7 @@ test_that("scan_usage treats stanflow attachment as core packages", {
   expect_true(all(expected_keys %in% res$functions))
 })
 
-test_that("scan_usage treats require(stanflow) as core attachment", {
+test_that("scan_usage can expand require(stanflow) when metapackages are provided", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "stanflow-require.R"),
@@ -1269,7 +1415,11 @@ test_that("scan_usage treats require(stanflow) as core attachment", {
     )
   )
 
-  res <- scan_usage(path, quiet = TRUE)
+  res <- scan_usage(
+    path,
+    quiet = TRUE,
+    metapackages = list(stanflow = core)
+  )
 
   expected_keys <- unique(na.omit(c(
     resolve_origin_key("posterior", "as_draws_df"),
@@ -1284,6 +1434,54 @@ test_that("scan_usage treats require(stanflow) as core attachment", {
 
   expect_true(all(expected_pkgs %in% res$packages))
   expect_true(all(expected_keys %in% res$functions))
+})
+
+test_that("scan_usage expands custom metapackages", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "meta.R"),
+    c(
+      "library(meta)",
+      "foo(1)"
+    )
+  )
+
+  res <- scan_usage(
+    path,
+    quiet = TRUE,
+    allowed_packages = c("meta", "pkgA"),
+    export_index = list(foo = "pkgA"),
+    origin_map = c("pkgA::foo" = "pkgA"),
+    metapackages = list(meta = "pkgA")
+  )
+
+  expect_true(setequal(res$packages, c("meta", "pkgA")))
+  expect_identical(res$functions, "pkgA::foo")
+  expect_identical(res$ambiguous, character())
+})
+
+test_that("scan_usage can disable metapackage expansion", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "meta-null.R"),
+    c(
+      "library(meta)",
+      "foo(1)"
+    )
+  )
+
+  res <- scan_usage(
+    path,
+    quiet = TRUE,
+    allowed_packages = c("meta", "pkgA"),
+    export_index = list(foo = "pkgA"),
+    origin_map = c("pkgA::foo" = "pkgA"),
+    metapackages = NULL
+  )
+
+  expect_identical(res$packages, "meta")
+  expect_identical(res$functions, character())
+  expect_identical(res$ambiguous, character())
 })
 
 test_that("scan_usage does not treat requireNamespace(stanflow) as core attachment", {
@@ -1306,7 +1504,7 @@ test_that("scan_usage does not treat requireNamespace(stanflow) as core attachme
   expect_identical(res$functions, character())
 })
 
-test_that("scan_usage handles stanflow attachment in qmd", {
+test_that("scan_usage handles stanflow attachment in qmd when metapackages are provided", {
   skip_if_not_installed("knitr")
 
   tmp <- withr::local_tempdir()
@@ -1324,7 +1522,11 @@ test_that("scan_usage handles stanflow attachment in qmd", {
     )
   )
 
-  res <- scan_usage(path, quiet = TRUE)
+  res <- scan_usage(
+    path,
+    quiet = TRUE,
+    metapackages = list(stanflow = core)
+  )
 
   expected_key <- resolve_origin_key("loo", "loo")
   expected_keys <- if (is.na(expected_key)) character() else expected_key
@@ -1809,7 +2011,6 @@ test_that("scan_usage ignores non-R files in directories", {
 })
 
 test_that(".resolve_candidates returns empty when no Stan candidates exist", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
   export_index <- getFromNamespace(".stan_export_index", "stanflow")
 
   # pick a deterministic name not in the index
@@ -1856,8 +2057,6 @@ test_that(".resolve_candidates returns empty when no Stan candidates exist", {
 })
 
 test_that(".resolve_candidates returns empty when no packages allowed", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "as_draws", idx = 1L),
     lib_data = NULL,
@@ -1870,8 +2069,6 @@ test_that(".resolve_candidates returns empty when no packages allowed", {
 })
 
 test_that(".resolve_candidates labels package ambiguity in non-strict mode", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 2L),
     lib_data = data.frame(
@@ -1891,8 +2088,6 @@ test_that(".resolve_candidates labels package ambiguity in non-strict mode", {
 })
 
 test_that(".resolve_candidates applies origin_map for resolved ambiguity", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 3L),
     lib_data = data.frame(
@@ -1912,8 +2107,6 @@ test_that(".resolve_candidates applies origin_map for resolved ambiguity", {
 })
 
 test_that(".resolve_candidates fills missing origin_map entries positionally", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = c("fa", "fb", "fc"), idx = c(1L, 2L, 3L)),
     lib_data = data.frame(
@@ -1937,8 +2130,6 @@ test_that(".resolve_candidates fills missing origin_map entries positionally", {
 })
 
 test_that(".resolve_candidates keeps ambiguity when no attach position precedes call", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 1L),
     lib_data = data.frame(
@@ -1958,8 +2149,6 @@ test_that(".resolve_candidates keeps ambiguity when no attach position precedes 
 })
 
 test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 7L),
     lib_data = data.frame(
@@ -1979,8 +2168,6 @@ test_that(".resolve_candidates keeps ambiguity when candidates attach later", {
 })
 
 test_that(".resolve_candidates keeps ambiguity when one call remains unresolved", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = c("foo", "foo"), idx = c(1L, 3L)),
     lib_data = data.frame(
@@ -2000,8 +2187,6 @@ test_that(".resolve_candidates keeps ambiguity when one call remains unresolved"
 })
 
 test_that(".resolve_candidates falls back when origin_map points to disallowed package", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 2L),
     lib_data = data.frame(
@@ -2021,8 +2206,6 @@ test_that(".resolve_candidates falls back when origin_map points to disallowed p
 })
 
 test_that(".resolve_candidates resolves attachment-ordered calls", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 3L),
     lib_data = data.frame(
@@ -2042,8 +2225,6 @@ test_that(".resolve_candidates resolves attachment-ordered calls", {
 })
 
 test_that(".resolve_candidates treats same-origin providers as unambiguous", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 2L),
     lib_data = data.frame(
@@ -2063,8 +2244,6 @@ test_that(".resolve_candidates treats same-origin providers as unambiguous", {
 })
 
 test_that(".resolve_candidates falls back to the resolved provider when its mapped origin is disallowed", {
-  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
-
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 4L),
     lib_data = data.frame(

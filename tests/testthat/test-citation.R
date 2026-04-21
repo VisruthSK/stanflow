@@ -74,6 +74,22 @@ test_that("stan_cite always cites stanflow and R", {
   )
 })
 
+test_that("stan_cite expands stanflow to its core packages when scanning", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "stanflow.R"),
+    c(
+      "library(stanflow)",
+      "loo(matrix(1))"
+    )
+  )
+
+  citations <- stan_cite(path, format = "bibtex", quiet = TRUE)
+
+  expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
+  expect_true(any(grepl("loo", citations, fixed = TRUE)))
+})
+
 test_that("stan_cite returns empty when no citations are found", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "plain.R"), "1 + 1")

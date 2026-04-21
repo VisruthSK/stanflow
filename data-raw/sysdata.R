@@ -123,87 +123,115 @@ if (length(missing) > 0) {
   ".cache"
 )
 
-# Scanner query sources and helper names
-.scan_special_heads <- c("library", "require", "requireNamespace", "use")
-.scan_pkg_arg_names <- c("package", "pkg")
-
+# Scanner query sources
 .scan_query_sources <- list(
-  attach_calls = paste(
-    "(call",
-    "  function: (identifier) @head",
-    "  arguments: (arguments) @args",
-    "  (#eq? @head \"library\")",
-    ") @call",
-    "",
-    "(call",
-    "  function: (identifier) @head",
-    "  arguments: (arguments) @args",
-    "  (#eq? @head \"require\")",
-    ") @call",
-    "",
-    "(call",
-    "  function: (identifier) @head",
-    "  arguments: (arguments) @args",
-    "  (#eq? @head \"requireNamespace\")",
-    ") @call",
-    sep = "\n"
-  ),
-  use_calls = paste(
-    "(call",
-    "  function: (identifier) @head",
-    "  arguments: (arguments) @args",
-    "  (#eq? @head \"use\")",
-    ") @call",
-    sep = "\n"
-  ),
-  plain_calls = paste(
-    "(call",
-    "  function: (identifier) @head",
-    "  arguments: (arguments) @args",
-    ") @call",
-    sep = "\n"
-  ),
-  namespace_uses = paste(
-    "(namespace_operator",
-    "  lhs: (identifier) @pkg",
-    "  rhs: (identifier) @fun",
-    ") @ns",
-    sep = "\n"
-  ),
-  member_calls = paste(
-    "(call",
-    "  function: (extract_operator",
-    "    rhs: (identifier) @member",
-    "  )",
-    "  arguments: (arguments) @args",
-    ") @call",
-    "",
-    "(call",
-    "  function: (extract_operator",
-    "    rhs: (string) @member",
-    "  )",
-    "  arguments: (arguments) @args",
-    ") @call",
-    "",
-    "(call",
-    "  function: (parenthesized_expression",
-    "    body: (extract_operator",
-    "      rhs: (identifier) @member",
-    "    )",
-    "  )",
-    "  arguments: (arguments) @args",
-    ") @call",
-    "",
-    "(call",
-    "  function: (parenthesized_expression",
-    "    body: (extract_operator",
-    "      rhs: (string) @member",
-    "    )",
-    "  )",
-    "  arguments: (arguments) @args",
-    ") @call",
-    sep = "\n"
+  attach_calls = r"(
+(call
+  function: (identifier) @head
+  arguments: (arguments
+    (argument !name value: (identifier) @pkg)
   )
+  (#match? @head "^(library|require|requireNamespace)$")
+) @call
+
+(call
+  function: (identifier) @head
+  arguments: (arguments
+    (argument !name value: (string) @pkg)
+  )
+  (#match? @head "^(library|require|requireNamespace)$")
+) @call
+
+(call
+  function: (identifier) @head
+  arguments: (arguments
+    (argument
+      name: (identifier) @arg
+      value: (identifier) @pkg
+    )
+  )
+  (#match? @head "^(library|require|requireNamespace)$")
+  (#match? @arg "^(package|pkg)$")
+) @call
+
+(call
+  function: (identifier) @head
+  arguments: (arguments
+    (argument
+      name: (identifier) @arg
+      value: (string) @pkg
+    )
+  )
+  (#match? @head "^(library|require|requireNamespace)$")
+  (#match? @arg "^(package|pkg)$")
+) @call
+)",
+  use_calls = r"(
+(call
+  function: (identifier) @head
+  arguments: (arguments
+    (argument !name value: (string) @pkg)
+    (argument !name value: (string) @fun)
+  )
+  (#eq? @head "use")
+) @call
+
+(call
+  function: (identifier) @head
+  arguments: (arguments
+    (argument !name value: (string) @pkg)
+    (argument !name value: (call
+      function: (identifier) @c_head
+      arguments: (arguments
+        (argument !name value: (string) @fun)
+      )
+    ))
+  )
+  (#eq? @head "use")
+  (#eq? @c_head "c")
+) @call
+)",
+  plain_calls = r"(
+(call
+  function: (identifier) @head
+  (#not-match? @head "^(library|require|requireNamespace|use)$")
+) @call
+)",
+  namespace_uses = r"(
+(namespace_operator
+  lhs: (identifier) @pkg
+  rhs: (identifier) @fun
+) @ns
+)",
+  member_calls = r"(
+(call
+  function: (extract_operator
+    rhs: (identifier) @member
+  )
+) @call
+
+(call
+  function: (extract_operator
+    rhs: (string) @member
+  )
+) @call
+
+(call
+  function: (parenthesized_expression
+    body: (extract_operator
+      rhs: (identifier) @member
+    )
+  )
+) @call
+
+(call
+  function: (parenthesized_expression
+    body: (extract_operator
+      rhs: (string) @member
+    )
+  )
+) @call
+)"
 )
 
 assign_citation <- function(pkg, funs, entries) {
@@ -330,10 +358,25 @@ keys <- paste0(all_stan_pkgs, "::", all_funs)
 )]
 names(.stan_origin_map) <- keys
 
+# Resolver index: Map fun -> provider/origin table used by funscanr
+.stan_resolver_index <- lapply(
+  names(.stan_export_index),
+  \(fun) {
+    providers <- .stan_export_index[[fun]]
+    data.frame(
+      provider = providers,
+      origin = unname(.stan_origin_map[paste0(providers, "::", fun)]),
+      stringsAsFactors = FALSE
+    )
+  }
+) |>
+  setNames(names(.stan_export_index))
+
 save(
   .stan_exports,
   .stan_export_index,
   .stan_origin_map,
+  .stan_resolver_index,
   .stan_citation_pkgs,
   .stan_citation_funs,
   .stan_citation_pkg_extras,
@@ -341,9 +384,7 @@ save(
   .stdlib_funs,
   .stan_pkg_versions,
   .scan_skip_dirs,
-  .scan_pkg_arg_names,
   .scan_query_sources,
-  .scan_special_heads,
   file = "R/sysdata.rda",
   compress = "xz"
 )

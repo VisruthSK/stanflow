@@ -65,6 +65,7 @@ stan_cite <- function(
     allowed_packages = .stan_pkgs,
     export_index = .stan_export_index,
     origin_map = .stan_origin_map,
+    metapackages = list(stanflow = core),
     quiet = quiet
   ) |>
     (\(x) {
