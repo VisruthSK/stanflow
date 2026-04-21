@@ -17,8 +17,10 @@ stan_cite(
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.qmd).}
 
-\item{strict}{If \code{TRUE} (default), only count unqualified function calls that resolve
-to a single Stan package.}
+\item{strict}{If \code{TRUE} (default), only count unqualified function calls
+whose origin can be determined exactly from the static scan, including
+attachment-order tie-breaks when the winner is unambiguous from the file.
+Unresolved calls are warned about and omitted.}
 
 \item{format}{One of "bibtex" or "bibentry", specifying the return format.}
 

@@ -18,8 +18,10 @@
 #'   attributing (unqualified) calls to Stan packages. Calls like `rstan::plot()`
 #'   will NOT be ignored even if `plot` is in `ignore_unqualified_functions`, since
 #'   they are namespaced.
-#' @param strict If `TRUE` (default), only count unqualified function calls that resolve
-#'   to a single Stan package.
+#' @param strict If `TRUE` (default), only count unqualified function calls
+#'   whose origin can be determined exactly from the static scan, including
+#'   attachment-order tie-breaks when the winner is unambiguous from the file.
+#'   Unresolved calls are warned about and omitted.
 #' @param skip_dirs Defaults to directories listed in `scan_skip_dirs`. Character
 #'   vector of directory names to skip when scanning a directory.
 #' @param format One of "bibtex" or "bibentry", specifying the return format.
