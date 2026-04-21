@@ -38,7 +38,7 @@ for (repo in repos) {
     expr_before_benchmark = {
       library(stanflow)
     },
-    n = 30,
+    n = 5,
     !!dir := stan_cite(
       path = !!repo_path,
       strict = FALSE,
