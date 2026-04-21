@@ -4,7 +4,7 @@
 #' is almost entirely divested from `stanflow`, except for
 #' defaults and `{stanflow}` behavior explained later.
 #'
-#' The scanning is wholly static (AST parsing), so there are
+#' The scanning is wholly static (tree-sitter parsing), so there are
 #' a number of restrictions on what calls are recognized:
 #' calls to `library()`, `require()`, `requireNamespace()`,
 #' or `use()` are all recognized as attaching a package.
@@ -240,11 +240,15 @@ scan_usage <- function(
   file_path = NULL
 ) {
   empty <- list(pkgs = character(), keys = character(), ambiguous = character())
-  expr <- tryCatch(
-    parse(text = code, keep.source = FALSE),
-    error = function(e) NULL
-  )
-  if (is.null(expr)) {
+  if (!nzchar(code)) {
+    return(empty)
+  }
+
+  scan_state <- .scan_treesitter()
+  tree <- treesitter::parser_parse(scan_state$parser, code)
+  root <- treesitter::tree_root_node(tree)
+
+  if (treesitter::node_has_error(root)) {
     path_label <- if (!is.null(file_path) && nzchar(file_path)) {
       file_path
     } else {
@@ -258,89 +262,32 @@ scan_usage <- function(
     return(empty)
   }
 
-  acc <- new.env(parent = emptyenv())
-  acc$visit_idx <- 0L
-  acc$lib_pkgs <- character()
-  acc$lib_visit_idx <- integer()
-  acc$lib_is_attach <- logical()
-  acc$ns_pkgs <- character()
-  acc$ns_keys <- character()
-  acc$unqual_funs <- character()
-  acc$unqual_visit_idx <- integer()
-
-  lib_funs <- c("library", "require", "requireNamespace")
-  ns_ops <- c("::", ":::")
-  use_heads <- c("c", "list")
-  ignore_heads <- c(
-    "if",
-    "for",
-    "while",
-    "repeat",
-    "function",
-    "return",
-    "next",
-    "break",
-    "{",
-    "(",
-    "<-",
-    "<<-",
-    "->",
-    "->>",
-    "=",
-    "+",
-    "-",
-    "*",
-    "/",
-    "^",
-    "%%",
-    "%/%",
-    "%*%",
-    "%>%",
-    ":",
-    "|",
-    "&",
-    "||",
-    "&&",
-    "!",
-    "~",
-    "|>",
-    "$",
-    "@",
-    "[",
-    "[["
-  )
   export_names <- names(export_index)
   if (is.null(export_names)) {
     export_names <- character()
   }
 
-  for (i in seq_along(expr)) {
-    .ast_walk(
-      expr[[i]],
-      acc,
-      ignore_unqualified_functions,
-      lib_funs,
-      allowed_packages,
-      ns_ops,
-      use_heads,
-      ignore_heads,
-      export_names
-    )
-  }
+  lib_data <- .scan_attached_packages(
+    root = root,
+    scan_state = scan_state,
+    allowed_packages = allowed_packages
+  )
 
-  lib_data <- if (length(acc$lib_pkgs)) {
-    data.frame(
-      visit_idx = acc$lib_visit_idx,
-      pkg = acc$lib_pkgs,
-      is_attach = acc$lib_is_attach,
-      stringsAsFactors = FALSE
-    )
-  } else {
-    NULL
-  }
+  ns_hits <- .scan_namespaced_hits(
+    root = root,
+    scan_state = scan_state,
+    allowed_packages = allowed_packages
+  )
+
+  unqual <- .scan_unqualified_candidates(
+    root = root,
+    scan_state = scan_state,
+    export_names = export_names,
+    ignore_unqualified_functions = ignore_unqualified_functions
+  )
 
   resolved <- .resolve_candidates(
-    list(funs = acc$unqual_funs, idx = acc$unqual_visit_idx),
+    unqual = unqual,
     lib_data,
     allowed_packages,
     export_index,
@@ -348,293 +295,481 @@ scan_usage <- function(
   )
 
   list(
-    pkgs = c(acc$lib_pkgs, acc$ns_pkgs, resolved$pkgs),
-    keys = c(acc$ns_keys, resolved$keys),
+    pkgs = c(
+      if (is.null(lib_data)) character() else lib_data$pkg,
+      ns_hits$pkgs,
+      resolved$pkgs
+    ),
+    keys = c(ns_hits$keys, resolved$keys),
     ambiguous = resolved$ambiguous
   )
 }
 
-.ast_walk <- function(
-  x,
-  acc,
-  ignore_unqualified_functions,
-  lib_funs,
-  allowed_packages,
-  ns_ops,
-  use_heads,
-  ignore_heads,
-  export_names
-) {
-  if (is.null(x)) {
-    return(invisible(NULL))
+.scan_treesitter <- local({
+  bundle <- NULL
+
+  function() {
+    if (!is.null(bundle)) {
+      return(bundle)
+    }
+
+    language <- treesitter.r::language()
+
+    # Compile the R grammar queries once; scan_usage() reuses them for every file.
+    bundle <<- list(
+      parser = treesitter::parser(language),
+      attach_calls = treesitter::query(
+        language,
+        .scan_query_sources$attach_calls
+      ),
+      use_calls = treesitter::query(
+        language,
+        .scan_query_sources$use_calls
+      ),
+      plain_calls = treesitter::query(
+        language,
+        .scan_query_sources$plain_calls
+      ),
+      namespace_uses = treesitter::query(
+        language,
+        .scan_query_sources$namespace_uses
+      ),
+      member_calls = treesitter::query(
+        language,
+        .scan_query_sources$member_calls
+      )
+    )
+
+    bundle
+  }
+})
+
+.scan_attached_packages <- function(root, scan_state, allowed_packages) {
+  hits <- .scan_capture_rows(
+    root,
+    scan_state$attach_calls,
+    "call",
+    c("call", "head", "args")
+  )
+  if (!length(hits)) {
+    return(NULL)
   }
 
-  if (is.call(x)) {
-    acc$visit_idx <- acc$visit_idx + 1L
+  pkgs <- character()
+  visit_idx <- integer()
+  is_attach <- logical()
 
-    head <- x[[1L]]
-    head_name <- if (is.symbol(head)) as.character(head) else NULL
-    member_fun <- .ast_member_fun(head)
+  for (hit in hits) {
+    head_name <- .scan_node_name(hit$head)
+    pkg <- .scan_pkg_arg(hit$args)
+    if (is.null(head_name) || is.null(pkg)) {
+      next
+    }
 
-    # Member calls (e.g., obj$sample()) are package API methods, not
-    # language-level calls; don't suppress them via stdlib ignore lists.
+    idx <- as.integer(treesitter::node_start_byte(hit$call))
+    attached <- head_name != "requireNamespace"
+
+    if (!is.na(fastmatch::fmatch(pkg, allowed_packages))) {
+      pkgs <- c(pkgs, pkg)
+      visit_idx <- c(visit_idx, idx)
+      is_attach <- c(is_attach, attached)
+    }
+
+    if (pkg == "stanflow" && attached) {
+      core_pkgs <- core
+      if (length(core_pkgs)) {
+        core_pkgs <- core_pkgs[
+          !is.na(fastmatch::fmatch(core_pkgs, allowed_packages))
+        ]
+      }
+      if (length(core_pkgs)) {
+        pkgs <- c(pkgs, core_pkgs)
+        visit_idx <- c(visit_idx, rep.int(idx, length(core_pkgs)))
+        is_attach <- c(is_attach, rep.int(TRUE, length(core_pkgs)))
+      }
+    }
+  }
+
+  if (!length(pkgs)) {
+    return(NULL)
+  }
+
+  data.frame(
+    visit_idx = visit_idx,
+    pkg = pkgs,
+    is_attach = is_attach,
+    stringsAsFactors = FALSE
+  )
+}
+
+.scan_namespaced_hits <- function(root, scan_state, allowed_packages) {
+  use_hits <- .scan_use_hits(root, scan_state, allowed_packages)
+  namespace_hits <- .scan_namespace_hits(root, scan_state, allowed_packages)
+
+  list(
+    pkgs = c(use_hits$pkgs, namespace_hits$pkgs),
+    keys = c(use_hits$keys, namespace_hits$keys)
+  )
+}
+
+.scan_use_hits <- function(root, scan_state, allowed_packages) {
+  hits <- .scan_capture_rows(
+    root,
+    scan_state$use_calls,
+    "call",
+    c("args")
+  )
+  if (!length(hits)) {
+    return(list(pkgs = character(), keys = character()))
+  }
+
+  pkgs <- character()
+  keys <- character()
+
+  for (hit in hits) {
+    args <- .scan_argument_data(hit$args)
+    if (!length(args) || !is.null(args[[1L]]$name)) {
+      next
+    }
+
+    pkg <- .scan_node_name(args[[1L]]$value)
+    if (is.null(pkg) || is.na(fastmatch::fmatch(pkg, allowed_packages))) {
+      next
+    }
+
+    pkgs <- c(pkgs, pkg)
+    funs <- if (length(args) >= 2L && is.null(args[[2L]]$name)) {
+      .scan_use_funs(args[[2L]]$value)
+    } else {
+      character()
+    }
+    if (length(funs)) {
+      keys <- c(keys, paste0(pkg, "::", funs))
+    }
+  }
+
+  list(pkgs = pkgs, keys = keys)
+}
+
+.scan_namespace_hits <- function(root, scan_state, allowed_packages) {
+  hits <- .scan_capture_rows(
+    root,
+    scan_state$namespace_uses,
+    "ns",
+    c("pkg", "fun")
+  )
+  if (!length(hits)) {
+    return(list(pkgs = character(), keys = character()))
+  }
+
+  pkgs <- character()
+  keys <- character()
+
+  for (hit in hits) {
+    pkg <- .scan_node_name(hit$pkg)
+    fun <- .scan_node_name(hit$fun)
     if (
-      !is.null(member_fun) &&
-        !is.na(fastmatch::fmatch(member_fun, export_names))
+      is.null(pkg) ||
+        is.null(fun) ||
+        is.na(fastmatch::fmatch(pkg, allowed_packages))
     ) {
-      acc$unqual_funs <- c(acc$unqual_funs, member_fun)
-      acc$unqual_visit_idx <- c(acc$unqual_visit_idx, acc$visit_idx)
+      next
     }
 
-    if (!is.null(head_name)) {
-      if (!is.na(fastmatch::fmatch(head_name, ns_ops)) && length(x) >= 3L) {
-        pkg <- .ast_lit_name(x[[2L]])
-        fun <- .ast_lit_name(x[[3L]])
-        if (
-          !is.null(pkg) &&
-            !is.null(fun) &&
-            !is.na(fastmatch::fmatch(pkg, allowed_packages))
-        ) {
-          acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
-          acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", fun))
-        }
-      } else if (head_name == "use") {
-        pkg <- .ast_get_lib_pkg(x)
-        if (!is.null(pkg) && !is.na(fastmatch::fmatch(pkg, allowed_packages))) {
-          acc$ns_pkgs <- c(acc$ns_pkgs, pkg)
-          funs <- .ast_get_use_funs(x, use_heads)
-          if (length(funs)) {
-            acc$ns_keys <- c(acc$ns_keys, paste0(pkg, "::", funs))
-          }
-        }
-      } else if (!is.na(fastmatch::fmatch(head_name, lib_funs))) {
-        pkg <- .ast_get_lib_pkg(x)
-        if (!is.null(pkg)) {
-          is_allowed <- !is.na(fastmatch::fmatch(pkg, allowed_packages))
-          is_attach <- head_name != "requireNamespace"
-
-          if (is_allowed) {
-            acc$lib_pkgs <- c(acc$lib_pkgs, pkg)
-            acc$lib_visit_idx <- c(acc$lib_visit_idx, acc$visit_idx)
-            acc$lib_is_attach <- c(acc$lib_is_attach, is_attach)
-          }
-
-          if (pkg == "stanflow" && is_attach) {
-            core_pkgs <- core
-            if (length(core_pkgs)) {
-              core_pkgs <- core_pkgs[
-                !is.na(fastmatch::fmatch(core_pkgs, allowed_packages))
-              ]
-            }
-            if (length(core_pkgs)) {
-              acc$lib_pkgs <- c(acc$lib_pkgs, core_pkgs)
-              acc$lib_visit_idx <- c(
-                acc$lib_visit_idx,
-                rep.int(acc$visit_idx, length(core_pkgs))
-              )
-              acc$lib_is_attach <- c(
-                acc$lib_is_attach,
-                rep.int(TRUE, length(core_pkgs))
-              )
-            }
-          }
-        }
-      } else if (!is.na(fastmatch::fmatch(head_name, ignore_heads))) {
-        # Skip language keywords, operators, and subsetting.
-      } else if (is.na(fastmatch::fmatch(head_name, export_names))) {
-        # Ignore non-Stan calls before consulting broader ignore lists.
-      } else if (
-        is.na(fastmatch::fmatch(head_name, ignore_unqualified_functions))
-      ) {
-        acc$unqual_funs <- c(acc$unqual_funs, head_name)
-        acc$unqual_visit_idx <- c(acc$unqual_visit_idx, acc$visit_idx)
-      }
-    }
-
-    if (is.call(head)) {
-      .ast_walk(
-        head,
-        acc,
-        ignore_unqualified_functions,
-        lib_funs,
-        allowed_packages,
-        ns_ops,
-        use_heads,
-        ignore_heads,
-        export_names
-      )
-    }
-    n <- length(x)
-    if (n >= 2L) {
-      for (i in 2L:n) {
-        .ast_walk(
-          x[[i]],
-          acc,
-          ignore_unqualified_functions,
-          lib_funs,
-          allowed_packages,
-          ns_ops,
-          use_heads,
-          ignore_heads,
-          export_names
-        )
-      }
-    }
-    return(invisible(NULL))
+    pkgs <- c(pkgs, pkg)
+    keys <- c(keys, paste0(pkg, "::", fun))
   }
 
-  if (is.expression(x) || is.pairlist(x) || is.list(x)) {
-    for (i in seq_along(x)) {
-      .ast_walk(
-        x[[i]],
-        acc,
-        ignore_unqualified_functions,
-        lib_funs,
-        allowed_packages,
-        ns_ops,
-        use_heads,
-        ignore_heads,
-        export_names
-      )
-    }
-    return(invisible(NULL))
-  }
-
-  invisible(NULL)
+  list(pkgs = pkgs, keys = keys)
 }
 
-.ast_lit_name <- function(x) {
-  if (is.symbol(x)) {
-    return(as.character(x))
+.scan_unqualified_candidates <- function(
+  root,
+  scan_state,
+  export_names,
+  ignore_unqualified_functions
+) {
+  plain <- .scan_plain_candidates(
+    root,
+    scan_state,
+    export_names,
+    ignore_unqualified_functions
+  )
+  member <- .scan_member_candidates(root, scan_state, export_names)
+
+  list(
+    funs = c(plain$funs, member$funs),
+    idx = c(plain$idx, member$idx)
+  )
+}
+
+.scan_plain_candidates <- function(
+  root,
+  scan_state,
+  export_names,
+  ignore_unqualified_functions
+) {
+  hits <- .scan_capture_rows(
+    root,
+    scan_state$plain_calls,
+    "call",
+    c("call", "head")
+  )
+  if (!length(hits)) {
+    return(list(funs = character(), idx = integer()))
   }
-  if (is.character(x) && length(x) == 1L) {
-    return(x)
+
+  funs <- character()
+  idx <- integer()
+
+  for (hit in hits) {
+    head_name <- .scan_node_name(hit$head)
+    if (
+      is.null(head_name) ||
+        !is.na(fastmatch::fmatch(head_name, .scan_special_heads)) ||
+        is.na(fastmatch::fmatch(head_name, export_names)) ||
+        !is.na(fastmatch::fmatch(head_name, ignore_unqualified_functions))
+    ) {
+      next
+    }
+
+    funs <- c(funs, head_name)
+    idx <- c(idx, as.integer(treesitter::node_start_byte(hit$call)))
   }
+
+  list(funs = funs, idx = idx)
+}
+
+.scan_member_candidates <- function(root, scan_state, export_names) {
+  hits <- .scan_capture_rows(
+    root,
+    scan_state$member_calls,
+    "call",
+    c("call", "member")
+  )
+  if (!length(hits)) {
+    return(list(funs = character(), idx = integer()))
+  }
+
+  funs <- character()
+  idx <- integer()
+
+  for (hit in hits) {
+    member_fun <- .scan_node_name(hit$member)
+    if (
+      is.null(member_fun) ||
+        is.na(fastmatch::fmatch(member_fun, export_names))
+    ) {
+      next
+    }
+
+    funs <- c(funs, member_fun)
+    idx <- c(idx, as.integer(treesitter::node_start_byte(hit$call)))
+  }
+
+  list(funs = funs, idx = idx)
+}
+
+.scan_capture_rows <- function(root, query, order_capture, fields) {
+  matches <- .scan_sort_matches(
+    treesitter::query_matches(query, root),
+    order_capture
+  )
+  if (!length(matches)) {
+    return(list())
+  }
+
+  lapply(
+    matches,
+    \(match) {
+      captures <- lapply(fields, \(field) .scan_match_node(match, field))
+      names(captures) <- fields
+      captures
+    }
+  )
+}
+
+.scan_match_node <- function(match, name) {
+  idx <- fastmatch::fmatch(name, match$name)
+  if (is.na(idx)) {
+    return(NULL)
+  }
+
+  match$node[[idx]]
+}
+
+.scan_sort_matches <- function(matches, capture_name) {
+  matches <- unlist(matches, recursive = FALSE, use.names = FALSE)
+  if (!length(matches)) {
+    return(list())
+  }
+
+  ord <- order(
+    vapply(
+      matches,
+      \(match) {
+        node <- .scan_match_node(match, capture_name)
+        if (is.null(node)) {
+          return(Inf)
+        }
+        treesitter::node_start_byte(node)
+      },
+      numeric(1)
+    ),
+    seq_along(matches)
+  )
+
+  matches[ord]
+}
+
+.scan_node_name <- function(node) {
+  if (is.null(node)) {
+    return(NULL)
+  }
+
+  node_type <- treesitter::node_type(node)
+  if (node_type == "identifier") {
+    return(.scan_identifier_name(node))
+  }
+  if (node_type == "string") {
+    return(.scan_string_name(node))
+  }
+
   NULL
 }
 
-.ast_member_fun <- function(head) {
-  if (!is.call(head) || !length(head)) {
-    return(NULL)
+.scan_identifier_name <- function(node) {
+  text <- treesitter::node_text(node)
+  n <- nchar(text, type = "chars")
+
+  if (
+    n >= 2L &&
+      startsWith(text, "`") &&
+      substr(text, n, n) == "`"
+  ) {
+    return(substr(text, 2L, n - 1L))
   }
 
-  op <- head[[1L]]
-  if (!is.symbol(op)) {
-    return(NULL)
-  }
-
-  op_name <- as.character(op)
-
-  if (op_name %in% c("$", "@") && length(head) >= 3L) {
-    return(.ast_lit_name(head[[3L]]))
-  }
-
-  if (op_name == "(" && length(head) >= 2L) {
-    return(.ast_member_fun(head[[2L]]))
-  }
-
-  NULL
+  text
 }
 
-.ast_get_lib_pkg <- function(call) {
-  n <- length(call)
-  if (n <= 1L) {
+.scan_string_name <- function(node) {
+  content <- treesitter::node_child_by_field_name(node, "content")
+  if (is.null(content)) {
+    return("")
+  }
+
+  treesitter::node_text(content)
+}
+
+.scan_argument_data <- function(args_node) {
+  if (is.null(args_node)) {
+    return(list())
+  }
+
+  arg_nodes <- treesitter::node_named_children(args_node)
+  if (!length(arg_nodes)) {
+    return(list())
+  }
+  arg_nodes <- arg_nodes[
+    vapply(arg_nodes, treesitter::node_type, character(1)) == "argument"
+  ]
+  if (!length(arg_nodes)) {
+    return(list())
+  }
+
+  lapply(
+    arg_nodes,
+    \(arg_node) {
+      list(
+        name = .scan_node_name(
+          treesitter::node_child_by_field_name(arg_node, "name")
+        ),
+        value = treesitter::node_child_by_field_name(arg_node, "value")
+      )
+    }
+  )
+}
+
+.scan_pkg_arg_index <- function(args) {
+  if (!length(args)) {
+    return(NA_integer_)
+  }
+
+  arg_names <- vapply(
+    args,
+    \(arg) {
+      if (is.null(arg$name)) NA_character_ else arg$name
+    },
+    character(1)
+  )
+
+  for (arg_name in .scan_pkg_arg_names) {
+    idx <- fastmatch::fmatch(arg_name, arg_names)
+    if (!is.na(idx)) {
+      return(idx)
+    }
+  }
+
+  1L
+}
+
+.scan_pkg_arg <- function(args_node) {
+  args <- .scan_argument_data(args_node)
+  if (!length(args)) {
     return(NULL)
   }
 
-  nms <- names(call)
-  arg_nms <- if (!is.null(nms) && n >= 2L) nms[-1L] else NULL
-  pkg_i <- if (!is.null(arg_nms)) {
-    fastmatch::fmatch("package", arg_nms)
-  } else {
-    NA_integer_
-  }
-  pkg_j <- if (!is.null(arg_nms)) {
-    fastmatch::fmatch("pkg", arg_nms)
-  } else {
-    NA_integer_
+  idx <- .scan_pkg_arg_index(args)
+  if (is.na(idx) || idx > length(args)) {
+    return(NULL)
   }
 
-  arg_idx <- if (!is.na(pkg_i)) {
-    pkg_i + 1L
-  } else if (!is.na(pkg_j)) {
-    pkg_j + 1L
-  } else {
-    2L
-  }
-
-  .ast_lit_name(call[[arg_idx]])
+  .scan_node_name(args[[idx]]$value)
 }
 
-.ast_collect_use_funs <- function(x, use_heads) {
-  if (is.null(x)) {
+.scan_use_funs <- function(node) {
+  if (is.null(node)) {
     return(character())
   }
 
-  lit <- .ast_lit_name(x)
+  lit <- .scan_node_name(node)
   if (!is.null(lit)) {
     return(lit)
   }
-
-  if (is.call(x)) {
-    head <- x[[1L]]
-    head_name <- if (is.symbol(head)) as.character(head) else NULL
-    if (
-      !is.null(head_name) && !is.na(fastmatch::fmatch(head_name, use_heads))
-    ) {
-      n <- length(x)
-      if (n <= 1L) {
-        return(character())
-      }
-      out <- vector("list", n - 1L)
-      for (i in 2L:n) {
-        out[[i - 1L]] <- .ast_collect_use_funs(x[[i]], use_heads = use_heads)
-      }
-      return(unlist(out, use.names = FALSE))
-    }
-  }
-
-  character()
-}
-
-.ast_get_use_funs <- function(call, use_heads) {
-  n <- length(call)
-  if (n <= 2L) {
+  if (treesitter::node_type(node) != "call") {
     return(character())
   }
 
-  nms <- names(call)
-  arg_nms <- if (!is.null(nms)) nms[-1L] else NULL
-  pkg_i <- if (!is.null(arg_nms)) {
-    fastmatch::fmatch("pkg", arg_nms)
-  } else {
-    NA_integer_
-  }
-  pkg_j <- if (!is.null(arg_nms)) {
-    fastmatch::fmatch("package", arg_nms)
-  } else {
-    NA_integer_
+  head_name <- .scan_node_name(
+    treesitter::node_child_by_field_name(node, "function")
+  )
+  if (is.null(head_name) || head_name != "c") {
+    return(character())
   }
 
-  pkg_idx <- if (!is.na(pkg_i)) {
-    pkg_i
-  } else if (!is.na(pkg_j)) {
-    pkg_j
-  } else {
-    1L
+  args <- .scan_argument_data(
+    treesitter::node_child_by_field_name(node, "arguments")
+  )
+  if (!length(args)) {
+    return(character())
   }
 
-  out <- vector("list", n - 2L)
-  j <- 0L
-  for (i in 2L:n) {
-    arg_idx <- i - 1L
-    if (arg_idx == pkg_idx) {
-      next
+  out <- lapply(
+    args,
+    \(arg) {
+      if (!is.null(arg$name)) {
+        return(character())
+      }
+      fun <- .scan_node_name(arg$value)
+      if (is.null(fun)) character() else fun
     }
-    j <- j + 1L
-    out[[j]] <- .ast_collect_use_funs(call[[i]], use_heads = use_heads)
-  }
+  )
   funs <- unlist(out, use.names = FALSE)
+  if (!length(funs)) {
+    return(character())
+  }
+
   funs[nzchar(funs)]
 }
 

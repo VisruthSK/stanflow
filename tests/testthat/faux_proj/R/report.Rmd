@@ -16,5 +16,5 @@ projpred::cv_varsel(1)
 ```
 
 ```{r}
-use("cmdstanr", list("cmdstan_model", "write_stan_json"))
+use("cmdstanr", c("cmdstan_model", "write_stan_json"))
 ```

@@ -27,6 +27,8 @@ Imports:
     posterior,
     projpred,
     shinystan,
+    treesitter,
+    treesitter.r,
     withr
 Suggests:
     brms,

@@ -123,6 +123,89 @@ if (length(missing) > 0) {
   ".cache"
 )
 
+# Scanner query sources and helper names
+.scan_special_heads <- c("library", "require", "requireNamespace", "use")
+.scan_pkg_arg_names <- c("package", "pkg")
+
+.scan_query_sources <- list(
+  attach_calls = paste(
+    "(call",
+    "  function: (identifier) @head",
+    "  arguments: (arguments) @args",
+    "  (#eq? @head \"library\")",
+    ") @call",
+    "",
+    "(call",
+    "  function: (identifier) @head",
+    "  arguments: (arguments) @args",
+    "  (#eq? @head \"require\")",
+    ") @call",
+    "",
+    "(call",
+    "  function: (identifier) @head",
+    "  arguments: (arguments) @args",
+    "  (#eq? @head \"requireNamespace\")",
+    ") @call",
+    sep = "\n"
+  ),
+  use_calls = paste(
+    "(call",
+    "  function: (identifier) @head",
+    "  arguments: (arguments) @args",
+    "  (#eq? @head \"use\")",
+    ") @call",
+    sep = "\n"
+  ),
+  plain_calls = paste(
+    "(call",
+    "  function: (identifier) @head",
+    "  arguments: (arguments) @args",
+    ") @call",
+    sep = "\n"
+  ),
+  namespace_uses = paste(
+    "(namespace_operator",
+    "  lhs: (identifier) @pkg",
+    "  rhs: (identifier) @fun",
+    ") @ns",
+    sep = "\n"
+  ),
+  member_calls = paste(
+    "(call",
+    "  function: (extract_operator",
+    "    rhs: (identifier) @member",
+    "  )",
+    "  arguments: (arguments) @args",
+    ") @call",
+    "",
+    "(call",
+    "  function: (extract_operator",
+    "    rhs: (string) @member",
+    "  )",
+    "  arguments: (arguments) @args",
+    ") @call",
+    "",
+    "(call",
+    "  function: (parenthesized_expression",
+    "    body: (extract_operator",
+    "      rhs: (identifier) @member",
+    "    )",
+    "  )",
+    "  arguments: (arguments) @args",
+    ") @call",
+    "",
+    "(call",
+    "  function: (parenthesized_expression",
+    "    body: (extract_operator",
+    "      rhs: (string) @member",
+    "    )",
+    "  )",
+    "  arguments: (arguments) @args",
+    ") @call",
+    sep = "\n"
+  )
+)
+
 assign_citation <- function(pkg, funs, entries) {
   for (fun in funs) {
     .stan_citation_funs[[paste0(pkg, "::", fun)]] <- entries
@@ -258,6 +341,9 @@ save(
   .stdlib_funs,
   .stan_pkg_versions,
   .scan_skip_dirs,
+  .scan_pkg_arg_names,
+  .scan_query_sources,
+  .scan_special_heads,
   file = "R/sysdata.rda",
   compress = "xz"
 )

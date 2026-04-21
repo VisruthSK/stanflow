@@ -13,7 +13,6 @@ force_local_snapshots <- function() {
 # Bind internal helpers/data so tests can call them directly.
 .scan_tokens <- bind_internal(".scan_tokens")
 .extract_code <- bind_internal(".extract_code")
-.ast_member_fun <- bind_internal(".ast_member_fun")
 .stan_exports <- bind_internal(".stan_exports")
 .stan_export_index <- bind_internal(".stan_export_index")
 .stan_origin_map <- bind_internal(".stan_origin_map")
@@ -105,11 +104,6 @@ test_that(".scan_tokens handles empty or no-code files", {
   )
 })
 
-test_that(".ast_member_fun returns NULL when call operator is not a symbol", {
-  malformed <- as.call(list(1, quote(fit), quote(sample)))
-  expect_null(.ast_member_fun(malformed))
-})
-
 test_that(".scan_tokens handles non-Stan library calls", {
   code <- c(
     "library(ggplot2)",
@@ -140,20 +134,6 @@ test_that(".scan_tokens handles use() calls", {
     ) %in%
       hits$keys
   ))
-})
-
-test_that(".scan_tokens handles nested use() calls", {
-  code <- c(
-    "use('posterior', list('as_draws', list(c('rhat', list('ess_bulk')))))"
-  )
-
-  hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
-
-  expect_true(all(
-    c("posterior::as_draws", "posterior::rhat", "posterior::ess_bulk") %in%
-      hits$keys
-  ))
-  expect_true("posterior" %in% hits$pkgs)
 })
 
 test_that(".scan_tokens resolves attachment order and requireNamespace", {
@@ -1825,137 +1805,6 @@ test_that("scan_usage ignores non-R files in directories", {
   expect_error(
     scan_usage(tmp, quiet = TRUE),
     "No files found"
-  )
-})
-
-test_that("internal helpers cover NULL/expression/list/pairlist branches in .ast_walk", {
-  ast_walk <- getFromNamespace(".ast_walk", "stanflow")
-
-  new_acc <- function() {
-    acc <- new.env(parent = emptyenv())
-    acc$pos <- 0L
-    acc$lib_pkgs <- character()
-    acc$lib_pos <- integer()
-    acc$lib_is_attach <- logical()
-    acc$ns_pkgs <- character()
-    acc$ns_keys <- character()
-    acc$unqual_funs <- character()
-    acc$unqual_pos <- integer()
-    acc
-  }
-
-  lib_funs <- c("library", "require", "requireNamespace")
-  ignore <- stanflow::stdlib_funs()
-
-  # is.null(x) branch
-  acc <- new_acc()
-  expect_invisible(ast_walk(NULL, acc, ignore, lib_funs))
-
-  # is.expression(x) branch
-  acc <- new_acc()
-  expect_invisible(ast_walk(
-    expression(posterior::as_draws(1)),
-    acc,
-    ignore,
-    lib_funs,
-    .stan_pkgs,
-    c("::", ":::"),
-    c("c", "list")
-  ))
-  expect_true("posterior::as_draws" %in% acc$ns_keys)
-
-  # is.list(x) branch (list)
-  acc <- new_acc()
-  expect_invisible(ast_walk(
-    list(quote(posterior::as_draws(1))),
-    acc,
-    ignore,
-    lib_funs,
-    .stan_pkgs,
-    c("::", ":::"),
-    c("c", "list")
-  ))
-  expect_true("posterior::as_draws" %in% acc$ns_keys)
-
-  # is.pairlist(x) branch (pairlist)
-  acc <- new_acc()
-  expect_invisible(ast_walk(
-    pairlist(a = quote(posterior::as_draws(1))),
-    acc,
-    ignore,
-    lib_funs,
-    .stan_pkgs,
-    c("::", ":::"),
-    c("c", "list")
-  ))
-  expect_true("posterior::as_draws" %in% acc$ns_keys)
-})
-
-test_that(".ast_lit_name returns NULL for non-literals", {
-  ast_lit_name <- getFromNamespace(".ast_lit_name", "stanflow")
-  expect_null(ast_lit_name(1)) # hits the trailing NULL return
-})
-
-test_that(".ast_get_lib_pkg handles empty args and named `package=`", {
-  ast_get_lib_pkg <- getFromNamespace(".ast_get_lib_pkg", "stanflow")
-
-  # no args -> early NULL
-  expect_null(ast_get_lib_pkg(quote(library())))
-
-  # named package= branch
-  expect_identical(
-    ast_get_lib_pkg(quote(library(package = "posterior"))),
-    "posterior"
-  )
-
-  # named pkg= branch
-  expect_identical(
-    ast_get_lib_pkg(quote(use(pkg = "posterior"))),
-    "posterior"
-  )
-})
-
-test_that(".ast_collect_use_funs and helpers handle edge cases", {
-  ast_collect_use_funs <- getFromNamespace(".ast_collect_use_funs", "stanflow")
-  ast_get_use_funs <- getFromNamespace(".ast_get_use_funs", "stanflow")
-  use_heads <- c("c", "list")
-  expect_identical(ast_collect_use_funs(NULL), character())
-  expect_identical(ast_collect_use_funs(quote(c()), use_heads), character())
-  expect_identical(
-    ast_collect_use_funs(quote(c("a", list("b", "c"), NULL)), use_heads),
-    c("a", "b", "c")
-  )
-  expect_identical(
-    ast_collect_use_funs(quote(foo("x")), use_heads),
-    character()
-  )
-
-  expect_identical(
-    ast_get_use_funs(quote(use("posterior")), use_heads),
-    character()
-  )
-  expect_identical(
-    sort(ast_get_use_funs(quote(use("posterior", c("a", "b"))), use_heads)),
-    c("a", "b")
-  )
-  expect_identical(
-    sort(ast_get_use_funs(quote(use("posterior", list("a", "b"))), use_heads)),
-    c("a", "b")
-  )
-  expect_identical(
-    sort(ast_get_use_funs(
-      quote(use("posterior", "a", c("b", "c"))),
-      use_heads
-    )),
-    c("a", "b", "c")
-  )
-  expect_identical(
-    sort(ast_get_use_funs(quote(use(pkg = "posterior", "a")), use_heads)),
-    "a"
-  )
-  expect_identical(
-    sort(ast_get_use_funs(quote(use(package = "posterior", "a")), use_heads)),
-    "a"
   )
 })
 

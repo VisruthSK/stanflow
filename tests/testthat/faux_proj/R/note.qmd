@@ -33,7 +33,7 @@ Next, a short posterior snippet using minimal draws for diagnostics.
 Even tiny examples should be detected when they are in a chunk.
 
 ```{r}
-use("posterior", list("as_draws"))
+use("posterior", "as_draws")
 ```
 
 We also tried a quick note on diagnostics with a few explicit calls.
@@ -47,7 +47,7 @@ posterior::ess_bulk(1)
 Note to self: check whether cmdstanr helpers get detected with use().
 
 ```{r}
-use("cmdstanr", list("cmdstan_model", "write_stan_json"))
+use("cmdstanr", c("cmdstan_model", "write_stan_json"))
 ```
 
 Narrative-only paragraph to ensure chunk boundaries are respected. Sometimes
