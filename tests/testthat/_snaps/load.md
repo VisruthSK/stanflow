@@ -17,6 +17,26 @@
     * brms     2.22.0          * rstan    2.36.0.9000
     v cmdstanr 0.9.0.9000      v rstanarm 2.32.1 
 
+# flow_check prints and returns messages
+
+    core-msg
+    backend-msg
+    conflict-msg
+
+# flow_check includes update status when requested (no updates)
+
+    core-msg
+    backend-msg
+    conflict-msg
+    up-to-date-msg
+
+# flow_check includes update list when packages are behind
+
+    core-msg
+    backend-msg
+    conflict-msg
+    updates-msg
+
 # update_check_message prints up-to-date status
 
     -- Available updates -------------------------------------- stanflow_update() --

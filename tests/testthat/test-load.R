@@ -106,9 +106,10 @@ test_that("flow_check prints and returns messages", {
     .package = "stanflow"
   )
 
-  withr::local_output_sink(withr::local_tempfile())
-  result <- flow_check()
-  expect_identical(result, c("core-msg", "backend-msg", "conflict-msg"))
+  expect_snapshot_output({
+    result <- flow_check()
+    expect_identical(result, c("core-msg", "backend-msg", "conflict-msg"))
+  })
 })
 
 test_that("flow_check includes update status when requested (no updates)", {
@@ -117,24 +118,17 @@ test_that("flow_check includes update status when requested (no updates)", {
     backends_attach_message = function(...) "backend-msg",
     stanflow_conflicts = function(...) "conflicts",
     stanflow_conflict_message = function(...) "conflict-msg",
-    stanflow_deps = function(...) {
-      data.frame(
-        package = c("cmdstanr", "posterior"),
-        remote = c("1.2.0", "1.6.0"),
-        local = c("1.2.0", "1.6.0"),
-        behind = c(FALSE, FALSE),
-        stringsAsFactors = FALSE
-      )
-    },
+    update_check_message = function(...) "up-to-date-msg",
     .package = "stanflow"
   )
 
-  withr::local_output_sink(withr::local_tempfile())
-  result <- flow_check(check_updates = TRUE)
-  expect_identical(
-    result,
-    c("core-msg", "backend-msg", "conflict-msg", update_check_message())
-  )
+  expect_snapshot_output({
+    result <- flow_check(check_updates = TRUE)
+    expect_identical(
+      result,
+      c("core-msg", "backend-msg", "conflict-msg", "up-to-date-msg")
+    )
+  })
 })
 
 test_that("flow_check includes update list when packages are behind", {
@@ -143,24 +137,17 @@ test_that("flow_check includes update list when packages are behind", {
     backends_attach_message = function(...) "backend-msg",
     stanflow_conflicts = function(...) "conflicts",
     stanflow_conflict_message = function(...) "conflict-msg",
-    stanflow_deps = function(...) {
-      data.frame(
-        package = c("cmdstanr", "posterior"),
-        remote = c("1.2.0", "1.6.0"),
-        local = c("1.1.0", "1.5.0"),
-        behind = c(TRUE, TRUE),
-        stringsAsFactors = FALSE
-      )
-    },
+    update_check_message = function(...) "updates-msg",
     .package = "stanflow"
   )
 
-  withr::local_output_sink(withr::local_tempfile())
-  result <- flow_check(check_updates = TRUE)
-  expect_identical(
-    result,
-    c("core-msg", "backend-msg", "conflict-msg", update_check_message())
-  )
+  expect_snapshot_output({
+    result <- flow_check(check_updates = TRUE)
+    expect_identical(
+      result,
+      c("core-msg", "backend-msg", "conflict-msg", "updates-msg")
+    )
+  })
 })
 
 test_that("update_check_message prints up-to-date status", {

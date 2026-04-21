@@ -1620,6 +1620,48 @@ test_that("scan_usage skips default directories", {
   expect_equal(res$functions, character())
 })
 
+test_that(".scan_dir_files prunes skipped directories during traversal", {
+  tmp <- withr::local_tempdir()
+  keep_path <- file.path(tmp, "R")
+  skip_path <- file.path(tmp, "renv", "library")
+  dir.create(keep_path, recursive = TRUE)
+  dir.create(skip_path, recursive = TRUE)
+
+  keep_file <- write_file(file.path(keep_path, "analysis.R"), "1 + 1")
+  write_file(file.path(skip_path, "vendored.R"), "2 + 2")
+
+  visited <- character()
+  base_list_files <- base::list.files
+
+  local_mocked_bindings(
+    list.files = function(path, ...) {
+      dots <- list(...)
+      if (isTRUE(dots$recursive)) {
+        stop("recursive traversal reached base::list.files()")
+      }
+      visited <<- c(
+        visited,
+        normalizePath(path, winslash = "/", mustWork = TRUE)
+      )
+      base_list_files(path, ...)
+    },
+    .package = "base"
+  )
+
+  out <- .scan_dir_files(tmp, "renv")
+
+  expect_equal(out, normalizePath(keep_file, winslash = "/", mustWork = FALSE))
+  expect_true(normalizePath(tmp, winslash = "/", mustWork = TRUE) %in% visited)
+  expect_true(
+    normalizePath(keep_path, winslash = "/", mustWork = TRUE) %in% visited
+  )
+  expect_false(
+    normalizePath(file.path(tmp, "renv"), winslash = "/", mustWork = TRUE) %in%
+      visited
+  )
+  expect_false(skip_path %in% visited)
+})
+
 test_that("scan_usage respects custom skip_dirs", {
   tmp <- withr::local_tempdir()
   skip_path <- file.path(tmp, "vendor", "lib")

@@ -140,29 +140,59 @@ scan_usage <- function(
   paste0("(^|/)(?:", paste(escaped, collapse = "|"), ")(/|$)")
 }
 
-.scan_dir_files <- function(dir_path, skip_dirs) {
-  dir_path <- normalizePath(dir_path, winslash = "/", mustWork = TRUE)
-  files <- list.files(
-    dir_path,
-    recursive = TRUE,
-    pattern = "\\.(R|Rmd|Qmd)$",
-    ignore.case = TRUE,
+.scan_dir_walk <- function(path, skip_dirs, file_cb) {
+  entries <- list.files(
+    path,
     all.files = TRUE,
     full.names = TRUE,
     no.. = TRUE
   )
-  files <- normalizePath(
-    files[!dir.exists(files)],
-    winslash = "/",
-    mustWork = FALSE
-  )
-
-  if (length(skip_dirs) && length(files)) {
-    rel_files <- sub(paste0("^", dir_path, "/?"), "", files)
-    files <- files[!grepl(.scan_skip_regex(skip_dirs), rel_files)]
+  if (!length(entries)) {
+    return(invisible(NULL))
   }
 
-  files
+  is_dir <- dir.exists(entries)
+
+  if (any(is_dir)) {
+    dirs <- entries[is_dir]
+    if (length(skip_dirs)) {
+      keep <- is.na(fastmatch::fmatch(basename(dirs), skip_dirs))
+      dirs <- dirs[keep]
+    }
+    if (length(dirs)) {
+      for (dir in dirs) {
+        .scan_dir_walk(dir, skip_dirs, file_cb)
+      }
+    }
+  }
+
+  if (!all(is_dir)) {
+    file_cb(entries[!is_dir])
+  }
+
+  invisible(NULL)
+}
+
+.scan_dir_files <- function(dir_path, skip_dirs) {
+  dir_path <- normalizePath(dir_path, winslash = "/", mustWork = TRUE)
+  files <- character()
+  n <- 0L
+
+  add_code_files <- function(paths) {
+    code_files <- paths[grepl("\\.(R|Rmd|Qmd)$", paths, ignore.case = TRUE)]
+    if (!length(code_files)) {
+      return(invisible(NULL))
+    }
+
+    idx <- seq.int(n + 1L, n + length(code_files))
+    files[idx] <<- code_files
+    n <<- idx[length(idx)]
+
+    invisible(NULL)
+  }
+
+  .scan_dir_walk(dir_path, skip_dirs, add_code_files)
+  normalizePath(files, winslash = "/", mustWork = FALSE)
 }
 
 .collect_unique <- function(hits, field) {
