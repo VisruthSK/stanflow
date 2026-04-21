@@ -309,6 +309,10 @@ scan_usage <- function(
     "[",
     "[["
   )
+  export_names <- names(export_index)
+  if (is.null(export_names)) {
+    export_names <- character()
+  }
 
   for (i in seq_along(expr)) {
     .ast_walk(
@@ -319,7 +323,8 @@ scan_usage <- function(
       allowed_packages,
       ns_ops,
       use_heads,
-      ignore_heads
+      ignore_heads,
+      export_names
     )
   }
 
@@ -357,7 +362,8 @@ scan_usage <- function(
   allowed_packages,
   ns_ops,
   use_heads,
-  ignore_heads
+  ignore_heads,
+  export_names
 ) {
   if (is.null(x)) {
     return(invisible(NULL))
@@ -372,7 +378,10 @@ scan_usage <- function(
 
     # Member calls (e.g., obj$sample()) are package API methods, not
     # language-level calls; don't suppress them via stdlib ignore lists.
-    if (!is.null(member_fun)) {
+    if (
+      !is.null(member_fun) &&
+        !is.na(fastmatch::fmatch(member_fun, export_names))
+    ) {
       acc$unqual_funs <- c(acc$unqual_funs, member_fun)
       acc$unqual_visit_idx <- c(acc$unqual_visit_idx, acc$visit_idx)
     }
@@ -432,6 +441,8 @@ scan_usage <- function(
         }
       } else if (!is.na(fastmatch::fmatch(head_name, ignore_heads))) {
         # Skip language keywords, operators, and subsetting.
+      } else if (is.na(fastmatch::fmatch(head_name, export_names))) {
+        # Ignore non-Stan calls before consulting broader ignore lists.
       } else if (
         is.na(fastmatch::fmatch(head_name, ignore_unqualified_functions))
       ) {
@@ -449,21 +460,23 @@ scan_usage <- function(
         allowed_packages,
         ns_ops,
         use_heads,
-        ignore_heads
+        ignore_heads,
+        export_names
       )
     }
-    children <- as.list(x)[-1L]
-    if (length(children)) {
-      for (i in seq_along(children)) {
+    n <- length(x)
+    if (n >= 2L) {
+      for (i in 2L:n) {
         .ast_walk(
-          children[[i]],
+          x[[i]],
           acc,
           ignore_unqualified_functions,
           lib_funs,
           allowed_packages,
           ns_ops,
           use_heads,
-          ignore_heads
+          ignore_heads,
+          export_names
         )
       }
     }
@@ -480,7 +493,8 @@ scan_usage <- function(
         allowed_packages,
         ns_ops,
         use_heads,
-        ignore_heads
+        ignore_heads,
+        export_names
       )
     }
     return(invisible(NULL))
@@ -523,24 +537,33 @@ scan_usage <- function(
 }
 
 .ast_get_lib_pkg <- function(call) {
-  args <- as.list(call)[-1L]
-  if (!length(args)) {
+  n <- length(call)
+  if (n <= 1L) {
     return(NULL)
   }
 
-  nms <- names(args)
-  pkg_i <- if (!is.null(nms)) fastmatch::fmatch("package", nms) else NA_integer_
-  pkg_j <- if (!is.null(nms)) fastmatch::fmatch("pkg", nms) else NA_integer_
-
-  arg <- if (!is.na(pkg_i)) {
-    args[[pkg_i]]
-  } else if (!is.na(pkg_j)) {
-    args[[pkg_j]]
+  nms <- names(call)
+  arg_nms <- if (!is.null(nms) && n >= 2L) nms[-1L] else NULL
+  pkg_i <- if (!is.null(arg_nms)) {
+    fastmatch::fmatch("package", arg_nms)
   } else {
-    args[[1L]]
+    NA_integer_
+  }
+  pkg_j <- if (!is.null(arg_nms)) {
+    fastmatch::fmatch("pkg", arg_nms)
+  } else {
+    NA_integer_
   }
 
-  .ast_lit_name(arg)
+  arg_idx <- if (!is.na(pkg_i)) {
+    pkg_i + 1L
+  } else if (!is.na(pkg_j)) {
+    pkg_j + 1L
+  } else {
+    2L
+  }
+
+  .ast_lit_name(call[[arg_idx]])
 }
 
 .ast_collect_use_funs <- function(x, use_heads) {
@@ -559,14 +582,15 @@ scan_usage <- function(
     if (
       !is.null(head_name) && !is.na(fastmatch::fmatch(head_name, use_heads))
     ) {
-      args <- as.list(x)[-1L]
-      if (!length(args)) {
+      n <- length(x)
+      if (n <= 1L) {
         return(character())
       }
-      return(unlist(
-        lapply(args, .ast_collect_use_funs, use_heads = use_heads),
-        use.names = FALSE
-      ))
+      out <- vector("list", n - 1L)
+      for (i in 2L:n) {
+        out[[i - 1L]] <- .ast_collect_use_funs(x[[i]], use_heads = use_heads)
+      }
+      return(unlist(out, use.names = FALSE))
     }
   }
 
@@ -574,14 +598,23 @@ scan_usage <- function(
 }
 
 .ast_get_use_funs <- function(call, use_heads) {
-  args <- as.list(call)[-1L]
-  if (length(args) <= 1L) {
+  n <- length(call)
+  if (n <= 2L) {
     return(character())
   }
 
-  nms <- names(args)
-  pkg_i <- if (!is.null(nms)) fastmatch::fmatch("pkg", nms) else NA_integer_
-  pkg_j <- if (!is.null(nms)) fastmatch::fmatch("package", nms) else NA_integer_
+  nms <- names(call)
+  arg_nms <- if (!is.null(nms)) nms[-1L] else NULL
+  pkg_i <- if (!is.null(arg_nms)) {
+    fastmatch::fmatch("pkg", arg_nms)
+  } else {
+    NA_integer_
+  }
+  pkg_j <- if (!is.null(arg_nms)) {
+    fastmatch::fmatch("package", arg_nms)
+  } else {
+    NA_integer_
+  }
 
   pkg_idx <- if (!is.na(pkg_i)) {
     pkg_i
@@ -591,11 +624,17 @@ scan_usage <- function(
     1L
   }
 
-  fun_args <- args[-pkg_idx]
-  funs <- unlist(
-    lapply(fun_args, .ast_collect_use_funs, use_heads = use_heads),
-    use.names = FALSE
-  )
+  out <- vector("list", n - 2L)
+  j <- 0L
+  for (i in 2L:n) {
+    arg_idx <- i - 1L
+    if (arg_idx == pkg_idx) {
+      next
+    }
+    j <- j + 1L
+    out[[j]] <- .ast_collect_use_funs(call[[i]], use_heads = use_heads)
+  }
+  funs <- unlist(out, use.names = FALSE)
   funs[nzchar(funs)]
 }
 
@@ -640,102 +679,107 @@ scan_usage <- function(
     return(empty)
   }
 
-  candidates_list <- export_index[unqual$funs] |>
-    lapply(\(x) x[!is.na(fastmatch::fmatch(x, allowed_packages))])
-  candidates_list <- lapply(
-    candidates_list,
-    \(x) x[!is.na(fastmatch::fmatch(x, attached_pkgs))]
-  )
-
-  has_candidates <- lengths(candidates_list) > 0
-  if (!any(has_candidates)) {
-    return(empty)
+  if (length(attached_visit_idx) > 1L) {
+    ord <- order(attached_visit_idx, seq_along(attached_visit_idx))
+    attached_pkgs <- attached_pkgs[ord]
+    attached_visit_idx <- attached_visit_idx[ord]
   }
 
-  idx <- unqual$idx[has_candidates]
-  funs <- unqual$funs[has_candidates]
-  candidates_list <- candidates_list[has_candidates]
+  unique_funs <- unique(unqual$funs)
+  meta_by_fun <- setNames(
+    lapply(unique_funs, function(fun) {
+      providers <- export_index[[fun]]
+      if (is.null(providers) || !length(providers)) {
+        return(NULL)
+      }
 
-  origins_list <- Map(
-    function(cands, fun) {
+      providers <- providers[
+        !is.na(fastmatch::fmatch(providers, allowed_packages)) &
+          !is.na(fastmatch::fmatch(providers, attached_pkgs))
+      ]
+      if (!length(providers)) {
+        return(NULL)
+      }
+
       origins <- vapply(
-        cands,
+        providers,
         .origin_pkg,
         character(1),
         fun = fun,
         origin_map = origin_map
       )
-      origins[!is.na(fastmatch::fmatch(origins, allowed_packages))]
-    },
-    candidates_list,
-    funs
+      origins <- origins[!is.na(fastmatch::fmatch(origins, allowed_packages))]
+      if (!length(origins)) {
+        return(NULL)
+      }
+
+      list(
+        providers = providers,
+        unique_origins = unique(origins)
+      )
+    }),
+    unique_funs
   )
 
-  has_origins <- lengths(origins_list) > 0L
-  if (!any(has_origins)) {
+  has_meta <- !vapply(meta_by_fun[unqual$funs], is.null, logical(1))
+  if (!any(has_meta)) {
     return(empty)
   }
 
-  idx <- idx[has_origins]
-  funs <- funs[has_origins]
-  candidates_list <- candidates_list[has_origins]
-  origins_list <- origins_list[has_origins]
-
-  origin_candidates <- lapply(origins_list, unique)
-
-  is_ambiguous <- lengths(origin_candidates) > 1
-
-  pkgs <- character()
-  keys <- character()
-  ambiguous <- character()
-
-  if (!all(is_ambiguous)) {
-    best_pkgs0 <- unlist(origin_candidates[!is_ambiguous], use.names = FALSE)
-    funs0 <- funs[!is_ambiguous]
-    pkgs <- c(pkgs, best_pkgs0)
-    keys <- c(keys, paste0(best_pkgs0, "::", funs0))
+  idx <- unqual$idx[has_meta]
+  funs <- unqual$funs[has_meta]
+  if (length(idx) > 1L) {
+    ord <- order(idx, seq_along(idx))
+    idx <- idx[ord]
+    funs <- funs[ord]
   }
 
-  if (any(is_ambiguous)) {
-    ambig_idx <- idx[is_ambiguous]
-    ambig_funs <- funs[is_ambiguous]
-    ambig_cands <- candidates_list[is_ambiguous]
-    intervals <- findInterval(ambig_idx, attached_visit_idx)
-    resolved <- logical(length(ambig_idx))
+  intervals <- findInterval(idx, attached_visit_idx)
+  resolved_pkgs <- character(length(idx))
+  resolved <- logical(length(idx))
 
-    for (i in seq_along(ambig_idx)) {
-      k <- intervals[i]
-      cands <- ambig_cands[[i]]
-
-      if (k == 0) {
-        resolved[i] <- FALSE
-      } else {
-        attached_before <- attached_pkgs[seq_len(k)]
-        matches <- fastmatch::fmatch(cands, attached_before)
-        if (all(is.na(matches))) {
-          resolved[i] <- FALSE
-        } else {
-          pkg <- cands[which.max(ifelse(is.na(matches), -1L, matches))]
-          resolved[i] <- TRUE
-        }
-      }
-
-      if (resolved[i]) {
-        origin <- .resolve_origin_pkg(
-          pkg,
-          ambig_funs[i],
-          origin_map,
-          allowed_packages
-        )
-        pkgs <- c(pkgs, origin)
-        keys <- c(keys, paste0(origin, "::", ambig_funs[i]))
-      }
+  for (i in seq_along(idx)) {
+    meta <- meta_by_fun[[funs[[i]]]]
+    if (length(meta$unique_origins) == 1L) {
+      resolved_pkgs[[i]] <- meta$unique_origins[[1L]]
+      resolved[[i]] <- TRUE
+      next
     }
 
-    ambiguous <- sort(unique(ambig_funs[!resolved]))
+    k <- intervals[[i]]
+    if (k == 0L) {
+      next
+    }
+
+    attached_before <- attached_pkgs[seq_len(k)]
+    matches <- fastmatch::fmatch(meta$providers, attached_before)
+    if (all(is.na(matches))) {
+      next
+    }
+
+    pkg <- meta$providers[[which.max(ifelse(is.na(matches), -1L, matches))]]
+    resolved_pkgs[[i]] <- .resolve_origin_pkg(
+      pkg,
+      funs[[i]],
+      origin_map,
+      allowed_packages
+    )
+    resolved[[i]] <- TRUE
   }
 
-  list(pkgs = pkgs, keys = keys, ambiguous = ambiguous)
+  list(
+    pkgs = resolved_pkgs[resolved],
+    keys = if (any(resolved)) {
+      paste0(resolved_pkgs[resolved], "::", funs[resolved])
+    } else {
+      character()
+    },
+    ambiguous = if (all(resolved)) {
+      character()
+    } else {
+      sort(unique(funs[!resolved]))
+    }
+  )
 }
 
 #' Ignored functions/directories used by scanner

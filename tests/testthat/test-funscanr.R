@@ -93,6 +93,16 @@ test_that(".scan_tokens handles empty or no-code files", {
     .scan_tokens("# just a comment", stdlib_funs()),
     list(pkgs = character(), keys = character(), ambiguous = character())
   )
+  expect_equal(
+    .scan_tokens(
+      "",
+      stdlib_funs(),
+      allowed_packages = "posterior",
+      export_index = unname(list("posterior")),
+      origin_map = character()
+    ),
+    list(pkgs = character(), keys = character(), ambiguous = character())
+  )
 })
 
 test_that(".ast_member_fun returns NULL when call operator is not a symbol", {
@@ -1964,13 +1974,36 @@ test_that(".resolve_candidates returns empty when no Stan candidates exist", {
 
   out <- resolve_candidates(
     unqual = list(funs = fun, idx = 1L),
-    lib_data = NULL
+    lib_data = data.frame(
+      visit_idx = 1L,
+      pkg = "posterior",
+      is_attach = TRUE,
+      stringsAsFactors = FALSE
+    )
   )
 
-  # triggers the `!any(has_candidates)` early return
+  # missing index entry -> no metadata built for the function
   expect_identical(out$pkgs, character())
   expect_identical(out$keys, character())
   expect_identical(out$ambiguous, character())
+
+  out_disallowed <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 1L),
+    lib_data = data.frame(
+      visit_idx = 1L,
+      pkg = "pkgA",
+      is_attach = TRUE,
+      stringsAsFactors = FALSE
+    ),
+    allowed_packages = "pkgA",
+    export_index = list(foo = "pkgB"),
+    origin_map = character()
+  )
+
+  # indexed provider exists but is filtered out by allowed_packages
+  expect_identical(out_disallowed$pkgs, character())
+  expect_identical(out_disallowed$keys, character())
+  expect_identical(out_disallowed$ambiguous, character())
 })
 
 test_that(".resolve_candidates returns empty when no packages allowed", {
