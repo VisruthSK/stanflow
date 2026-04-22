@@ -776,6 +776,32 @@ test_that(".extract_code returns empty string when file has no allowed packages"
   )
 })
 
+test_that(".extract_code early skip respects word boundaries and regex escaping", {
+  tmp <- withr::local_tempdir()
+
+  no_boundary <- write_file(
+    file.path(tmp, "no-boundary.R"),
+    "foobar(1)"
+  )
+  expect_identical(.extract_code(no_boundary, allowed_packages = "foo"), "")
+
+  dotted <- write_file(
+    file.path(tmp, "dotted.R"),
+    "foo.bar(1)"
+  )
+  expect_identical(
+    .extract_code(dotted, allowed_packages = "foo.bar"),
+    "foo.bar(1)"
+  )
+})
+
+test_that(".extract_code returns empty for empty allowed_packages", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(file.path(tmp, "plain.R"), "posterior::as_draws_df(x)")
+
+  expect_identical(.extract_code(path, allowed_packages = character()), "")
+})
+
 test_that(".extract_code keeps fast-extracted non-R display chunks in default mode", {
   tmp <- withr::local_tempdir()
   path <- write_file(
