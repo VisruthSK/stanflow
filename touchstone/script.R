@@ -41,7 +41,7 @@ for (repo in repos) {
     },
     n = n,
     !!dir := stan_cite(
-      path = repo_path,
+      path = !!repo_path,
       strict = FALSE,
       quiet = TRUE
     )
