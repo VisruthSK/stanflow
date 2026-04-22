@@ -3,7 +3,9 @@
 #' `stan_cite()` generates the correct citations for Stan packages
 #' in a directory or set of files. Quarto (.qmd) and R Markdown (.Rmd)
 #' documents are scanned by extracting R code chunks directly from the
-#' source text. `stan_cite()` uses some simple heuristics to guess which
+#' source text by default. Setting `use_knitr = TRUE` switches to
+#' `knitr::purl()`, which is more accurate for knitr/quarto chunk handling
+#' but much slower. `stan_cite()` uses some simple heuristics to guess which
 #' packages export functions, and also attempts to map re-exports to their
 #' origin package. Calls to `library()`, `require()`, `requireNamespace()`,
 #' or `use()` are all recognized as attaching a package.
@@ -24,6 +26,9 @@
 #'   Unresolved calls are warned about and omitted.
 #' @param skip_dirs Defaults to directories listed in `scan_skip_dirs`. Character
 #'   vector of directory names to skip when scanning a directory.
+#' @param use_knitr Logical. If `TRUE`, parse `.Rmd` and `.qmd` files with
+#'   `knitr::purl()`. This is more accurate for knitr/quarto chunk extraction
+#'   but much slower than the default in-house parser. Defaults to `FALSE`.
 #' @param format One of "bibtex" or "bibentry", specifying the return format.
 #' @param quiet Logical. If `TRUE`, suppresses status messages.
 #' @return A BibTeX character vector or a bibentry object.
@@ -51,6 +56,7 @@ stan_cite <- function(
   format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
   ignore_unqualified_functions = .stdlib_funs,
+  use_knitr = FALSE,
   quiet = getOption("stanflow.quiet", FALSE)
 ) {
   local_cli_quiet(quiet)
@@ -64,6 +70,7 @@ stan_cite <- function(
     strict = strict,
     skip_dirs = skip_dirs,
     metapackages = list(stanflow = core),
+    use_knitr = use_knitr,
     quiet = quiet
   ) |>
     (\(x) {

@@ -13,6 +13,7 @@ scan_usage(
   strict = FALSE,
   skip_dirs = .scan_skip_dirs,
   metapackages = NULL,
+  use_knitr = FALSE,
   quiet = getOption("stanflow.quiet", FALSE)
 )
 }
@@ -45,6 +46,10 @@ directory. Defaults to \code{.scan_skip_dirs}.}
 \item{metapackages}{Named list mapping attached package names to additional
 packages that should be treated as co-attached for unqualified resolution.
 Defaults to \code{NULL}.}
+
+\item{use_knitr}{Logical. If \code{TRUE}, parse \code{.Rmd} and \code{.qmd} files with
+\code{knitr::purl()}. This is more accurate for knitr/quarto chunk extraction
+but much slower than the default in-house parser. Defaults to \code{FALSE}.}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
 }

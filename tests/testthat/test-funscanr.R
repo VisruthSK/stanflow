@@ -38,6 +38,15 @@ scan_usage <- function(
   )
 }
 
+expect_scan_usage_knitr_parity <- function(path, ..., info = NULL) {
+  skip_if_not_installed("knitr")
+
+  fast <- scan_usage(path, ..., quiet = TRUE, use_knitr = FALSE)
+  knitr <- scan_usage(path, ..., quiet = TRUE, use_knitr = TRUE)
+
+  expect_identical(unclass(fast), unclass(knitr), info = info)
+}
+
 resolve_origin_pkg <- function(pkg, fun) {
   key <- paste0(pkg, "::", fun)
   if (is.null(.stan_origin_map) || !key %in% names(.stan_origin_map)) {
@@ -767,8 +776,7 @@ test_that(".extract_code returns empty string when file has no allowed packages"
   )
 })
 
-test_that(".extract_code falls back to knitr for non-R display chunks", {
-  skip_if_not_installed("knitr")
+test_that(".extract_code keeps fast-extracted non-R display chunks in default mode", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "doc.Rmd"),
@@ -782,10 +790,193 @@ test_that(".extract_code falls back to knitr for non-R display chunks", {
   )
 
   out <- .extract_code(path)
-  expect_match(out, "^# /\\*\\*", perl = TRUE)
+  expect_match(out, "^/\\*\\*", perl = TRUE)
 })
 
-test_that(".extract_code returns fast extracted code when knitr is unavailable", {
+test_that(".extract_code uses knitr when requested", {
+  skip_if_not_installed("knitr")
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.Rmd"),
+    c(
+      "```{r}",
+      "as_draws(1)",
+      "```"
+    )
+  )
+
+  out <- .extract_code(path, use_knitr = TRUE)
+  expect_match(out, "as_draws\\(")
+})
+
+test_that(".extract_code matches knitr::purl on ordinary Rmd documents", {
+  skip_if_not_installed("knitr")
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.Rmd"),
+    c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r setup, include=FALSE}",
+      "library(posterior)",
+      "```",
+      "",
+      "```{r model}",
+      "draws <- as_draws(list(mu = rnorm(10)))",
+      "rhat(draws)",
+      "```"
+    )
+  )
+
+  fast <- .extract_code(path)
+  knitr <- .extract_code(path, use_knitr = TRUE)
+
+  expect_identical(
+    parse(text = fast, keep.source = FALSE),
+    parse(text = knitr, keep.source = FALSE)
+  )
+})
+
+test_that(".extract_code matches knitr::purl on ordinary Qmd documents", {
+  skip_if_not_installed("knitr")
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.qmd"),
+    c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r setup, include=FALSE}",
+      "library(posterior)",
+      "```",
+      "",
+      "```{r}",
+      "draws <- as_draws(list(mu = rnorm(10)))",
+      "rhat(draws)",
+      "```"
+    )
+  )
+
+  fast <- .extract_code(path)
+  knitr <- .extract_code(path, use_knitr = TRUE)
+
+  expect_identical(
+    parse(text = fast, keep.source = FALSE),
+    parse(text = knitr, keep.source = FALSE)
+  )
+})
+
+test_that("scan_usage matches knitr on ordinary Rmd and Qmd fixtures", {
+  skip_if_not_installed("knitr")
+  tmp <- withr::local_tempdir()
+
+  fixtures <- list(
+    basic = c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r setup, include=FALSE}",
+      "library(posterior)",
+      "requireNamespace('loo')",
+      "```",
+      "",
+      "```{r}",
+      "draws <- as_draws(list(mu = rnorm(10)))",
+      "rhat(draws)",
+      "loo::loo(matrix(1))",
+      "```"
+    ),
+    attach_order = c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r}",
+      "library(posterior)",
+      "library(brms)",
+      "```",
+      "",
+      "```{r}",
+      "as_draws(1)",
+      "mixture(0.4)",
+      "posterior::rhat(as_draws(list(mu = rnorm(10))))",
+      "```"
+    ),
+    explicit_and_member = c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r setup, include=FALSE}",
+      "library(cmdstanr)",
+      "use('posterior', c('as_draws', 'rhat'))",
+      "```",
+      "",
+      "```{r}",
+      "fit$summary()",
+      "fit$loo(moment_match = TRUE)",
+      "posterior::as_draws(list(mu = rnorm(10)))",
+      "```"
+    ),
+    stanflow_meta = c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r}",
+      "library(stanflow)",
+      "as_draws_df(matrix(1))",
+      "mcmc_hist(as_draws_df(matrix(1)), pars = 'theta')",
+      "loo(matrix(1))",
+      "```"
+    ),
+    irrelevant = c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "```{r echo=FALSE}",
+      "mean(1:3)",
+      "plot(1:5)",
+      "```"
+    )
+  )
+
+  for (ext in c("Rmd", "qmd")) {
+    for (name in names(fixtures)) {
+      path <- write_file(
+        file.path(tmp, paste0(name, ".", ext)),
+        fixtures[[name]]
+      )
+      expect_scan_usage_knitr_parity(path, info = paste(ext, name))
+    }
+  }
+})
+
+test_that(".extract_code errors when use_knitr is true and knitr is unavailable", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.Rmd"),
+    c(
+      "```{r}",
+      "as_draws(1)",
+      "```"
+    )
+  )
+
+  local_mocked_bindings(
+    requireNamespace = function(...) FALSE,
+    .package = "base"
+  )
+
+  expect_error(.extract_code(path, use_knitr = TRUE), "knitr")
+})
+
+test_that(".extract_code default mode does not depend on knitr for invalid extracted code", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "doc.Rmd"),
@@ -796,11 +987,6 @@ test_that(".extract_code returns fast extracted code when knitr is unavailable",
       " */",
       "```"
     )
-  )
-
-  local_mocked_bindings(
-    requireNamespace = function(...) FALSE,
-    .package = "base"
   )
 
   out <- .extract_code(path)
@@ -1374,6 +1560,13 @@ test_that("scan_usage handles faux_proj directory tree", {
       functions = res$functions
     ),
     style = "json2"
+  )
+})
+
+test_that("scan_usage matches knitr on faux_proj directory tree", {
+  expect_scan_usage_knitr_parity(
+    test_path("faux_proj"),
+    info = "faux_proj"
   )
 })
 
