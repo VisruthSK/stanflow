@@ -74,6 +74,22 @@ test_that("stan_cite always cites stanflow and R", {
   )
 })
 
+test_that("stan_cite expands stanflow to its core packages when scanning", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "stanflow.R"),
+    c(
+      "library(stanflow)",
+      "loo(matrix(1))"
+    )
+  )
+
+  citations <- stan_cite(path, format = "bibtex", quiet = TRUE)
+
+  expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
+  expect_true(any(grepl("loo", citations, fixed = TRUE)))
+})
+
 test_that("stan_cite returns empty when no citations are found", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "plain.R"), "1 + 1")
@@ -117,27 +133,19 @@ test_that("stan_cite defaults to stanflow.quiet option", {
 
 test_that("all package citations exist", {
   expected <- getFromNamespace(".stan_pkgs", "stanflow")
+  installed <- expected[
+    vapply(expected, requireNamespace, logical(1), quietly = TRUE)
+  ]
 
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "all_pkgs.R"),
-    c(
-      "library(bayesplot)",
-      "library(brms)",
-      "library(cmdstanr)",
-      "library(loo)",
-      "library(posterior)",
-      "library(projpred)",
-      "library(rstan)",
-      "library(rstanarm)",
-      "library(rstantools)",
-      "library(shinystan)"
-    )
+    paste0("library(", installed, ")")
   )
 
   citations <- stan_cite(path, format = "bibtex", quiet = TRUE)
   expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
-  for (pkg in expected) {
+  for (pkg in installed) {
     expect_true(any(grepl(pkg, citations, fixed = TRUE)))
   }
 })
@@ -153,6 +161,8 @@ test_that("package citations use generated paper entries", {
 })
 
 test_that("cmdstanr function citations follow cmdstanr docs", {
+  skip_if_not_installed("cmdstanr")
+
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "cmdstanr.R"),
