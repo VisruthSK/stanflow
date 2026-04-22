@@ -1,12 +1,12 @@
 #' Cite Stan packages in a project/files
 #'
 #' `stan_cite()` generates the correct citations for Stan packages
-#' in a directory or set of files. The `{knitr}` package is required
-#' to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. `stan_cite()`
-#' uses some simple heuristics to guess which packages export functions,
-#' and also attempts to map re-exports to their origin package. Calls
-#' to `library()`, `require()`, `requireNamespace()`, or `use()` are
-#' all recognized as attaching a package.
+#' in a directory or set of files. Quarto (.qmd) and R Markdown (.Rmd)
+#' documents are scanned by extracting R code chunks directly from the
+#' source text. `stan_cite()` uses some simple heuristics to guess which
+#' packages export functions, and also attempts to map re-exports to their
+#' origin package. Calls to `library()`, `require()`, `requireNamespace()`,
+#' or `use()` are all recognized as attaching a package.
 #'
 #' The parsing is handled by `scan_usage()`; `stan_cite()` owns
 #' the citation lookups.
@@ -34,12 +34,10 @@
 #'   c(
 #'     "# one messy analysis file",
 #'     "library(posterior)",
-#'     "requireNamespace(\"brms\")",
-#'     "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+#'     "requireNamespace(\"loo\")",
 #'     "draws <- as_draws(list(mu = rnorm(10)))",
 #'     "posterior::rhat(draws)",
-#'     "brms::mixture(0.4)",
-#'     "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+#'     "loo::loo(matrix(1))"
 #'   ),
 #'   path
 #' )
@@ -59,12 +57,13 @@ stan_cite <- function(
 
   scan_usage(
     path = path,
-    ignore_unqualified_functions = ignore_unqualified_functions,
-    strict = strict,
-    skip_dirs = skip_dirs,
     allowed_packages = .stan_pkgs,
     export_index = .stan_export_index,
     origin_map = .stan_origin_map,
+    ignore_unqualified_functions = ignore_unqualified_functions,
+    strict = strict,
+    skip_dirs = skip_dirs,
+    metapackages = list(stanflow = core),
     quiet = quiet
   ) |>
     (\(x) {

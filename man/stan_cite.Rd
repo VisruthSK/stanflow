@@ -40,12 +40,12 @@ A BibTeX character vector or a bibentry object.
 }
 \description{
 \code{stan_cite()} generates the correct citations for Stan packages
-in a directory or set of files. The \code{{knitr}} package is required
-to parse Quarto (.qmd) or RMarkdown (.Rmd) documents. \code{stan_cite()}
-uses some simple heuristics to guess which packages export functions,
-and also attempts to map re-exports to their origin package. Calls
-to \code{library()}, \code{require()}, \code{requireNamespace()}, or \code{use()} are
-all recognized as attaching a package.
+in a directory or set of files. Quarto (.qmd) and R Markdown (.Rmd)
+documents are scanned by extracting R code chunks directly from the
+source text. \code{stan_cite()} uses some simple heuristics to guess which
+packages export functions, and also attempts to map re-exports to their
+origin package. Calls to \code{library()}, \code{require()}, \code{requireNamespace()},
+or \code{use()} are all recognized as attaching a package.
 }
 \details{
 The parsing is handled by \code{scan_usage()}; \code{stan_cite()} owns
@@ -57,12 +57,10 @@ writeLines(
   c(
     "# one messy analysis file",
     "library(posterior)",
-    "requireNamespace(\"brms\")",
-    "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+    "requireNamespace(\"loo\")",
     "draws <- as_draws(list(mu = rnorm(10)))",
     "posterior::rhat(draws)",
-    "brms::mixture(0.4)",
-    "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+    "loo::loo(matrix(1))"
   ),
   path
 )

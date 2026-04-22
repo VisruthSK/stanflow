@@ -13,11 +13,30 @@ force_local_snapshots <- function() {
 # Bind internal helpers/data so tests can call them directly.
 .scan_tokens <- bind_internal(".scan_tokens")
 .extract_code <- bind_internal(".extract_code")
+.extract_markdown_code <- bind_internal(".extract_markdown_code")
 .ast_member_fun <- bind_internal(".ast_member_fun")
 .stan_exports <- bind_internal(".stan_exports")
 .stan_export_index <- bind_internal(".stan_export_index")
 .stan_origin_map <- bind_internal(".stan_origin_map")
 .stan_pkgs <- bind_internal(".stan_pkgs")
+.stan_core <- bind_internal("core")
+
+scan_usage_pkg <- getExportedValue("stanflow", "scan_usage")
+scan_usage <- function(
+  ...,
+  allowed_packages = .stan_pkgs,
+  export_index = .stan_export_index,
+  origin_map = .stan_origin_map,
+  metapackages = list(stanflow = .stan_core)
+) {
+  scan_usage_pkg(
+    ...,
+    allowed_packages = allowed_packages,
+    export_index = export_index,
+    origin_map = origin_map,
+    metapackages = metapackages
+  )
+}
 
 resolve_origin_pkg <- function(pkg, fun) {
   key <- paste0(pkg, "::", fun)
@@ -118,6 +137,61 @@ test_that(".scan_tokens handles non-Stan library calls", {
   hits <- .scan_tokens(paste(code, collapse = "\n"), stdlib_funs())
   expect_equal(hits$pkgs, character())
   expect_equal(hits$keys, character())
+})
+
+test_that(".scan_tokens handles empty resolver exports", {
+  code <- c(
+    "library(posterior)",
+    "as_draws(1)"
+  )
+  hits <- .scan_tokens(
+    paste(code, collapse = "\n"),
+    ignore_unqualified_functions = character(),
+    allowed_packages = "posterior",
+    export_index = unname(list()),
+    origin_map = character()
+  )
+
+  expect_identical(hits$pkgs, "posterior")
+  expect_identical(hits$keys, character())
+  expect_identical(hits$ambiguous, character())
+})
+
+test_that(".scan_resolver_index keeps empty provider entries null", {
+  scan_resolver_index <- getFromNamespace(".scan_resolver_index", "stanflow")
+
+  out <- scan_resolver_index(
+    export_index = list(foo = character(), bar = "pkgA"),
+    origin_map = c("pkgA::bar" = "pkgA")
+  )
+
+  expect_null(out$foo)
+  expect_identical(out$bar$provider, "pkgA")
+  expect_identical(out$bar$origin, "pkgA")
+})
+
+test_that(".scan_tokens expands metapackages for unqualified resolution", {
+  hits <- .scan_tokens(
+    "library(meta)\nfoo(1)",
+    ignore_unqualified_functions = character(),
+    allowed_packages = "pkgA",
+    export_index = list(foo = "pkgA"),
+    origin_map = c("pkgA::foo" = "pkgA"),
+    metapackages = list(meta = "pkgA")
+  )
+
+  expect_true(all(hits$pkgs == "pkgA"))
+  expect_identical(hits$keys, "pkgA::foo")
+  expect_identical(hits$ambiguous, character())
+})
+
+test_that(".normalize_metapackages returns null for null input", {
+  normalize_metapackages <- getFromNamespace(
+    ".normalize_metapackages",
+    "stanflow"
+  )
+
+  expect_null(normalize_metapackages(NULL, "pkgA"))
 })
 
 test_that(".scan_tokens handles use() calls", {
@@ -613,7 +687,6 @@ test_that(".extract_code returns R source verbatim", {
 })
 
 test_that(".extract_code extracts Rmd chunks", {
-  skip_if_not_installed("knitr")
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "doc.Rmd"),
@@ -632,7 +705,6 @@ test_that(".extract_code extracts Rmd chunks", {
 })
 
 test_that(".extract_code extracts Qmd chunks", {
-  skip_if_not_installed("knitr")
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "doc.qmd"),
@@ -650,7 +722,31 @@ test_that(".extract_code extracts Qmd chunks", {
   expect_match(out, "as_draws\\(")
 })
 
-test_that(".extract_code errors when knitr is unavailable", {
+test_that(".extract_code handles chunk options and tilde fences", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.Rmd"),
+    c(
+      "---",
+      "title: 'Doc'",
+      "---",
+      "",
+      "~~~{r setup, include=FALSE}",
+      "as_draws(1)",
+      "~~~",
+      "",
+      "````{r fig.width=8}",
+      "rhat(1)",
+      "````"
+    )
+  )
+
+  out <- .extract_code(path)
+  expect_match(out, "as_draws\\(")
+  expect_match(out, "rhat\\(")
+})
+
+test_that(".extract_code returns empty string when file has no allowed packages", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "doc.Rmd"),
@@ -660,7 +756,44 @@ test_that(".extract_code errors when knitr is unavailable", {
       "---",
       "",
       "```{r}",
-      "as_draws(1)",
+      "mean(1:3)",
+      "```"
+    )
+  )
+
+  expect_identical(
+    .extract_code(path, allowed_packages = c("posterior", "loo")),
+    ""
+  )
+})
+
+test_that(".extract_code falls back to knitr for non-R display chunks", {
+  skip_if_not_installed("knitr")
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.Rmd"),
+    c(
+      "```{r, eval=FALSE}",
+      "/**",
+      " * not R code",
+      " */",
+      "```"
+    )
+  )
+
+  out <- .extract_code(path)
+  expect_match(out, "^# /\\*\\*", perl = TRUE)
+})
+
+test_that(".extract_code returns fast extracted code when knitr is unavailable", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "doc.Rmd"),
+    c(
+      "```{r, eval=FALSE}",
+      "/**",
+      " * not R code",
+      " */",
       "```"
     )
   )
@@ -670,14 +803,35 @@ test_that(".extract_code errors when knitr is unavailable", {
     .package = "base"
   )
 
-  expect_error(.extract_code(path), "knitr")
+  out <- .extract_code(path)
+  expect_match(out, "^/\\*\\*", perl = TRUE)
 })
-
 
 test_that(".extract_code errors on unsupported extensions", {
   tmp <- withr::local_tempdir()
   path <- write_file(file.path(tmp, "note.txt"), "x <- 1")
   expect_snapshot_error(.extract_code(path))
+})
+
+test_that(".extract_markdown_code handles empty and non-R fences", {
+  expect_identical(.extract_markdown_code(character()), "")
+  expect_identical(.extract_markdown_code("plain text"), "")
+  expect_identical(
+    .extract_markdown_code(c("plain text", "~~~{python}", "x = 1", "~~~")),
+    ""
+  )
+})
+
+test_that(".extract_markdown_code skips non-closing fence candidates inside chunks", {
+  out <- .extract_markdown_code(c(
+    "```{r}",
+    "x <- 1",
+    "```{python}",
+    "print('not a close fence')",
+    "```"
+  ))
+
+  expect_match(out, "x <- 1", fixed = TRUE)
 })
 
 test_that(".scan_tokens warns on parse errors with unknown file path", {
@@ -730,12 +884,28 @@ test_that("scan_usage handles modern syntax and Windows line endings", {
   expect_equal(res$functions, expected_key)
 })
 
-test_that("scan_usage warns on parse errors in strict mode", {
+test_that("scan_usage skips irrelevant parse errors in strict mode", {
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "bad.R"),
     c(
       "function("
+    )
+  )
+
+  res <- scan_usage(path, strict = TRUE, quiet = TRUE)
+  expect_identical(res$packages, character())
+  expect_identical(res$functions, character())
+  expect_identical(res$ambiguous, character())
+})
+
+test_that("scan_usage warns on parse errors in relevant files", {
+  tmp <- withr::local_tempdir()
+  path <- write_file(
+    file.path(tmp, "bad.R"),
+    c(
+      "library(posterior",
+      "as_draws(1)"
     )
   )
 
@@ -1046,8 +1216,6 @@ test_that("scan_usage supports multiple file paths", {
 })
 
 test_that("scan_usage handles faux_proj directory tree", {
-  skip_if_not_installed("knitr")
-
   faux_path <- test_path("faux_proj")
   res <- scan_usage(faux_path, quiet = TRUE)
 
@@ -1327,8 +1495,6 @@ test_that("scan_usage does not treat requireNamespace(stanflow) as core attachme
 })
 
 test_that("scan_usage handles stanflow attachment in qmd", {
-  skip_if_not_installed("knitr")
-
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "note.qmd"),
@@ -1381,8 +1547,6 @@ test_that("scan_usage keeps namespaced calls when unqualified calls are ignored"
 })
 
 test_that("scan_usage handles projects with renv/packrat and real R folder", {
-  skip_if_not_installed("knitr")
-
   tmp <- withr::local_tempdir()
   dir.create(file.path(tmp, "R"), recursive = TRUE)
   dir.create(file.path(tmp, "renv", "library"), recursive = TRUE)
@@ -1550,7 +1714,6 @@ test_that("scan_usage errors when mixing directories and files", {
 })
 
 test_that("scan_usage scans directories with mixed inputs", {
-  skip_if_not_installed("knitr")
   tmp <- withr::local_tempdir()
   write_file(
     file.path(tmp, "script.R"),
@@ -1585,10 +1748,7 @@ test_that("scan_usage scans directories with mixed inputs", {
     )
   )
   res <- NULL
-  expect_warning(
-    res <- scan_usage(tmp, quiet = TRUE),
-    "Failed to parse"
-  )
+  res <- scan_usage(tmp, quiet = TRUE)
 
   expect_equal(res$packages, sort(res$packages))
   expect_equal(res$functions, sort(res$functions))
@@ -2190,6 +2350,48 @@ test_that(".resolve_candidates resolves attachment-ordered calls", {
   expect_identical(out$ambiguous, character())
   expect_identical(out$pkgs, "pkgB")
   expect_identical(out$keys, "pkgB::foo")
+})
+
+test_that(".resolve_candidates uses the most recent matching reattach", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 4L),
+    lib_data = data.frame(
+      visit_idx = c(1L, 2L, 3L),
+      pkg = c("pkgA", "pkgB", "pkgA"),
+      is_attach = c(TRUE, TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, "pkgA")
+  expect_identical(out$keys, "pkgA::foo")
+})
+
+test_that(".resolve_candidates returns empty when there are no attaches", {
+  resolve_candidates <- getFromNamespace(".resolve_candidates", "stanflow")
+
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 2L),
+    lib_data = data.frame(
+      visit_idx = 1L,
+      pkg = "pkgA",
+      is_attach = FALSE,
+      stringsAsFactors = FALSE
+    ),
+    allowed_packages = "pkgA",
+    export_index = list(foo = "pkgA"),
+    origin_map = c("pkgA::foo" = "pkgA")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, character())
+  expect_identical(out$keys, character())
 })
 
 test_that(".resolve_candidates treats same-origin providers as unambiguous", {
