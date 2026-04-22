@@ -275,11 +275,6 @@ scan_usage <- function(
     return(empty)
   }
 
-  export_names <- names(resolver_index)
-  if (is.null(export_names)) {
-    export_names <- character()
-  }
-
   attached <- .scan_collect_attached(
     root = root,
     collector = scan_state$collectors$attached,
@@ -291,6 +286,18 @@ scan_usage <- function(
     collector = scan_state$collectors$explicit,
     allowed_packages = allowed_packages
   )
+  if (!any(attached$is_attach)) {
+    return(list(
+      pkgs = c(attached$pkg, explicit$pkg),
+      keys = explicit$key[nzchar(explicit$key)],
+      ambiguous = character()
+    ))
+  }
+
+  export_names <- names(resolver_index)
+  if (is.null(export_names)) {
+    export_names <- character()
+  }
   candidates <- .scan_collect_candidates(
     root = root,
     collector = scan_state$collectors$candidate,
