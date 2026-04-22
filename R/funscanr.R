@@ -236,16 +236,31 @@ scan_usage <- function(
     ))
   }
 
-  raw <- paste(readLines(file, warn = FALSE), collapse = "\n")
-  if (
-    !is.null(allowed_packages) &&
-      !any(vapply(allowed_packages, grepl, logical(1), x = raw, fixed = TRUE))
-  ) {
-    return("")
+  lines <- readLines(file, warn = FALSE)
+  if (!is.null(allowed_packages)) {
+    if (!length(allowed_packages)) {
+      return("")
+    }
+
+    skip_pattern <- paste0(
+      "\\b(",
+      paste(
+        unique(vapply(
+          allowed_packages,
+          \(x) gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x),
+          character(1)
+        )),
+        collapse = "|"
+      ),
+      ")\\b"
+    )
+    if (!any(grepl(skip_pattern, lines, perl = TRUE))) {
+      return("")
+    }
   }
 
   if (ext == "r") {
-    return(raw)
+    return(paste(lines, collapse = "\n"))
   }
 
   if (use_knitr) {
@@ -260,7 +275,7 @@ scan_usage <- function(
     knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
     paste(readLines(tmp, warn = FALSE), collapse = "\n")
   } else {
-    .extract_markdown_code(strsplit(raw, "\n", fixed = TRUE)[[1L]])
+    .extract_markdown_code(lines)
   }
 }
 
@@ -274,7 +289,8 @@ scan_usage <- function(
     return("")
   }
 
-  out <- character()
+  chunks <- vector("list", length(fence_rows))
+  j <- 0L
   k <- 1L
   while (k <= length(fence_rows)) {
     i <- fence_rows[[k]]
@@ -314,13 +330,59 @@ scan_usage <- function(
     }
 
     if (close_row > start) {
-      out <- c(out, lines[start:(close_row - 1L)], "")
+      j <- j + 1L
+      chunks[[j]] <- c(lines[start:(close_row - 1L)], "")
     }
     k <- k + 1L
   }
 
-  paste(out, collapse = "\n")
+  if (!j) {
+    return("")
+  }
+  paste(unlist(chunks[seq_len(j)], use.names = FALSE), collapse = "\n")
 }
+
+.scan_lib_funs <- c("library", "require", "requireNamespace")
+.scan_ns_ops <- c("::", ":::")
+.scan_use_heads <- c("c", "list")
+.scan_ignore_heads <- c(
+  "if",
+  "for",
+  "while",
+  "repeat",
+  "function",
+  "return",
+  "next",
+  "break",
+  "{",
+  "(",
+  "<-",
+  "<<-",
+  "->",
+  "->>",
+  "=",
+  "+",
+  "-",
+  "*",
+  "/",
+  "^",
+  "%%",
+  "%/%",
+  "%*%",
+  "%>%",
+  ":",
+  "|",
+  "&",
+  "||",
+  "&&",
+  "!",
+  "~",
+  "|>",
+  "$",
+  "@",
+  "[",
+  "[["
+)
 
 .scan_tokens <- function(
   code,
@@ -361,47 +423,6 @@ scan_usage <- function(
   acc$unqual_funs <- character()
   acc$unqual_visit_idx <- integer()
 
-  lib_funs <- c("library", "require", "requireNamespace")
-  ns_ops <- c("::", ":::")
-  use_heads <- c("c", "list")
-  ignore_heads <- c(
-    "if",
-    "for",
-    "while",
-    "repeat",
-    "function",
-    "return",
-    "next",
-    "break",
-    "{",
-    "(",
-    "<-",
-    "<<-",
-    "->",
-    "->>",
-    "=",
-    "+",
-    "-",
-    "*",
-    "/",
-    "^",
-    "%%",
-    "%/%",
-    "%*%",
-    "%>%",
-    ":",
-    "|",
-    "&",
-    "||",
-    "&&",
-    "!",
-    "~",
-    "|>",
-    "$",
-    "@",
-    "[",
-    "[["
-  )
   export_names <- names(export_index)
   if (is.null(export_names)) {
     export_names <- character()
@@ -415,11 +436,11 @@ scan_usage <- function(
       expr[[i]],
       acc,
       ignore_unqualified_functions,
-      lib_funs,
+      .scan_lib_funs,
       allowed_packages,
-      ns_ops,
-      use_heads,
-      ignore_heads,
+      .scan_ns_ops,
+      .scan_use_heads,
+      .scan_ignore_heads,
       export_names,
       metapackages
     )
