@@ -585,7 +585,7 @@ scan_usage <- function(
           return(NULL)
         }
 
-        data.frame(
+        list(
           provider = providers,
           origin = vapply(
             providers,
@@ -595,8 +595,7 @@ scan_usage <- function(
             },
             character(1),
             USE.NAMES = FALSE
-          ),
-          stringsAsFactors = FALSE
+          )
         )
       }
     ),
@@ -611,7 +610,7 @@ scan_usage <- function(
   resolver_index
 ) {
   meta <- resolver_index[[fun]]
-  if (is.null(meta)) {
+  if (is.null(meta) || !length(meta$provider)) {
     return(NULL)
   }
 
@@ -621,47 +620,64 @@ scan_usage <- function(
     return(NULL)
   }
 
-  meta <- meta[keep, , drop = FALSE]
-  allowed_origins <- unique(
-    meta$origin[!is.na(fastmatch::fmatch(meta$origin, allowed_packages))]
-  )
-  if (!length(allowed_origins)) {
+  origin <- meta$origin[keep]
+  origin_allowed <- !is.na(fastmatch::fmatch(origin, allowed_packages))
+  if (!any(origin_allowed)) {
     return(NULL)
   }
 
-  list(meta = meta, allowed_origins = allowed_origins)
+  list(
+    provider = meta$provider[keep],
+    origin = origin,
+    origin_allowed = origin_allowed
+  )
 }
 
-.resolve_call <- function(
+.resolve_calls <- function(
   meta,
-  visit_idx,
   attached,
+  attached_rows,
+  visit_idx,
   allowed_packages
 ) {
-  if (length(meta$allowed_origins) == 1L) {
-    return(meta$allowed_origins[[1L]])
+  allowed_origins <- unique(meta$origin[meta$origin_allowed])
+  if (length(allowed_origins) == 1L) {
+    return(rep.int(allowed_origins[[1L]], length(visit_idx)))
   }
 
-  k <- findInterval(visit_idx, attached$visit_idx)
-  if (k == 0L) {
-    return("")
-  }
+  attached_match_idx <- do.call(
+    cbind,
+    lapply(
+      meta$provider,
+      \(pkg) {
+        provider_rows <- attached_rows[[pkg]]
+        hits <- findInterval(visit_idx, attached$visit_idx[provider_rows])
+        out <- rep.int(-1L, length(visit_idx))
+        matched <- hits > 0L
+        out[matched] <- provider_rows[hits[matched]]
+        out
+      }
+    )
+  )
 
-  matches <- fastmatch::fmatch(meta$meta$provider, attached$pkg[seq_len(k)])
-  if (all(is.na(matches))) {
-    return("")
-  }
-
-  resolved <- meta$meta[
-    which.max(ifelse(is.na(matches), -1L, matches)),
-    ,
-    drop = FALSE
+  best_provider <- max.col(attached_match_idx, ties.method = "first")
+  matched <- attached_match_idx[
+    cbind(seq_along(best_provider), best_provider)
   ]
-  if (is.na(fastmatch::fmatch(resolved$origin, allowed_packages))) {
-    resolved$provider
-  } else {
-    resolved$origin
+  resolved <- rep.int("", length(visit_idx))
+  keep <- matched > 0L
+  if (!any(keep)) {
+    return(resolved)
   }
+
+  resolved_provider <- meta$provider[best_provider[keep]]
+  resolved_origin <- meta$origin[best_provider[keep]]
+  resolved[keep] <- ifelse(
+    is.na(fastmatch::fmatch(resolved_origin, allowed_packages)),
+    resolved_provider,
+    resolved_origin
+  )
+  resolved
 }
 
 .resolve_candidates <- function(
@@ -685,41 +701,37 @@ scan_usage <- function(
     ),
     attached$is_attach
   )
+  attached_rows <- split(seq_along(attached$pkg), attached$pkg)
 
-  call_funs <- unique(candidates$fun)
-  meta_by_fun <- lapply(
-    call_funs,
-    \(fun) {
-      .resolve_meta(
-        fun = fun,
-        attached = attached,
-        allowed_packages = allowed_packages,
-        resolver_index = resolver_index
-      )
+  resolved_pkgs <- rep.int("", length(candidates$fun))
+  considered <- logical(length(candidates$fun))
+  call_groups <- split(seq_along(candidates$fun), candidates$fun)
+  for (fun in names(call_groups)) {
+    idx <- call_groups[[fun]]
+    meta <- .resolve_meta(
+      fun = fun,
+      attached = attached,
+      allowed_packages = allowed_packages,
+      resolver_index = resolver_index
+    )
+    if (is.null(meta)) {
+      next
     }
-  )
-  candidate_meta <- meta_by_fun[fastmatch::fmatch(candidates$fun, call_funs)]
-  has_meta <- !vapply(candidate_meta, is.null, logical(1))
-  if (!any(has_meta)) {
+
+    considered[idx] <- TRUE
+    resolved_pkgs[idx] <- .resolve_calls(
+      meta = meta,
+      attached = attached,
+      attached_rows = attached_rows,
+      visit_idx = candidates$visit_idx[idx],
+      allowed_packages = allowed_packages
+    )
+  }
+  if (!any(considered)) {
     return(empty)
   }
 
-  candidates <- .scan_subset_records(candidates, has_meta)
-  candidate_meta <- candidate_meta[has_meta]
-  resolved_pkgs <- vapply(
-    seq_along(candidates$fun),
-    \(i) {
-      .resolve_call(
-        meta = candidate_meta[[i]],
-        visit_idx = candidates$visit_idx[[i]],
-        attached = attached,
-        allowed_packages = allowed_packages
-      )
-    },
-    character(1)
-  )
   resolved <- nzchar(resolved_pkgs)
-
   list(
     pkgs = resolved_pkgs[resolved],
     keys = if (any(resolved)) {
@@ -727,10 +739,10 @@ scan_usage <- function(
     } else {
       character()
     },
-    ambiguous = if (all(resolved)) {
+    ambiguous = if (all(!considered | resolved)) {
       character()
     } else {
-      sort(unique(candidates$fun[!resolved]))
+      sort(unique(candidates$fun[considered & !resolved]))
     }
   )
 }

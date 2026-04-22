@@ -2278,6 +2278,25 @@ test_that(".resolve_candidates resolves attachment-ordered calls", {
   expect_identical(out$keys, "pkgB::foo")
 })
 
+test_that(".resolve_candidates uses the most recent matching reattach", {
+  out <- resolve_candidates(
+    unqual = list(funs = "foo", idx = 4L),
+    lib_data = data.frame(
+      visit_idx = c(1L, 2L, 3L),
+      pkg = c("pkgA", "pkgB", "pkgA"),
+      is_attach = c(TRUE, TRUE, TRUE),
+      stringsAsFactors = FALSE
+    ),
+    allowed_packages = c("pkgA", "pkgB"),
+    export_index = list(foo = c("pkgA", "pkgB")),
+    origin_map = c("pkgA::foo" = "pkgA", "pkgB::foo" = "pkgB")
+  )
+
+  expect_identical(out$ambiguous, character())
+  expect_identical(out$pkgs, "pkgA")
+  expect_identical(out$keys, "pkgA::foo")
+})
+
 test_that(".resolve_candidates treats same-origin providers as unambiguous", {
   out <- resolve_candidates(
     unqual = list(funs = "foo", idx = 2L),
