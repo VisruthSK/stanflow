@@ -1,11 +1,14 @@
 # Cite Stan packages in a project/files
 
 `stan_cite()` generates the correct citations for Stan packages in a
-directory or set of files. The `{knitr}` package is required to parse
-Quarto (.qmd) or RMarkdown (.Rmd) documents. `stan_cite()` uses some
-simple heuristics to guess which packages export functions, and also
-attempts to map re-exports to their origin package. Calls to
-[`library()`](https://rdrr.io/r/base/library.html),
+directory or set of files. Quarto (.qmd) and R Markdown (.Rmd) documents
+are scanned by extracting R code chunks directly from the source text by
+default. Setting `use_knitr = TRUE` switches to
+[`knitr::purl()`](https://rdrr.io/pkg/knitr/man/knit.html), which is
+more accurate for knitr/quarto chunk handling but much slower.
+`stan_cite()` uses some simple heuristics to guess which packages export
+functions, and also attempts to map re-exports to their origin package.
+Calls to [`library()`](https://rdrr.io/r/base/library.html),
 [`require()`](https://rdrr.io/r/base/library.html),
 [`requireNamespace()`](https://rdrr.io/r/base/ns-load.html), or
 [`use()`](https://rdrr.io/r/base/use.html) are all recognized as
@@ -20,6 +23,7 @@ stan_cite(
   format = c("bibtex", "bibentry"),
   skip_dirs = .scan_skip_dirs,
   ignore_unqualified_functions = .stdlib_funs,
+  use_knitr = FALSE,
   quiet = getOption("stanflow.quiet", FALSE)
 )
 ```
@@ -56,6 +60,13 @@ stan_cite(
   NOT be ignored even if `plot` is in `ignore_unqualified_functions`,
   since they are namespaced.
 
+- use_knitr:
+
+  Logical. If `TRUE`, parse `.Rmd` and `.qmd` files with
+  [`knitr::purl()`](https://rdrr.io/pkg/knitr/man/knit.html). This is
+  more accurate for knitr/quarto chunk extraction but much slower than
+  the default in-house parser. Defaults to `FALSE`.
+
 - quiet:
 
   Logical. If `TRUE`, suppresses status messages.
@@ -78,59 +89,22 @@ writeLines(
   c(
     "# one messy analysis file",
     "library(posterior)",
-    "requireNamespace(\"brms\")",
-    "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+    "requireNamespace(\"loo\")",
     "draws <- as_draws(list(mu = rnorm(10)))",
     "posterior::rhat(draws)",
-    "brms::mixture(0.4)",
-    "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+    "loo::loo(matrix(1))"
   ),
   path
 )
 
 stan_cite(path, quiet = TRUE)
-#> @Article{,
-#>   title = {{brms}: An {R} Package for {Bayesian} Multilevel Models Using {Stan}},
-#>   author = {Paul-Christian B\u00fcrkner},
-#>   journal = {Journal of Statistical Software},
-#>   year = {2017},
-#>   volume = {80},
-#>   number = {1},
-#>   pages = {1--28},
-#>   doi = {10.18637/jss.v080.i01},
-#>   encoding = {UTF-8},
-#> }
-#> 
-#> @Article{,
-#>   title = {Advanced {Bayesian} Multilevel Modeling with the {R} Package {brms}},
-#>   author = {Paul-Christian B\u00fcrkner},
-#>   journal = {The R Journal},
-#>   year = {2018},
-#>   volume = {10},
-#>   number = {1},
-#>   pages = {395--411},
-#>   doi = {10.32614/RJ-2018-017},
-#>   encoding = {UTF-8},
-#> }
-#> 
-#> @Article{,
-#>   title = {Bayesian Item Response Modeling in {R} with {brms} and {Stan}},
-#>   author = {Paul-Christian B\u00fcrkner},
-#>   journal = {Journal of Statistical Software},
-#>   year = {2021},
-#>   volume = {100},
-#>   number = {5},
-#>   pages = {1--54},
-#>   doi = {10.18637/jss.v100.i05},
-#>   encoding = {UTF-8},
-#> }
-#> 
-#> @Manual{cmdstanr,
-#>   title = {R Interface to 'CmdStan'},
-#>   author = {Jonah Gabry and Rok Češnovar and Andrew Johnson and Steve Bronder},
+#> @Manual{loo,
+#>   title = {Efficient Leave-One-Out Cross-Validation and WAIC for Bayesian
+#> Models},
+#>   author = {Aki Vehtari and Jonah Gabry and Måns Magnusson and Yuling Yao and Paul-Christian Bürkner and Topi Paananen and Andrew Gelman},
 #>   year = {2025},
-#>   note = {R package version 0.9.0, https://discourse.mc-stan.org},
-#>   url = {https://mc-stan.org/cmdstanr/},
+#>   note = {R package version 2.9.0, https://discourse.mc-stan.org},
+#>   url = {https://mc-stan.org/loo/},
 #> }
 #> 
 #> @Manual{posterior,
@@ -160,6 +134,29 @@ stan_cite(path, quiet = TRUE)
 #>   url = {https://mc-stan.org/stanflow/},
 #> }
 #> 
+#> @Article{vehtari-2017-loo,
+#>   title = {Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC},
+#>   author = {Aki Vehtari and Andrew Gelman and Jonah Gabry},
+#>   journal = {Statistics and Computing},
+#>   year = {2017},
+#>   volume = {27},
+#>   number = {5},
+#>   pages = {1413--1432},
+#>   doi = {10.1007/s11222-016-9696-4},
+#>   note = {arXiv preprint: https://arxiv.org/abs/1507.04544},
+#> }
+#> 
+#> @Article{vehtari-2024-psis,
+#>   title = {Pareto smoothed importance sampling},
+#>   author = {Aki Vehtari and Daniel Simpson and Andrew Gelman and Yuling Yao and Jonah Gabry},
+#>   journal = {Journal of Machine Learning Research},
+#>   year = {2024},
+#>   volume = {25},
+#>   number = {72},
+#>   pages = {1--58},
+#>   url = {https://jmlr.org/papers/v25/19-556.html},
+#> }
+#> 
 #> @Manual{,
 #>   title = {R: A Language and Environment for Statistical Computing},
 #>   author = {{R Core Team}},
@@ -169,21 +166,10 @@ stan_cite(path, quiet = TRUE)
 #>   url = {https://www.R-project.org/},
 #> }
 stan_cite(path, format = "bibentry", quiet = TRUE)
-#> B\u00fcrkner P (2017). “brms: An R Package for Bayesian Multilevel
-#> Models Using Stan.” _Journal of Statistical Software_, *80*(1), 1-28.
-#> doi:10.18637/jss.v080.i01 <https://doi.org/10.18637/jss.v080.i01>.
-#> 
-#> B\u00fcrkner P (2018). “Advanced Bayesian Multilevel Modeling with the
-#> R Package brms.” _The R Journal_, *10*(1), 395-411.
-#> doi:10.32614/RJ-2018-017 <https://doi.org/10.32614/RJ-2018-017>.
-#> 
-#> B\u00fcrkner P (2021). “Bayesian Item Response Modeling in R with brms
-#> and Stan.” _Journal of Statistical Software_, *100*(5), 1-54.
-#> doi:10.18637/jss.v100.i05 <https://doi.org/10.18637/jss.v100.i05>.
-#> 
-#> Gabry J, Češnovar R, Johnson A, Bronder S (2025). _R Interface to
-#> 'CmdStan'_. R package version 0.9.0, https://discourse.mc-stan.org,
-#> <https://mc-stan.org/cmdstanr/>.
+#> Vehtari A, Gabry J, Magnusson M, Yao Y, Bürkner P, Paananen T, Gelman A
+#> (2025). _Efficient Leave-One-Out Cross-Validation and WAIC for Bayesian
+#> Models_. R package version 2.9.0, https://discourse.mc-stan.org,
+#> <https://mc-stan.org/loo/>.
 #> 
 #> Bürkner P, Gabry J, Kay M, Vehtari A (2026). _Tools for Working with
 #> Posterior Distributions_. R package version 1.7.0,
@@ -198,6 +184,16 @@ stan_cite(path, format = "bibentry", quiet = TRUE)
 #> Srimath Kandali V (2026). _A Mildly Opinionated Stan Bayesian
 #> Workflow_. R package version 0.1.0.9000, https://discourse.mc-stan.org,
 #> <https://mc-stan.org/stanflow/>.
+#> 
+#> Vehtari A, Gelman A, Gabry J (2017). “Practical Bayesian model
+#> evaluation using leave-one-out cross-validation and WAIC.” _Statistics
+#> and Computing_, *27*(5), 1413-1432. doi:10.1007/s11222-016-9696-4
+#> <https://doi.org/10.1007/s11222-016-9696-4>, arXiv preprint:
+#> https://arxiv.org/abs/1507.04544.
+#> 
+#> Vehtari A, Simpson D, Gelman A, Yao Y, Gabry J (2024). “Pareto smoothed
+#> importance sampling.” _Journal of Machine Learning Research_, *25*(72),
+#> 1-58. <https://jmlr.org/papers/v25/19-556.html>.
 #> 
 #> R Core Team (2026). _R: A Language and Environment for Statistical
 #> Computing_. R Foundation for Statistical Computing, Vienna, Austria.
