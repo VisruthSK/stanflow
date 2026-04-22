@@ -7,6 +7,7 @@ branch_install()
 base_dir <- file.path("touchstone", "sources")
 dir.create(base_dir, recursive = TRUE, showWarnings = FALSE)
 
+n <- 30
 repos <- list(
   list(
     url = "https://github.com/tidyverse/ggplot2.git",
@@ -38,14 +39,27 @@ for (repo in repos) {
     expr_before_benchmark = {
       library(stanflow)
     },
-    n = 5,
+    n = n,
     !!dir := stan_cite(
-      path = !!repo_path,
+      path = repo_path,
       strict = FALSE,
       quiet = TRUE
     )
   )
 }
+
+benchmark_run(
+  expr_before_benchmark = {
+    library(stanflow)
+  },
+  n = n,
+  loo_knitr := stan_cite(
+    path = file.path(base_dir, "loo"),
+    strict = FALSE,
+    quiet = TRUE,
+    use_knitr = TRUE
+  )
+)
 
 # Analyze and report the results
 benchmark_analyze()

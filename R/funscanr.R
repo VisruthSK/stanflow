@@ -64,6 +64,7 @@ scan_usage <- function(
   strict = FALSE,
   skip_dirs = .scan_skip_dirs,
   metapackages = NULL,
+  use_knitr = FALSE,
   quiet = getOption("stanflow.quiet", FALSE)
 ) {
   local_cli_quiet(quiet)
@@ -104,7 +105,8 @@ scan_usage <- function(
       .scan_tokens(
         .extract_code(
           file,
-          allowed_packages = c(allowed_packages, names(metapackages))
+          allowed_packages = c(allowed_packages, names(metapackages)),
+          use_knitr = use_knitr
         ),
         ignore_unqualified_functions = ignore_unqualified_functions,
         allowed_packages = allowed_packages,
@@ -222,7 +224,7 @@ scan_usage <- function(
   )
 }
 
-.extract_code <- function(file, allowed_packages = NULL) {
+.extract_code <- function(file, allowed_packages = NULL, use_knitr = FALSE) {
   ext <- file |>
     sub(".*\\.", "", x = _) |>
     tolower()
@@ -246,24 +248,20 @@ scan_usage <- function(
     return(raw)
   }
 
-  code <- .extract_markdown_code(strsplit(raw, "\n", fixed = TRUE)[[1L]])
-  if (
-    !nzchar(code) ||
-      !inherits(
-        try(parse(text = code, keep.source = FALSE), silent = TRUE),
-        "try-error"
-      )
-  ) {
-    return(code)
-  }
-  if (!requireNamespace("knitr", quietly = TRUE)) {
-    return(code)
-  }
+  if (use_knitr) {
+    if (!requireNamespace("knitr", quietly = TRUE)) {
+      cli::cli_abort(c(
+        "Package {.pkg knitr} is required to parse R Markdown ({.file .Rmd}) or Quarto ({.file .qmd}) files when {.code use_knitr = TRUE}.",
+        "i" = "Install it with {.code install.packages('knitr')} or use the default in-house parser."
+      ))
+    }
 
-  tmp <- withr::local_tempfile(fileext = ".R")
-  knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
-
-  paste(readLines(tmp, warn = FALSE), collapse = "\n")
+    tmp <- withr::local_tempfile(fileext = ".R")
+    knitr::purl(file, tmp, quiet = TRUE, documentation = 0)
+    paste(readLines(tmp, warn = FALSE), collapse = "\n")
+  } else {
+    .extract_markdown_code(strsplit(raw, "\n", fixed = TRUE)[[1L]])
+  }
 }
 
 .extract_markdown_code <- function(lines) {
