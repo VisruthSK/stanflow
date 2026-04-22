@@ -125,7 +125,7 @@ if (length(missing) > 0) {
 
 # Scanner query sources
 .scan_query_sources <- list(
-  attach_calls = r"(
+  attached_calls = r"(
 (call
   function: (identifier) @head
   arguments: (arguments
@@ -166,7 +166,7 @@ if (length(missing) > 0) {
   (#match? @arg "^(package|pkg)$")
 ) @call
 )",
-  use_calls = r"(
+  explicit_refs = r"(
 (call
   function: (identifier) @head
   arguments: (arguments
@@ -174,7 +174,7 @@ if (length(missing) > 0) {
     (argument !name value: (string) @fun)
   )
   (#eq? @head "use")
-) @call
+) @node
 
 (call
   function: (identifier) @head
@@ -189,37 +189,35 @@ if (length(missing) > 0) {
   )
   (#eq? @head "use")
   (#eq? @c_head "c")
-) @call
-)",
-  plain_calls = r"(
-(call
-  function: (identifier) @head
-  (#not-match? @head "^(library|require|requireNamespace|use)$")
-) @call
-)",
-  namespace_uses = r"(
+) @node
+
 (namespace_operator
   lhs: (identifier) @pkg
   rhs: (identifier) @fun
-) @ns
+) @node
 )",
-  member_calls = r"(
+  candidate_calls = r"(
+(call
+  function: (identifier) @fun
+  (#not-match? @fun "^(library|require|requireNamespace|use)$")
+) @call
+
 (call
   function: (extract_operator
-    rhs: (identifier) @member
+    rhs: (identifier) @fun
   )
 ) @call
 
 (call
   function: (extract_operator
-    rhs: (string) @member
+    rhs: (string) @fun
   )
 ) @call
 
 (call
   function: (parenthesized_expression
     body: (extract_operator
-      rhs: (identifier) @member
+      rhs: (identifier) @fun
     )
   )
 ) @call
@@ -227,11 +225,17 @@ if (length(missing) > 0) {
 (call
   function: (parenthesized_expression
     body: (extract_operator
-      rhs: (string) @member
+      rhs: (string) @fun
     )
   )
 ) @call
 )"
+)
+
+.scan_collector_specs <- list(
+  attached = list(query = "attached_calls", order_capture = "call"),
+  explicit = list(query = "explicit_refs", order_capture = "node"),
+  candidate = list(query = "candidate_calls", order_capture = "call")
 )
 
 assign_citation <- function(pkg, funs, entries) {
@@ -384,6 +388,7 @@ save(
   .stdlib_funs,
   .stan_pkg_versions,
   .scan_skip_dirs,
+  .scan_collector_specs,
   .scan_query_sources,
   file = "R/sysdata.rda",
   compress = "xz"

@@ -17,7 +17,11 @@ force_local_snapshots <- function() {
 .scan_capture <- bind_internal(".scan_capture")
 .scan_matches <- bind_internal(".scan_matches")
 .scan_name <- bind_internal(".scan_name")
+.scan_dir_files <- bind_internal(".scan_dir_files")
+.scan_attached_pkgs_impl <- bind_internal(".scan_attached_pkgs")
 .extract_code <- bind_internal(".extract_code")
+.normalize_metapackages_impl <- bind_internal(".normalize_metapackages")
+.scan_resolver_index_impl <- bind_internal(".scan_resolver_index")
 .resolve_candidates_impl <- bind_internal(".resolve_candidates")
 .stan_exports <- bind_internal(".stan_exports")
 .stan_export_index <- bind_internal(".stan_export_index")
@@ -59,16 +63,17 @@ scan_usage <- function(
     ) {
       .stan_resolver_index
     } else {
-      NULL
+      .scan_resolver_index_impl(export_index, origin_map)
     }
+  }
+  if (!is.null(metapackages)) {
+    metapackages <- .normalize_metapackages_impl(metapackages, allowed_packages)
   }
 
   .scan_tokens_impl(
     code = code,
     ignore_unqualified_functions = ignore_unqualified_functions,
     allowed_packages = allowed_packages,
-    export_index = export_index,
-    origin_map = origin_map,
     resolver_index = resolver_index,
     metapackages = metapackages,
     file_path = file_path
@@ -90,16 +95,29 @@ resolve_candidates <- function(
     ) {
       .stan_resolver_index
     } else {
-      NULL
+      .scan_resolver_index_impl(export_index, origin_map)
     }
   }
 
   .resolve_candidates_impl(
-    unqual = unqual,
-    lib_data = lib_data,
+    candidates = list(
+      fun = unqual$funs,
+      visit_idx = unqual$idx
+    ),
+    attached = if (is.null(lib_data)) {
+      list(
+        visit_idx = integer(),
+        pkg = character(),
+        is_attach = logical()
+      )
+    } else {
+      list(
+        visit_idx = lib_data$visit_idx,
+        pkg = lib_data$pkg,
+        is_attach = lib_data$is_attach
+      )
+    },
     allowed_packages = allowed_packages,
-    export_index = export_index,
-    origin_map = origin_map,
     resolver_index = resolver_index
   )
 }
@@ -204,12 +222,48 @@ test_that(".scan_tokens handles unnamed export indexes on non-empty code", {
   expect_identical(hits$ambiguous, character())
 })
 
+test_that(".scan_attached_pkgs returns NULL for missing package names", {
+  expect_null(
+    .scan_attached_pkgs_impl(
+      visit_idx = 1L,
+      pkg = NULL,
+      is_attach = TRUE,
+      allowed_packages = "posterior"
+    )
+  )
+
+  expect_null(
+    .scan_attached_pkgs_impl(
+      visit_idx = 1L,
+      pkg = "",
+      is_attach = TRUE,
+      allowed_packages = "posterior"
+    )
+  )
+})
+
+test_that(".scan_resolver_index keeps empty provider entries as NULL", {
+  idx <- .scan_resolver_index_impl(
+    export_index = list(foo = character(), bar = "pkgA"),
+    origin_map = c("pkgA::bar" = "pkgA")
+  )
+
+  expect_true("foo" %in% names(idx))
+  expect_null(idx[["foo"]])
+  expect_identical(idx[["bar"]]$provider, "pkgA")
+  expect_identical(idx[["bar"]]$origin, "pkgA")
+})
+
 test_that("tree-sitter helper functions handle missing and unsupported nodes", {
   scan_state <- .scan_treesitter()
   root <- treesitter::tree_root_node(
     treesitter::parser_parse(scan_state$parser, "foo()")
   )
-  match <- .scan_matches(root, scan_state$plain_calls, "call")[[1]]
+  match <- .scan_matches(
+    root,
+    scan_state$collectors$candidate$query,
+    "call"
+  )[[1]]
 
   expect_null(.scan_capture(match, "missing"))
   expect_null(.scan_name(NULL))
@@ -2296,40 +2350,31 @@ test_that("origin_map is applied even when an ambiguous call is position-resolve
   export_index <- list(foo = c("reexporter", "other"))
 
   origin_map <- c("reexporter::foo" = "origin")
-
-  unqual1 <- list(funs = "foo", idx = 2L)
-  lib1 <- data.frame(
-    visit_idx = 1L,
-    pkg = "reexporter",
-    is_attach = TRUE,
-    stringsAsFactors = FALSE
-  )
+  resolver_index <- .scan_resolver_index_impl(export_index, origin_map)
 
   r1 <- resolve(
-    unqual = unqual1,
-    lib_data = lib1,
+    candidates = list(fun = "foo", visit_idx = 2L),
+    attached = list(
+      visit_idx = 1L,
+      pkg = "reexporter",
+      is_attach = TRUE
+    ),
     allowed_packages = allowed_packages,
-    export_index = export_index,
-    origin_map = origin_map
+    resolver_index = resolver_index
   )
 
   expect_identical(r1$keys, "origin::foo")
   expect_identical(r1$pkgs, "origin")
 
-  unqual2 <- list(funs = "foo", idx = 3L)
-  lib2 <- data.frame(
-    visit_idx = c(1L, 2L),
-    pkg = c("other", "reexporter"),
-    is_attach = c(TRUE, TRUE),
-    stringsAsFactors = FALSE
-  )
-
   r2 <- resolve(
-    unqual = unqual2,
-    lib_data = lib2,
+    candidates = list(fun = "foo", visit_idx = 3L),
+    attached = list(
+      visit_idx = c(1L, 2L),
+      pkg = c("other", "reexporter"),
+      is_attach = c(TRUE, TRUE)
+    ),
     allowed_packages = allowed_packages,
-    export_index = export_index,
-    origin_map = origin_map
+    resolver_index = resolver_index
   )
 
   expect_identical(r2$keys, "origin::foo")

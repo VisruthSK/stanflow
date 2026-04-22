@@ -40,18 +40,16 @@
 #'   c(
 #'     "# one messy analysis file",
 #'     "library(posterior)",
-#'     "requireNamespace(\"brms\")",
-#'     "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+#'     "requireNamespace(\"loo\")",
 #'     "draws <- as_draws(list(mu = rnorm(10)))",
 #'     "posterior::rhat(draws)",
-#'     "brms::mixture(0.4)",
-#'     "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+#'     "loo::loo(matrix(1))"
 #'   ),
 #'   path
 #' )
 #' scan_usage(
 #'   path,
-#'   allowed_packages = c("posterior", "brms", "cmdstanr"),
+#'   allowed_packages = c("posterior", "loo"),
 #'   export_index = list(as_draws = "posterior"),
 #'   origin_map = c("posterior::as_draws" = "posterior"),
 #'   quiet = TRUE
@@ -70,6 +68,7 @@ scan_usage <- function(
 ) {
   local_cli_quiet(quiet)
   resolver_index <- .scan_resolver_index(export_index, origin_map)
+  metapackages <- .normalize_metapackages(metapackages, allowed_packages)
 
   paths <- normalizePath(path, winslash = "/", mustWork = TRUE)
   dir_flags <- dir.exists(paths)
@@ -85,14 +84,11 @@ scan_usage <- function(
         "x" = "Mixed directories and files or multiple directories are not supported."
       ))
     }
-    paths |>
-      (\(paths) {
-        lapply(
-          paths,
-          \(file_path) cli::cli_alert_info("Searching {.path {file_path}}")
-        )
-        paths
-      })()
+    lapply(
+      paths,
+      \(file_path) cli::cli_alert_info("Searching {.path {file_path}}")
+    )
+    paths
   }
 
   if (!length(files)) {
@@ -102,22 +98,19 @@ scan_usage <- function(
     ))
   }
 
-  hits <- unique(files) |>
-    lapply(
-      \(file) {
-        file |>
-          .extract_code() |>
-          .scan_tokens(
-            ignore_unqualified_functions = ignore_unqualified_functions,
-            allowed_packages = allowed_packages,
-            export_index = export_index,
-            origin_map = origin_map,
-            resolver_index = resolver_index,
-            metapackages = metapackages,
-            file_path = file
-          )
-      }
-    )
+  hits <- lapply(
+    unique(files),
+    \(file) {
+      .scan_tokens(
+        .extract_code(file),
+        ignore_unqualified_functions = ignore_unqualified_functions,
+        allowed_packages = allowed_packages,
+        resolver_index = resolver_index,
+        metapackages = metapackages,
+        file_path = file
+      )
+    }
+  )
 
   ambiguous <- .collect_unique(hits, "ambiguous")
   if (length(ambiguous)) {
@@ -187,23 +180,21 @@ scan_usage <- function(
 
 .scan_dir_files <- function(dir_path, skip_dirs) {
   dir_path <- normalizePath(dir_path, winslash = "/", mustWork = TRUE)
-  files <- character()
-  n <- 0L
+  chunks <- list()
+  n_chunks <- 0L
 
-  add_code_files <- function(paths) {
+  .scan_dir_walk(dir_path, skip_dirs, function(paths) {
     code_files <- paths[grepl("\\.(R|Rmd|Qmd)$", paths, ignore.case = TRUE)]
     if (!length(code_files)) {
       return(invisible(NULL))
     }
 
-    idx <- seq.int(n + 1L, n + length(code_files))
-    files[idx] <<- code_files
-    n <<- idx[length(idx)]
+    n_chunks <<- n_chunks + 1L
+    chunks[[n_chunks]] <<- code_files
 
     invisible(NULL)
-  }
-
-  .scan_dir_walk(dir_path, skip_dirs, add_code_files)
+  })
+  files <- if (n_chunks) unlist(chunks, use.names = FALSE) else character()
   normalizePath(files, winslash = "/", mustWork = FALSE)
 }
 
@@ -213,6 +204,16 @@ scan_usage <- function(
     unlist(use.names = FALSE) |>
     unique() |>
     sort()
+}
+
+.normalize_metapackages <- function(metapackages, allowed_packages) {
+  if (is.null(metapackages)) {
+    return(NULL)
+  }
+  lapply(
+    metapackages,
+    \(pkgs) unique(pkgs[!is.na(fastmatch::fmatch(pkgs, allowed_packages))])
+  )
 }
 
 .extract_code <- function(file) {
@@ -247,18 +248,13 @@ scan_usage <- function(
   code,
   ignore_unqualified_functions,
   allowed_packages,
-  export_index,
-  origin_map,
-  resolver_index = NULL,
+  resolver_index,
   metapackages = NULL,
   file_path = NULL
 ) {
   empty <- list(pkgs = character(), keys = character(), ambiguous = character())
   if (!nzchar(code)) {
     return(empty)
-  }
-  if (is.null(resolver_index)) {
-    resolver_index <- .scan_resolver_index(export_index, origin_map)
   }
 
   scan_state <- .scan_treesitter()
@@ -284,111 +280,38 @@ scan_usage <- function(
     export_names <- character()
   }
 
-  lib_pkgs <- character()
-  lib_visit_idx <- integer()
-  lib_is_attach <- logical()
-  ns_pkgs <- character()
-  ns_keys <- character()
-  unqual_funs <- character()
-  unqual_idx <- integer()
-
-  for (match in .scan_matches(root, scan_state$attach_calls, "call")) {
-    visit_idx <- as.integer(
-      treesitter::node_start_byte(.scan_capture(match, "call"))
-    )
-    head <- .scan_name(.scan_capture(match, "head"))
-    pkg <- .scan_name(.scan_capture(match, "pkg"))
-    attached <- .scan_attached_pkgs(
-      pkg = pkg,
-      is_attach = head != "requireNamespace",
-      allowed_packages = allowed_packages,
-      metapackages = metapackages
-    )
-    if (!is.null(attached)) {
-      lib_pkgs <- c(lib_pkgs, attached$pkg)
-      lib_visit_idx <- c(
-        lib_visit_idx,
-        rep.int(visit_idx, length(attached$pkg))
-      )
-      lib_is_attach <- c(lib_is_attach, attached$is_attach)
-    }
-  }
-
-  for (match in .scan_matches(root, scan_state$use_calls, "call")) {
-    pkg <- .scan_name(.scan_capture(match, "pkg"))
-    fun <- .scan_name(.scan_capture(match, "fun"))
-
-    if (
-      !is.null(pkg) &&
-        !is.na(fastmatch::fmatch(pkg, allowed_packages))
-    ) {
-      ns_pkgs <- c(ns_pkgs, pkg)
-      if (!is.null(fun) && nzchar(fun)) {
-        ns_keys <- c(ns_keys, paste0(pkg, "::", fun))
-      }
-    }
-  }
-
-  for (match in .scan_matches(root, scan_state$namespace_uses, "ns")) {
-    pkg <- .scan_name(.scan_capture(match, "pkg"))
-    fun <- .scan_name(.scan_capture(match, "fun"))
-
-    if (!is.na(fastmatch::fmatch(pkg, allowed_packages))) {
-      ns_pkgs <- c(ns_pkgs, pkg)
-      ns_keys <- c(ns_keys, paste0(pkg, "::", fun))
-    }
-  }
-
-  for (match in .scan_matches(root, scan_state$plain_calls, "call")) {
-    call <- .scan_capture(match, "call")
-    head <- .scan_name(.scan_capture(match, "head"))
-
-    if (
-      is.na(fastmatch::fmatch(head, export_names)) ||
-        !is.na(fastmatch::fmatch(head, ignore_unqualified_functions))
-    ) {
-      next
-    }
-
-    unqual_funs <- c(unqual_funs, head)
-    unqual_idx <- c(unqual_idx, as.integer(treesitter::node_start_byte(call)))
-  }
-
-  for (match in .scan_matches(root, scan_state$member_calls, "call")) {
-    call <- .scan_capture(match, "call")
-    fun <- .scan_name(.scan_capture(match, "member"))
-
-    if (!is.na(fastmatch::fmatch(fun, export_names))) {
-      unqual_funs <- c(unqual_funs, fun)
-      unqual_idx <- c(unqual_idx, as.integer(treesitter::node_start_byte(call)))
-    }
-  }
-
-  lib_data <- if (length(lib_pkgs)) {
-    data.frame(
-      visit_idx = lib_visit_idx,
-      pkg = lib_pkgs,
-      is_attach = lib_is_attach,
-      stringsAsFactors = FALSE
-    )
-  } else {
-    NULL
-  }
+  attached <- .scan_collect_attached(
+    root = root,
+    collector = scan_state$collectors$attached,
+    allowed_packages = allowed_packages,
+    metapackages = metapackages
+  )
+  explicit <- .scan_collect_explicit(
+    root = root,
+    collector = scan_state$collectors$explicit,
+    allowed_packages = allowed_packages
+  )
+  candidates <- .scan_collect_candidates(
+    root = root,
+    collector = scan_state$collectors$candidate,
+    export_names = export_names,
+    ignore_unqualified_functions = ignore_unqualified_functions
+  )
 
   resolved <- .resolve_candidates(
-    unqual = list(funs = unqual_funs, idx = unqual_idx),
-    lib_data,
-    allowed_packages,
+    candidates = candidates,
+    attached = attached,
+    allowed_packages = allowed_packages,
     resolver_index = resolver_index
   )
 
   list(
     pkgs = c(
-      if (is.null(lib_data)) character() else lib_data$pkg,
-      ns_pkgs,
+      attached$pkg,
+      explicit$pkg,
       resolved$pkgs
     ),
-    keys = c(ns_keys, resolved$keys),
+    keys = c(explicit$key[nzchar(explicit$key)], resolved$keys),
     ambiguous = resolved$ambiguous
   )
 }
@@ -402,22 +325,42 @@ scan_usage <- function(
   }
 
   language <- treesitter.r::language()
-  bundle <- c(
-    list(parser = treesitter::parser(language)),
-    lapply(.scan_query_sources, \(source) treesitter::query(language, source))
+  bundle <- list(
+    parser = treesitter::parser(language),
+    collectors = lapply(
+      .scan_collector_specs,
+      \(spec) {
+        list(
+          query = treesitter::query(
+            language,
+            .scan_query_sources[[spec$query]]
+          ),
+          order_capture = spec$order_capture
+        )
+      }
+    )
   )
   .scan_treesitter_cache$bundle <- bundle
   bundle
 }
 
 .scan_attached_pkgs <- function(
+  visit_idx,
   pkg,
   is_attach,
   allowed_packages,
   metapackages = NULL
 ) {
-  pkgs <- pkg
-  attach_flags <- is_attach
+  if (is.null(pkg) || !nzchar(pkg)) {
+    return(NULL)
+  }
+
+  pkgs <- if (!is.na(fastmatch::fmatch(pkg, allowed_packages))) {
+    pkg
+  } else {
+    character()
+  }
+  attach_flags <- if (length(pkgs)) is_attach else logical()
 
   expanded <- if (is_attach && !is.null(metapackages)) {
     metapackages[[pkg]]
@@ -429,14 +372,138 @@ scan_usage <- function(
     attach_flags <- c(attach_flags, rep.int(TRUE, length(expanded)))
   }
 
-  keep <- !is.na(fastmatch::fmatch(pkgs, allowed_packages))
-  if (!any(keep)) {
+  if (!length(pkgs)) {
     return(NULL)
   }
 
   list(
-    pkg = pkgs[keep],
-    is_attach = attach_flags[keep]
+    visit_idx = rep.int(as.integer(visit_idx), length(pkgs)),
+    pkg = pkgs,
+    is_attach = attach_flags
+  )
+}
+
+.scan_subset_records <- function(records, keep) {
+  stats::setNames(lapply(records, `[`, keep), names(records))
+}
+
+.scan_bind_records <- function(rows, type) {
+  rows <- Filter(\(row) !is.null(row), rows)
+  out <- switch(
+    type,
+    attached = list(
+      visit_idx = integer(),
+      pkg = character(),
+      is_attach = logical()
+    ),
+    explicit = list(
+      pkg = character(),
+      key = character()
+    ),
+    candidate = list(
+      visit_idx = integer(),
+      fun = character()
+    )
+  )
+  if (!length(rows)) {
+    return(out)
+  }
+
+  for (field in names(out)) {
+    out[[field]] <- unlist(lapply(rows, `[[`, field), use.names = FALSE)
+  }
+
+  out
+}
+
+.scan_collect <- function(root, collector, type, build_row) {
+  .scan_bind_records(
+    lapply(
+      .scan_matches(root, collector$query, collector$order_capture),
+      build_row
+    ),
+    type
+  )
+}
+
+.scan_collect_attached <- function(
+  root,
+  collector,
+  allowed_packages,
+  metapackages = NULL
+) {
+  .scan_collect(
+    root = root,
+    collector = collector,
+    type = "attached",
+    \(match) {
+      call <- .scan_capture(match, "call")
+      .scan_attached_pkgs(
+        visit_idx = treesitter::node_start_byte(call),
+        pkg = .scan_name(.scan_capture(match, "pkg")),
+        is_attach = !identical(
+          .scan_name(.scan_capture(match, "head")),
+          "requireNamespace"
+        ),
+        allowed_packages = allowed_packages,
+        metapackages = metapackages
+      )
+    }
+  )
+}
+
+.scan_collect_explicit <- function(root, collector, allowed_packages) {
+  .scan_collect(
+    root = root,
+    collector = collector,
+    type = "explicit",
+    \(match) {
+      pkg <- .scan_name(.scan_capture(match, "pkg"))
+      if (is.null(pkg) || is.na(fastmatch::fmatch(pkg, allowed_packages))) {
+        return(NULL)
+      }
+
+      fun <- .scan_name(.scan_capture(match, "fun"))
+      list(
+        pkg = pkg,
+        key = if (is.null(fun) || !nzchar(fun)) "" else paste0(pkg, "::", fun)
+      )
+    }
+  )
+}
+
+.scan_collect_candidates <- function(
+  root,
+  collector,
+  export_names,
+  ignore_unqualified_functions
+) {
+  .scan_collect(
+    root = root,
+    collector = collector,
+    type = "candidate",
+    \(match) {
+      call <- .scan_capture(match, "call")
+      fun <- .scan_name(.scan_capture(match, "fun"))
+      if (is.null(fun) || is.na(fastmatch::fmatch(fun, export_names))) {
+        return(NULL)
+      }
+
+      fn_node <- treesitter::node_child_by_field_name(call, "function")
+      is_plain_call <- !is.null(fn_node) &&
+        identical(treesitter::node_type(fn_node), "identifier")
+      if (
+        is_plain_call &&
+          !is.na(fastmatch::fmatch(fun, ignore_unqualified_functions))
+      ) {
+        return(NULL)
+      }
+
+      list(
+        visit_idx = as.integer(treesitter::node_start_byte(call)),
+        fun = fun
+      )
+    }
   )
 }
 
@@ -455,8 +522,8 @@ scan_usage <- function(
     recursive = FALSE,
     use.names = FALSE
   )
-  if (!length(matches)) {
-    return(list())
+  if (length(matches) <= 1L) {
+    return(matches)
   }
 
   matches[order(
@@ -496,11 +563,6 @@ scan_usage <- function(
   NULL
 }
 
-.origin_pkg <- function(pkg, fun, origin_map) {
-  origin <- unname(origin_map[paste0(pkg, "::", fun)])
-  if (is.na(origin)) pkg else origin
-}
-
 .scan_resolver_index <- function(export_index, origin_map) {
   if (
     identical(export_index, .stan_export_index) &&
@@ -514,7 +576,7 @@ scan_usage <- function(
     return(list())
   }
 
-  setNames(
+  stats::setNames(
     lapply(
       funs,
       \(fun) {
@@ -527,10 +589,12 @@ scan_usage <- function(
           provider = providers,
           origin = vapply(
             providers,
-            .origin_pkg,
+            \(pkg) {
+              origin <- unname(origin_map[paste0(pkg, "::", fun)])
+              if (is.na(origin)) pkg else origin
+            },
             character(1),
-            fun = fun,
-            origin_map = origin_map
+            USE.NAMES = FALSE
           ),
           stringsAsFactors = FALSE
         )
@@ -538,19 +602,6 @@ scan_usage <- function(
     ),
     funs
   )
-}
-
-.scan_attached_libs <- function(lib_data) {
-  if (is.null(lib_data) || !any(lib_data$is_attach)) {
-    return(NULL)
-  }
-
-  attached <- lib_data[lib_data$is_attach, c("visit_idx", "pkg"), drop = FALSE]
-  if (nrow(attached) <= 1L) {
-    return(attached)
-  }
-
-  attached[order(attached$visit_idx, seq_len(nrow(attached))), , drop = FALSE]
 }
 
 .resolve_meta <- function(
@@ -614,61 +665,53 @@ scan_usage <- function(
 }
 
 .resolve_candidates <- function(
-  unqual,
-  lib_data,
+  candidates,
+  attached,
   allowed_packages,
-  export_index,
-  origin_map,
-  resolver_index = NULL
+  resolver_index
 ) {
   empty <- list(pkgs = character(), keys = character(), ambiguous = character())
-  if (!length(unqual$funs) || !length(allowed_packages)) {
-    return(empty)
-  }
-  if (is.null(resolver_index)) {
-    resolver_index <- .scan_resolver_index(export_index, origin_map)
-  }
-
-  attached <- .scan_attached_libs(lib_data)
-  if (is.null(attached)) {
+  if (!length(candidates$fun) || !length(allowed_packages)) {
     return(empty)
   }
 
-  calls <- data.frame(
-    fun = unqual$funs,
-    visit_idx = unqual$idx,
-    stringsAsFactors = FALSE
-  )
-  if (nrow(calls) > 1L) {
-    calls <- calls[order(calls$visit_idx, seq_len(nrow(calls))), , drop = FALSE]
+  if (!length(attached$pkg) || !any(attached$is_attach)) {
+    return(empty)
   }
-
-  meta_by_fun <- setNames(
-    lapply(
-      unique(calls$fun),
-      \(fun) {
-        .resolve_meta(
-          fun = fun,
-          attached = attached,
-          allowed_packages = allowed_packages,
-          resolver_index = resolver_index
-        )
-      }
+  attached <- .scan_subset_records(
+    list(
+      visit_idx = attached$visit_idx,
+      pkg = attached$pkg
     ),
-    unique(calls$fun)
+    attached$is_attach
   )
-  has_meta <- !vapply(meta_by_fun[calls$fun], is.null, logical(1))
+
+  call_funs <- unique(candidates$fun)
+  meta_by_fun <- lapply(
+    call_funs,
+    \(fun) {
+      .resolve_meta(
+        fun = fun,
+        attached = attached,
+        allowed_packages = allowed_packages,
+        resolver_index = resolver_index
+      )
+    }
+  )
+  candidate_meta <- meta_by_fun[fastmatch::fmatch(candidates$fun, call_funs)]
+  has_meta <- !vapply(candidate_meta, is.null, logical(1))
   if (!any(has_meta)) {
     return(empty)
   }
 
-  calls <- calls[has_meta, , drop = FALSE]
+  candidates <- .scan_subset_records(candidates, has_meta)
+  candidate_meta <- candidate_meta[has_meta]
   resolved_pkgs <- vapply(
-    seq_len(nrow(calls)),
+    seq_along(candidates$fun),
     \(i) {
       .resolve_call(
-        meta = meta_by_fun[[calls$fun[[i]]]],
-        visit_idx = calls$visit_idx[[i]],
+        meta = candidate_meta[[i]],
+        visit_idx = candidates$visit_idx[[i]],
         attached = attached,
         allowed_packages = allowed_packages
       )
@@ -680,14 +723,14 @@ scan_usage <- function(
   list(
     pkgs = resolved_pkgs[resolved],
     keys = if (any(resolved)) {
-      paste0(resolved_pkgs[resolved], "::", calls$fun[resolved])
+      paste0(resolved_pkgs[resolved], "::", candidates$fun[resolved])
     } else {
       character()
     },
     ambiguous = if (all(resolved)) {
       character()
     } else {
-      sort(unique(calls$fun[!resolved]))
+      sort(unique(candidates$fun[!resolved]))
     }
   )
 }

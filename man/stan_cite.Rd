@@ -57,12 +57,10 @@ writeLines(
   c(
     "# one messy analysis file",
     "library(posterior)",
-    "requireNamespace(\"brms\")",
-    "use(\"cmdstanr\", c(\"cmdstan_model\", \"write_stan_json\"))",
+    "requireNamespace(\"loo\")",
     "draws <- as_draws(list(mu = rnorm(10)))",
     "posterior::rhat(draws)",
-    "brms::mixture(0.4)",
-    "cmdstanr::write_stan_json(list(N = 3), \"data.json\")"
+    "loo::loo(matrix(1))"
   ),
   path
 )

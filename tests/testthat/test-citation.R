@@ -133,27 +133,19 @@ test_that("stan_cite defaults to stanflow.quiet option", {
 
 test_that("all package citations exist", {
   expected <- getFromNamespace(".stan_pkgs", "stanflow")
+  installed <- expected[
+    vapply(expected, requireNamespace, logical(1), quietly = TRUE)
+  ]
 
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "all_pkgs.R"),
-    c(
-      "library(bayesplot)",
-      "library(brms)",
-      "library(cmdstanr)",
-      "library(loo)",
-      "library(posterior)",
-      "library(projpred)",
-      "library(rstan)",
-      "library(rstanarm)",
-      "library(rstantools)",
-      "library(shinystan)"
-    )
+    paste0("library(", installed, ")")
   )
 
   citations <- stan_cite(path, format = "bibtex", quiet = TRUE)
   expect_true(any(grepl("stanflow", citations, fixed = TRUE)))
-  for (pkg in expected) {
+  for (pkg in installed) {
     expect_true(any(grepl(pkg, citations, fixed = TRUE)))
   }
 })
@@ -169,6 +161,8 @@ test_that("package citations use generated paper entries", {
 })
 
 test_that("cmdstanr function citations follow cmdstanr docs", {
+  skip_if_not_installed("cmdstanr")
+
   tmp <- withr::local_tempdir()
   path <- write_file(
     file.path(tmp, "cmdstanr.R"),
