@@ -30,7 +30,7 @@ stan_repos()
 #>                                                          CRAN 
 #>                                    "https://cran.rstudio.com" 
 #>                                                               
-#>                         "https://community.r-multiverse.org," 
+#>                          "https://community.r-multiverse.org" 
 #>                                                               
 #>                             "https://stan-dev.r-universe.dev" 
 stan_repos(dev = TRUE)
@@ -41,7 +41,7 @@ stan_repos(dev = TRUE)
 #>                                                          CRAN 
 #>                                    "https://cran.rstudio.com" 
 #>                                                               
-#>                         "https://community.r-multiverse.org," 
+#>                          "https://community.r-multiverse.org" 
 #>                                                               
 #>                             "https://stan-dev.r-universe.dev" 
 ```

@@ -18,7 +18,7 @@ for base R.
 
 ## Features
 
-- Install common Stan packages in one step[¹](#fn1):
+- Install common Stan packages in one step[^1]:
   - Installing (or attaching) `stanflow` installs (attaches)
     `bayesplot`, `loo`, `posterior`, `projpred`, and `shinystan`
 - Generate proper Stan citations for your research project:
@@ -31,7 +31,7 @@ for base R.
     automatically handles installing/attaching any of the compatible
     Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`, with some
     mild defaults.
-- Update packages[²](#fn2):
+- Update packages[^2]:
   - [`stanflow_update()`](https://visruthsk.github.io/stanflow/dev/reference/stanflow_update.md)
     attempts to automatically update out of date packages, and can
     optionally search for dependencies’ dependencies. `stanflow`
@@ -47,6 +47,7 @@ You can install the development version of stanflow from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # install.packages("pak")
 pak::pak("VisruthSK/stanflow")
 ```
@@ -56,6 +57,7 @@ pak::pak("VisruthSK/stanflow")
 Here, we load `stanflow` and use `cmdstanr` as the backend for `brms`.
 
 ``` r
+
 library(stanflow)
 setup_interface(
   interface = "brms",
@@ -95,6 +97,7 @@ will load the core stanflow packages: `bayesplot`, `loo`, `posterior`,
 proceed with our analysis immediately.
 
 ``` r
+
 cmdstanr_example()
 #>    variable   mean median   sd  mad     q5    q95 rhat ess_bulk ess_tail
 #>  lp__       -65.94 -65.62 1.39 1.19 -68.67 -64.29 1.00     1996     2876
@@ -159,6 +162,7 @@ plot(fit1, variable = c("b_Trt1", "b_zBase"))
 ![](reference/figures/README-unnamed-chunk-2-1.png)
 
 ``` r
+
 
 fit2 <- brm(
   count ~ zAge + zBase * Trt + (1 | patient) + (1 | obs),
@@ -262,11 +266,9 @@ Code snippets above are taken from the [`brms`
 README](https://paulbuerkner.com/brms/) but results aren’t directly
 comparable.
 
-------------------------------------------------------------------------
+[^1]: This feature is adopted from the `tidyverse` package!
 
-1.  This feature is adopted from the `tidyverse` package!
-
-2.  This feature is adopted from the `tidyverse` package!
+[^2]: This feature is adopted from the `tidyverse` package!
 
 # Package index
 

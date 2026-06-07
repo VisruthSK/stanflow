@@ -163,6 +163,7 @@ stan_cite(path, quiet = TRUE)
 #>   organization = {R Foundation for Statistical Computing},
 #>   address = {Vienna, Austria},
 #>   year = {2026},
+#>   doi = {10.32614/R.manuals},
 #>   url = {https://www.R-project.org/},
 #> }
 stan_cite(path, format = "bibentry", quiet = TRUE)
@@ -188,7 +189,7 @@ stan_cite(path, format = "bibentry", quiet = TRUE)
 #> Vehtari A, Gelman A, Gabry J (2017). “Practical Bayesian model
 #> evaluation using leave-one-out cross-validation and WAIC.” _Statistics
 #> and Computing_, *27*(5), 1413-1432. doi:10.1007/s11222-016-9696-4
-#> <https://doi.org/10.1007/s11222-016-9696-4>, arXiv preprint:
+#> <https://doi.org/10.1007/s11222-016-9696-4>. arXiv preprint:
 #> https://arxiv.org/abs/1507.04544.
 #> 
 #> Vehtari A, Simpson D, Gelman A, Yao Y, Gabry J (2024). “Pareto smoothed
@@ -197,6 +198,7 @@ stan_cite(path, format = "bibentry", quiet = TRUE)
 #> 
 #> R Core Team (2026). _R: A Language and Environment for Statistical
 #> Computing_. R Foundation for Statistical Computing, Vienna, Austria.
+#> doi:10.32614/R.manuals <https://doi.org/10.32614/R.manuals>.
 #> <https://www.R-project.org/>.
 unlink(path)
 ```

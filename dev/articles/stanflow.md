@@ -9,6 +9,7 @@ install/configure Stan interfaces (`cmdstanr`, `rstan`, `brms`,
 ## Attach `stanflow`
 
 ``` r
+
 library(stanflow)
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
@@ -48,6 +49,7 @@ or just the namespace conflicts with
 [`stanflow_conflicts()`](https://visruthsk.github.io/stanflow/dev/reference/stanflow_conflicts.md).
 
 ``` r
+
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
@@ -74,6 +76,7 @@ releases by default, or dev builds with `dev = TRUE`). Set `recursive`
 to check the full dependency closure.
 
 ``` r
+
 stanflow_update(recursive = TRUE)
 ```
 
@@ -82,6 +85,7 @@ using
 [`flow_check()`](https://visruthsk.github.io/stanflow/dev/reference/flow_check.md).
 
 ``` r
+
 flow_check(check_updates = TRUE)
 ```
 
@@ -95,6 +99,7 @@ attach both packages and ensure that `brms` calls rely on `cmdstanr` by
 default.
 
 ``` r
+
 setup_interface(
   interface = "brms",
   brms_backend = "cmdstanr",
@@ -102,9 +107,9 @@ setup_interface(
   quiet = TRUE, # only silences R output
   force = TRUE # only required for non-interactive usage
 )
-#> * Latest CmdStan release is v2.38.0
-#> * Installing CmdStan v2.38.0 in /home/runner/.cmdstan/cmdstan-2.38.0
-#> * Downloading cmdstan-2.38.0.tar.gz from GitHub...
+#> * Latest CmdStan release is v2.39.0
+#> * Installing CmdStan v2.39.0 in /home/runner/.cmdstan/cmdstan-2.39.0
+#> * Downloading cmdstan-2.39.0.tar.gz from GitHub...
 #> * Download complete
 #> * Unpacking archive...
 #> * Building CmdStan binaries...
@@ -112,7 +117,7 @@ setup_interface(
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a
-#> /home/runner/.cmdstan/cmdstan-2.38.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.17.0
+#> /home/runner/.cmdstan/cmdstan-2.39.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.17.0
 #> In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:
 #> ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template<class _Category, class _Tp, class _Distance, class _Pointer, class _Reference> struct std::iterator’ is deprecated [-Wdeprecated-declarations]
 #>   347 |         : public std::iterator<std::forward_iterator_tag,Value>
@@ -145,8 +150,8 @@ setup_interface(
 #>   127 |     struct _GLIBCXX17_DEPRECATED iterator
 #>       |                                  ^~~~~~~~
 #> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
-#> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.38.0
-#> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.38.0
+#> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.39.0
+#> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.39.0
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
@@ -166,6 +171,7 @@ flow_check()
 If you prefer `RStan`, you could load it alongside `brms`.
 
 ``` r
+
 setup_interface(
   interface = c("rstan", "brms"),
   cores = 2,
@@ -176,6 +182,7 @@ setup_interface(
 You can setup as many interfaces you’d like:
 
 ``` r
+
 setup_interface(
   interface = c("rstan", "rstanarm", "brms", "cmdstanr"),
   brms_backend = "cmdstanr",
@@ -190,6 +197,7 @@ With the core packages attached, you can generate, summarise, and
 visualise draws immediately.
 
 ``` r
+
 set.seed(0)
 draws <- as_draws_df(
   matrix(rnorm(4000), ncol = 1, dimnames = list(NULL, "theta"))
@@ -206,6 +214,7 @@ mcmc_hist(draws, pars = "theta")
 ![](stanflow_files/figure-html/unnamed-chunk-9-1.png)
 
 ``` r
+
 log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
 loo(log_lik)
 #> 
@@ -232,11 +241,12 @@ on your project/files to quickly generate an appropriate BibTeX or
 bibentry.
 
 ``` r
+
 start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1496935 secs
+#> Time difference of 0.1684406 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
@@ -338,6 +348,7 @@ citations
 #>   organization = {R Foundation for Statistical Computing},
 #>   address = {Vienna, Austria},
 #>   year = {2026},
+#>   doi = {10.32614/R.manuals},
 #>   url = {https://www.R-project.org/},
 #> }
 ```
