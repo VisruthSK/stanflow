@@ -80,6 +80,27 @@ vehtari2019_rhat <- bibentry(
   note = "arXiv preprint: https://arxiv.org/abs/1903.08008"
 )
 
+posterior_joss <- bibentry(
+  bibtype = "Article",
+  key = "burkner-2026-posterior",
+  title = "posterior: Tools for Working with Posterior Distributions in R",
+  author = c(
+    person(given = "Paul-Christian", family = "B\\u00fcrkner"),
+    person(given = "Jonah", family = "Gabry"),
+    person(given = "Matthew", family = "Kay"),
+    person(given = "Aki", family = "Vehtari")
+  ),
+  journal = "Journal of Open Source Software",
+  year = "2026",
+  volume = "11",
+  number = "122",
+  pages = "10526",
+  doi = "10.21105/joss.10526",
+  url = "https://doi.org/10.21105/joss.10526",
+  publisher = "The Open Journal",
+  encoding = "UTF-8"
+)
+
 vehtari2017_loo <- bibentry(
   bibtype = "Article",
   key = "vehtari-2017-loo",
