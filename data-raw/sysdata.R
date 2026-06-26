@@ -131,7 +131,10 @@ assign_citation <- function(pkg, funs, entries) {
 
 source("data-raw/papers.R")
 .stan_citation_pkg_extras$bayesplot <- gabry2019_vis
-.stan_citation_pkg_extras$posterior <- vehtari2021_rhat
+.stan_citation_pkg_extras$posterior <- c(
+  posterior_joss,
+  vehtari2021_rhat
+)
 source("data-raw/bayesplot-citations.R")
 source("data-raw/brms-citations.R")
 source("data-raw/cmdstanr-citations.R")
