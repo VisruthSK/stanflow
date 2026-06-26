@@ -246,7 +246,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1947196 secs
+#> Time difference of 0.167429 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
@@ -281,6 +281,20 @@ citations
 #>   year = {2026},
 #>   note = {R package version 1.7.0, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/posterior/},
+#> }
+#> 
+#> @Article{burkner-2026-posterior,
+#>   title = {posterior: Tools for Working with Posterior Distributions in R},
+#>   author = {Paul-Christian B\u00fcrkner and Jonah Gabry and Matthew Kay and Aki Vehtari},
+#>   journal = {Journal of Open Source Software},
+#>   year = {2026},
+#>   volume = {11},
+#>   number = {122},
+#>   pages = {10526},
+#>   doi = {10.21105/joss.10526},
+#>   url = {https://doi.org/10.21105/joss.10526},
+#>   publisher = {The Open Journal},
+#>   encoding = {UTF-8},
 #> }
 #> 
 #> @Article{vehtari-2021-rhat,

@@ -115,6 +115,20 @@ stan_cite(path, quiet = TRUE)
 #>   url = {https://mc-stan.org/posterior/},
 #> }
 #> 
+#> @Article{burkner-2026-posterior,
+#>   title = {posterior: Tools for Working with Posterior Distributions in R},
+#>   author = {Paul-Christian B\u00fcrkner and Jonah Gabry and Matthew Kay and Aki Vehtari},
+#>   journal = {Journal of Open Source Software},
+#>   year = {2026},
+#>   volume = {11},
+#>   number = {122},
+#>   pages = {10526},
+#>   doi = {10.21105/joss.10526},
+#>   url = {https://doi.org/10.21105/joss.10526},
+#>   publisher = {The Open Journal},
+#>   encoding = {UTF-8},
+#> }
+#> 
 #> @Article{vehtari-2021-rhat,
 #>   title = {Rank-normalization, folding, and localization: An improved R-hat for assessing convergence of MCMC (with discussion)},
 #>   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\u00fcrkner},
@@ -175,6 +189,12 @@ stan_cite(path, format = "bibentry", quiet = TRUE)
 #> Bürkner P, Gabry J, Kay M, Vehtari A (2026). _Tools for Working with
 #> Posterior Distributions_. R package version 1.7.0,
 #> https://discourse.mc-stan.org, <https://mc-stan.org/posterior/>.
+#> 
+#> B\u00fcrkner P, Gabry J, Kay M, Vehtari A (2026). “posterior: Tools for
+#> Working with Posterior Distributions in R.” _Journal of Open Source
+#> Software_, *11*(122), 10526. doi:10.21105/joss.10526
+#> <https://doi.org/10.21105/joss.10526>.
+#> <https://doi.org/10.21105/joss.10526>.
 #> 
 #> Vehtari A, Gelman A, Simpson D, Carpenter B, B\u00fcrkner P (2021).
 #> “Rank-normalization, folding, and localization: An improved R-hat for
