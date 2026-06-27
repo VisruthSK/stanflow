@@ -139,8 +139,7 @@ test_that("stanflow_update installs when user accepts interactive prompt", {
 
 test_that("stanflow_update dry_run reports package installs without installing", {
   withr::local_options(list(
-    repos = c(CRAN = "https://cloud.r-project.org"),
-    stanflow.force_interactive = FALSE
+    repos = c(CRAN = "https://cloud.r-project.org")
   ))
 
   behind <- data.frame(
@@ -155,6 +154,7 @@ test_that("stanflow_update dry_run reports package installs without installing",
   withr::local_output_sink(withr::local_tempfile())
   result <- with_mocked_bindings(
     stanflow_deps = function(...) behind,
+    is_interactive_session = function() FALSE,
     with_mocked_bindings(
       menu = function(...) stop("should not prompt"),
       install.packages = function(...) {
@@ -424,10 +424,11 @@ test_that("stanflow_deps uses recursive fallback dependencies", {
 })
 
 test_that("stanflow_update aborts in non-interactive sessions", {
-  withr::local_options(list(
-    stanflow.testing = FALSE,
-    stanflow.force_interactive = FALSE
-  ))
+  withr::local_options(list(stanflow.testing = FALSE))
+  local_mocked_bindings(
+    is_interactive_session = function() FALSE,
+    .package = "stanflow"
+  )
   expect_error(stanflow_update(), "must be run interactively")
 })
 

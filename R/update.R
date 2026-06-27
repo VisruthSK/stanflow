@@ -189,7 +189,7 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE, dry_run = FALSE) {
   )
   cli::cat_line()
 
-  if (is_interactive_session()) {
+  if (!dry_run && is_interactive_session()) {
     title <- if (dev) {
       "Update packages from Stan Universe (Dev)?"
     } else {
@@ -238,10 +238,10 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE, dry_run = FALSE) {
         }
       )
     },
-    code = paste0(
-      "utils::install.packages(",
-      dry_code_package_vector(behind$package),
-      ", repos = stanflow::stan_repos(dev), quiet = TRUE)"
+    code = sprintf(
+      "utils::install.packages(%s, repos = stanflow::stan_repos(%s), quiet = TRUE)",
+      deparse1(behind$package),
+      deparse1(dev)
     )
   )
 

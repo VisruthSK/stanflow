@@ -98,6 +98,7 @@ test_that("setup_interface dry_run reports missing package setup without side ef
 
   local_mocked_bindings(
     is_installed = function(pkg) FALSE,
+    is_interactive_session = function() FALSE,
     .same_library = function(pkg) {
       calls <<- c(calls, paste0("library:", pkg))
     },
@@ -120,19 +121,32 @@ test_that("setup_interface dry_run reports missing package setup without side ef
   expect_null(getOption("mc.cores"))
   expect_null(getOption("brms.backend"))
   out <- paste(out, collapse = "\n")
-  expect_match(out, "Would install")
+  expect_match(out, "Would not install")
+  expect_match(out, "non-interactive session")
+  expect_match(out, "force = FALSE")
   expect_match(out, "Would attach")
   expect_match(out, "Would configure")
-  expect_match(out, "stanflow:::.same_library")
   expect_false(grepl("Setup complete", out))
 })
 
 expect_setup_interface_dry_run_snapshot <- function(interface) {
   local_mocked_bindings(
     is_installed = function(pkg) TRUE,
+    is_interactive_session = function() FALSE,
     .same_library = function(pkg) stop("dry run should not attach packages"),
     .package = "stanflow"
   )
+
+  if ("cmdstanr" %in% interface) {
+    skip_on_cran()
+    skip_if_not_installed("cmdstanr")
+    local_mocked_bindings(
+      check_cmdstan_toolchain = function(...) TRUE,
+      cmdstan_path = function() stop("missing"),
+      cmdstan_version = function() stop("missing"),
+      .package = "cmdstanr"
+    )
+  }
 
   expect_snapshot(
     setup_interface(
@@ -493,7 +507,7 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
   expect_true(installed)
 })
 
-test_that("setup_cmdstanr dry_run skips toolchain fix and CmdStan install", {
+test_that("setup_cmdstanr dry_run skips mutations but runs detection", {
   skip_on_cran()
   skip_if_not_installed("cmdstanr")
   calls <- character()
@@ -517,6 +531,10 @@ test_that("setup_cmdstanr dry_run skips toolchain fix and CmdStan install", {
     },
     .package = "cmdstanr"
   )
+  local_mocked_bindings(
+    is_interactive_session = function() FALSE,
+    .package = "stanflow"
+  )
 
   withr::local_options(list(mc.cores = NULL))
   out <- capture_messages(
@@ -528,15 +546,18 @@ test_that("setup_cmdstanr dry_run skips toolchain fix and CmdStan install", {
     )
   )
 
-  expect_equal(calls, character())
+  # Detection runs (cmdstan_path is called, throws, caught by tryCatch)
+  expect_equal(calls, "path")
+  # Mutations are skipped
+  expect_false("toolchain" %in% calls)
+  expect_false("install" %in% calls)
   expect_null(getOption("mc.cores"))
   out <- paste(out, collapse = "\n")
   expect_match(out, "Would check and fix")
-  expect_match(out, "Would configure")
   expect_match(out, "cmdstanr::check_cmdstan_toolchain")
-  expect_match(out, "options\\(mc\\.cores = 2\\)")
   expect_false(grepl("Found CmdStan", out))
-  expect_false(grepl("Would install CmdStan", out))
+  expect_match(out, "Would not install CmdStan")
+  expect_match(out, "non-interactive session")
 })
 
 test_that("setup_cmdstanr returns invisibly when up to date", {

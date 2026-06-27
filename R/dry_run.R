@@ -4,13 +4,12 @@ dry_runner <- function(dry_run = FALSE) {
   function(msg, expr, code = NULL) {
     env <- parent.frame()
     if (!dry_run) {
-      eval(substitute(expr), envir = env)
+      force(expr)
       return(invisible(NULL))
     }
 
     msg <- cli::format_inline(msg, .envir = env)
     if (!is.null(code)) {
-      code <- cli::format_inline(code, .envir = env)
       msg <- paste0(msg, ": ", code)
     }
     cli::cli_alert_info("Would {msg}.")
@@ -19,31 +18,33 @@ dry_runner <- function(dry_run = FALSE) {
 }
 
 dry_code_attach <- function(pkg) {
-  cli::format_inline('stanflow:::.same_library("{pkg}")')
+  sprintf("stanflow:::.same_library(%s)", deparse1(pkg))
 }
 
-dry_code_install_package <- function(pkg) {
-  cli::format_inline(
-    'utils::install.packages("{pkg}", repos = stanflow::stan_repos(dev), quiet = TRUE)'
+dry_code_install_package <- function(pkg, dev) {
+  sprintf(
+    "utils::install.packages(%s, repos = stanflow::stan_repos(%s), quiet = TRUE)",
+    deparse1(pkg),
+    deparse1(dev)
   )
 }
 
 dry_code_mc_cores <- function(cores) {
-  cli::format_inline("options(mc.cores = {cores})")
+  sprintf("options(mc.cores = %s)", deparse1(cores))
 }
 
 dry_code_rstan <- function(cores, rstan_auto_write) {
-  cli::format_inline(
-    "options(mc.cores = {cores}); rstan::rstan_options(auto_write = {rstan_auto_write})"
+  sprintf(
+    "%s; rstan::rstan_options(auto_write = %s)",
+    dry_code_mc_cores(cores),
+    deparse1(rstan_auto_write)
   )
 }
 
 dry_code_brms <- function(cores, brms_backend) {
-  cli::format_inline(
-    'options(mc.cores = {cores}); options(brms.backend = "{brms_backend}")'
+  sprintf(
+    "%s; options(brms.backend = %s)",
+    dry_code_mc_cores(cores),
+    deparse1(brms_backend)
   )
-}
-
-dry_code_package_vector <- function(pkgs) {
-  paste0("c(", paste(vapply(pkgs, deparse, character(1)), collapse = ", "), ")")
 }

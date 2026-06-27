@@ -49,7 +49,7 @@ setup_interface <- function(
   rstan_auto_write = TRUE,
   dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
 
   if (missing(interface)) {
     cli::cli_abort(
@@ -144,7 +144,7 @@ install_backend_package <- function(
   reinstall,
   dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
   run_side_effect <- dry_runner(dry_run)
 
   if (reinstall) {
@@ -155,7 +155,13 @@ install_backend_package <- function(
     cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
   }
 
-  if (!dry_run && !is_interactive_session() && !force) {
+  if (!is_interactive_session() && !force) {
+    if (dry_run) {
+      cli::cli_alert_warning(
+        "Would not install {.pkg {pkg}} in a non-interactive session because {.code force = FALSE}."
+      )
+      return(invisible(NULL))
+    }
     cli::cli_abort(
       c(
         "Package {.pkg {pkg}} is missing.",
@@ -165,7 +171,13 @@ install_backend_package <- function(
     )
   }
 
-  if (!dry_run && is_interactive_session() && !force) {
+  if (is_interactive_session() && !force) {
+    if (dry_run) {
+      cli::cli_alert_info(
+        "Would ask before installing {.pkg {pkg}}."
+      )
+      return(invisible(NULL))
+    }
     title <- if (dev) {
       "Install from Stan Universe (Dev)?"
     } else {
@@ -184,7 +196,7 @@ install_backend_package <- function(
       utils::install.packages(pkg, repos = stan_repos(dev), quiet = TRUE)
       cli::cli_progress_done()
     },
-    code = dry_code_install_package(pkg)
+    code = dry_code_install_package(pkg, dev)
   )
 }
 
@@ -230,7 +242,7 @@ setup_cmdstanr <- function(
   cores,
   dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
   run_side_effect <- dry_runner(dry_run)
 
   toolchain_ok <- tryCatch(
@@ -240,7 +252,10 @@ setup_cmdstanr <- function(
         {
           cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
         },
-        code = "cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)"
+        code = sprintf(
+          "cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = %s)",
+          deparse1(quiet)
+        )
       )
       TRUE
     },
@@ -258,11 +273,6 @@ setup_cmdstanr <- function(
         "i" = "Re-run {.code cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)} for detailed diagnostics."
       )
     )
-  }
-
-  if (dry_run) {
-    set_mc_cores(run_side_effect, cores, "cmdstanr")
-    return(invisible(NULL))
   }
 
   cmdstan_ready <- FALSE
@@ -328,10 +338,22 @@ setup_cmdstanr <- function(
 
   if (!is_interactive_session() && !force) {
     if (needs_update && !needs_install) {
+      if (dry_run) {
+        cli::cli_alert_info(
+          "Would skip update in non-interactive mode (set {.code force = TRUE} to upgrade)."
+        )
+        return(invisible(NULL))
+      }
       cli::cli_alert_info(
         "Skipping update in non-interactive mode (set {.code force = TRUE} to upgrade)."
       )
       return(invisible(TRUE))
+    }
+    if (dry_run) {
+      cli::cli_alert_warning(
+        "Would not install CmdStan in a non-interactive session because {.code force = FALSE}."
+      )
+      return(invisible(NULL))
     }
     cli::cli_abort(
       c(
@@ -343,6 +365,12 @@ setup_cmdstanr <- function(
   }
 
   if (is_interactive_session() && !force) {
+    if (dry_run) {
+      cli::cli_alert_info(
+        "Would ask before installing/upgrading CmdStan."
+      )
+      return(invisible(NULL))
+    }
     title <- if (needs_install) {
       "Download and compile CmdStan now?"
     } else {
@@ -364,7 +392,11 @@ setup_cmdstanr <- function(
       cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
       cli::cli_process_done()
     },
-    code = "cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)"
+    code = sprintf(
+      "cmdstanr::install_cmdstan(quiet = %s, overwrite = TRUE, cores = %s)",
+      deparse1(quiet),
+      deparse1(cores)
+    )
   )
 
   set_mc_cores(run_side_effect, cores, "cmdstanr")
@@ -391,7 +423,7 @@ setup_rstan <- function(
   rstan_auto_write,
   dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
   run_side_effect <- dry_runner(dry_run)
 
   run_side_effect(
@@ -428,7 +460,7 @@ setup_brms <- function(
   cores,
   dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
   run_side_effect <- dry_runner(dry_run)
   brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
 
@@ -464,7 +496,7 @@ setup_rstanarm <- function(
   cores,
   dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
   run_side_effect <- dry_runner(dry_run)
 
   set_mc_cores(run_side_effect, cores, "rstanarm")
