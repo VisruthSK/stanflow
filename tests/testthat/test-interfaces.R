@@ -212,6 +212,27 @@ test_that("install_backend_package installs from Stan universe when dev = TRUE",
   expect_equal(unname(called$repos[1]), "https://stan-dev.r-universe.dev")
 })
 
+test_that("install_backend_package respects quiet = FALSE", {
+  called <- list()
+
+  local_mocked_bindings(
+    install.packages = function(pkg, repos, quiet) {
+      called <<- list(pkg = pkg, repos = repos, quiet = quiet)
+    },
+    .package = "utils"
+  )
+
+  install_backend_package(
+    "cmdstanr",
+    dev = FALSE,
+    quiet = FALSE,
+    force = TRUE,
+    reinstall = FALSE
+  )
+
+  expect_false(called$quiet)
+})
+
 test_that("install_backend_package installs from multiverse when dev = FALSE", {
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")
@@ -434,7 +455,26 @@ test_that("setup_cmdstanr returns invisibly when up to date", {
 })
 
 test_that("setup_cmdstanr does not check updates by default", {
-  expect_false(formals(setup_cmdstanr)$check_updates)
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() "/tmp",
+    cmdstan_version = function() "2.31.0",
+    install_cmdstan = function(...) stop("should not install"),
+    .package = "cmdstanr"
+  )
+
+  local_mocked_bindings(
+    readLines = function(...) stop("should not check updates"),
+    .package = "base"
+  )
+
+  expect_identical(
+    setup_cmdstanr(quiet = TRUE, force = FALSE, cores = 2),
+    TRUE
+  )
 })
 
 test_that("setup_cmdstanr ignores failed update checks when CmdStan is ready", {
