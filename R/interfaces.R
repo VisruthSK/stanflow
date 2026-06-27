@@ -89,9 +89,6 @@ setup_interface <- function(
       install_backend_package(pkg, dev, quiet, force, reinstall)
     }
 
-    cli::cli_alert_info("Attaching {.pkg {pkg}}...")
-    suppressPackageStartupMessages(.same_library(pkg))
-
     switch(
       pkg,
       "cmdstanr" = setup_cmdstanr(
@@ -105,6 +102,9 @@ setup_interface <- function(
       "brms" = setup_brms(quiet, brms_backend, cores),
       "rstanarm" = setup_rstanarm(quiet, cores)
     )
+
+    cli::cli_alert_info("Attaching {.pkg {pkg}}...")
+    suppressPackageStartupMessages(.same_library(pkg))
   }
 
   attached_pkgs <- unique(interface)
@@ -155,7 +155,7 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
   }
 
   cli::cli_progress_step("Installing {.pkg {pkg}}...")
-  utils::install.packages(pkg, repos = stan_repos(dev), quiet = TRUE)
+  utils::install.packages(pkg, repos = stan_repos(dev), quiet = quiet)
   cli::cli_progress_done()
 }
 
@@ -184,7 +184,7 @@ setup_cmdstanr <- function(
   quiet,
   force,
   reinstall = FALSE,
-  check_updates = TRUE,
+  check_updates = FALSE,
   cores
 ) {
   local_cli_quiet(quiet)
@@ -224,35 +224,12 @@ setup_cmdstanr <- function(
 
   latest_ver <- NULL
   if (cmdstan_ready && check_updates) {
-    tryCatch(
-      {
-        raw_json <- suppressWarnings(
-          readLines(
-            "https://api.github.com/repos/stan-dev/cmdstan/releases/latest",
-            warn = FALSE
-          )
-        )
-        tag_line <- grep('"tag_name":', raw_json, value = TRUE)[1]
-        if (!is.na(tag_line)) {
-          latest_ver <- numeric_version(
-            sub(
-              '.*"tag_name":\\s*"v?([^"]+)".*',
-              "\\1",
-              tag_line
-            )
-          )
-        }
-      },
-      error = function(e) {
-        cli::cli_abort(
-          c(
-            "Could not check for CmdStan updates.",
-            "x" = "Network or parsing error while reaching GitHub.",
-            "i" = "Set {.code check_updates = FALSE} to skip update checks."
-          )
-        )
-      }
-    )
+    latest_ver <- try_fetch_latest_cmdstan_version()
+    if (is.null(latest_ver)) {
+      cli::cli_alert_warning(
+        "Could not check for CmdStan updates; using installed CmdStan v{local_ver}."
+      )
+    }
   }
 
   needs_install <- !cmdstan_ready || reinstall
@@ -318,6 +295,31 @@ setup_cmdstanr <- function(
   invisible(NULL)
 }
 # nocov end
+
+try_fetch_latest_cmdstan_version <- function() {
+  tryCatch(
+    {
+      raw_json <- suppressWarnings(
+        readLines(
+          "https://api.github.com/repos/stan-dev/cmdstan/releases/latest",
+          warn = FALSE
+        )
+      )
+      tag_line <- grep('"tag_name":', raw_json, value = TRUE)[1]
+      if (is.na(tag_line)) {
+        return(NULL)
+      }
+      numeric_version(
+        sub(
+          '.*"tag_name":\\s*"v?([^"]+)".*',
+          "\\1",
+          tag_line
+        )
+      )
+    },
+    error = \(e) NULL
+  )
+}
 
 #' Setup rstan
 #'
