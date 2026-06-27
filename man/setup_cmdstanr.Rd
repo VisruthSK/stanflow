@@ -4,7 +4,7 @@
 \alias{setup_cmdstanr}
 \title{Setup cmdstanr and CmdStan}
 \usage{
-setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
+setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = FALSE, cores)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
