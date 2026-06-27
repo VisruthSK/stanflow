@@ -137,6 +137,43 @@ test_that("stanflow_update installs when user accepts interactive prompt", {
   expect_identical(result, behind)
 })
 
+test_that("stanflow_update dry_run reports package installs without installing", {
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org"),
+    stanflow.force_interactive = FALSE
+  ))
+
+  behind <- data.frame(
+    package = c("cmdstanr", "posterior"),
+    remote = c("1.2.0", "1.6.0"),
+    local = c("1.1.0", "1.5.0"),
+    behind = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  installed <- FALSE
+
+  withr::local_output_sink(withr::local_tempfile())
+  result <- with_mocked_bindings(
+    stanflow_deps = function(...) behind,
+    with_mocked_bindings(
+      menu = function(...) stop("should not prompt"),
+      install.packages = function(...) {
+        installed <<- TRUE
+        invisible(NULL)
+      },
+      capture_messages(stanflow_update(dry_run = TRUE)),
+      .package = "utils"
+    ),
+    .package = "stanflow"
+  )
+
+  expect_false(installed)
+  result <- paste(result, collapse = "\n")
+  expect_match(result, "Would install")
+  expect_match(result, "cmdstanr")
+  expect_match(result, "posterior")
+})
+
 test_that("stanflow_deps computes remote/local state", {
   fake_available <- matrix(
     c("1.2.0", "1.6.0", "2.8.0"),

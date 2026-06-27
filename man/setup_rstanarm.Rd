@@ -4,7 +4,7 @@
 \alias{setup_rstanarm}
 \title{Setup rstanarm}
 \usage{
-setup_rstanarm(quiet, cores)
+setup_rstanarm(quiet, cores, dry_run = FALSE)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
@@ -12,6 +12,10 @@ setup_rstanarm(quiet, cores)
 \item{cores}{Integer. Number of cores to use. Defaults to
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
 \code{cores} explicitly.}
+
+\item{dry_run}{Logical. If \code{TRUE}, prints the setup actions that would run
+without installing packages, attaching packages, changing options, fixing
+the toolchain, or installing CmdStan. Defaults to \code{FALSE}.}
 }
 \value{
 Returns \code{NULL} invisibly.

@@ -13,7 +13,8 @@ setup_interface(
   check_updates = FALSE,
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan"),
-  rstan_auto_write = TRUE
+  rstan_auto_write = TRUE,
+  dry_run = FALSE
 )
 }
 \arguments{
@@ -39,6 +40,10 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 \code{c("cmdstanr", "rstan")}.}
 
 \item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \code{rstan::rstan_options(auto_write = TRUE)}}
+
+\item{dry_run}{Logical. If \code{TRUE}, prints the setup actions that would run
+without installing packages, attaching packages, changing options, fixing
+the toolchain, or installing CmdStan. Defaults to \code{FALSE}.}
 }
 \value{
 Returns attached package names invisibly.

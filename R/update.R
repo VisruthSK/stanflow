@@ -150,9 +150,12 @@ stanflow_deps <- function(
 #' }
 #'
 #' @inheritParams stanflow_deps
+#' @inheritParams setup_interface
 #' @export
-stanflow_update <- function(recursive = FALSE, dev = FALSE) {
-  if (!is_interactive_session()) {
+stanflow_update <- function(recursive = FALSE, dev = FALSE, dry_run = FALSE) {
+  run_side_effect <- dry_runner(dry_run)
+
+  if (!dry_run && !is_interactive_session()) {
     cli::cli_abort(
       c(
         "{.fn stanflow_update} must be run interactively.",
@@ -206,25 +209,40 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
   }
 
   # Muffle all warnings except cannot install
-  withCallingHandlers(
-    utils::install.packages(behind$package, repos = repos, quiet = TRUE),
-    warning = function(w) {
-      if (
-        grepl(
-          "cannot remove prior installation of package",
-          w$message,
-          fixed = TRUE
-        )
-      ) {
-        m <- regexpr("[\u2018'](.+?)[\u2019']", w$message)
-        if (m != -1) {
-          pkg <- substring(w$message, m + 1, m + attr(m, "match.length") - 2)
-          pkgs_to_report <<- c(pkgs_to_report, pkg)
+  package_list <- paste0("{.pkg ", behind$package, "}", collapse = ", ")
+  run_side_effect(
+    "install {package_list}",
+    {
+      withCallingHandlers(
+        utils::install.packages(behind$package, repos = repos, quiet = TRUE),
+        warning = function(w) {
+          if (
+            grepl(
+              "cannot remove prior installation of package",
+              w$message,
+              fixed = TRUE
+            )
+          ) {
+            m <- regexpr("[\u2018'](.+?)[\u2019']", w$message)
+            if (m != -1) {
+              pkg <- substring(
+                w$message,
+                m + 1,
+                m + attr(m, "match.length") - 2
+              )
+              pkgs_to_report <<- c(pkgs_to_report, pkg)
+            }
+          } else {
+            invokeRestart("muffleWarning")
+          }
         }
-      } else {
-        invokeRestart("muffleWarning")
-      }
-    }
+      )
+    },
+    code = paste0(
+      "utils::install.packages(",
+      dry_code_package_vector(behind$package),
+      ", repos = stanflow::stan_repos(dev), quiet = TRUE)"
+    )
   )
 
   if (length(pkgs_to_report)) {
