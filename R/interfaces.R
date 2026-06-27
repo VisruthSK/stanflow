@@ -305,8 +305,8 @@ try_fetch_latest_cmdstan_version <- function() {
           warn = FALSE
         )
       )
-      tag_line <- grep('"tag_name":', raw_json, value = TRUE)[1]
-      if (is.na(tag_line)) {
+      tag_line <- grep('"tag_name"\\s*:', raw_json, value = TRUE)
+      if (!length(tag_line)) {
         return(NULL)
       }
       numeric_version(
