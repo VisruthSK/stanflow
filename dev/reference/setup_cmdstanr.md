@@ -9,7 +9,7 @@ defaults; `setup_cmdstanr()` assumes inputs are already checked.
 ## Usage
 
 ``` r
-setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = TRUE, cores)
+setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = FALSE, cores)
 ```
 
 ## Arguments

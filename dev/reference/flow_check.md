@@ -30,7 +30,7 @@ Invisibly returns the character vector that was printed.
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
+#> ✔ loo       2.10.0     ✔ shinystan 2.7.0 
 #> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
