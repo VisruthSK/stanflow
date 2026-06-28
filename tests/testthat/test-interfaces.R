@@ -172,6 +172,42 @@ local({
   }
 })
 
+test_that("setup_interface dry_run emits output even when quiet = TRUE", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .same_library = function(pkg) stop("should not attach"),
+    .package = "stanflow"
+  )
+
+  out <- capture_messages(
+    setup_interface(
+      interface = "brms",
+      brms_backend = "rstan",
+      cores = 2,
+      quiet = TRUE,
+      dry_run = TRUE
+    )
+  )
+
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would configure")
+  expect_match(out, "Would attach")
+})
+
+test_that("setup_interface dry_run returns packages that would be attached", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .same_library = function(pkg) stop("dry run should not attach packages"),
+    setup_rstan = function(...) invisible(NULL),
+    .package = "stanflow"
+  )
+
+  expect_equal(
+    setup_interface("rstan", brms_backend = "rstan", cores = 2, dry_run = TRUE),
+    "rstan"
+  )
+})
+
 test_that("setup_interface runs backend setup helpers", {
   calls <- character()
 

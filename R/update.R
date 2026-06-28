@@ -189,7 +189,7 @@ stanflow_update <- function(
     )
   }
 
-  deps <- stanflow_deps(recursive, dev = dev, check_updates = TRUE)
+  deps <- stanflow_deps(recursive, dev = dev, check_updates = check_updates)
   behind <- deps[deps$behind, ]
 
   if (nrow(behind) == 0) {
