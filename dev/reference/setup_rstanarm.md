@@ -8,7 +8,7 @@ defaults; `setup_rstanarm()` assumes inputs are already checked.
 ## Usage
 
 ``` r
-setup_rstanarm(quiet, cores)
+setup_rstanarm(quiet, cores, dry_run = FALSE)
 ```
 
 ## Arguments
@@ -22,6 +22,12 @@ setup_rstanarm(quiet, cores)
 
   Integer. Number of cores to use. Defaults to `getOption("mc.cores")`.
   You must set `options(mc.cores = ...)` or pass `cores` explicitly.
+
+- dry_run:
+
+  Logical. If `TRUE`, previews mutating setup actions without
+  installing, attaching, changing options, or prompting. Dry-run output
+  is shown even when `quiet = TRUE`.
 
 ## Value
 

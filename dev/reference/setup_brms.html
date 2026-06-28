@@ -75,7 +75,7 @@ validation and defaults; <code>setup_brms()</code> assumes inputs are already ch
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setup_brms</span><span class="op">(</span><span class="va">quiet</span>, <span class="va">brms_backend</span>, <span class="va">cores</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setup_brms</span><span class="op">(</span><span class="va">quiet</span>, <span class="va">brms_backend</span>, <span class="va">cores</span>, dry_run <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -96,6 +96,12 @@ validation and defaults; <code>setup_brms()</code> assumes inputs are already ch
 <dd><p>Integer. Number of cores to use. Defaults to
 <code>getOption("mc.cores")</code>. You must set <code>options(mc.cores = ...)</code> or pass
 <code>cores</code> explicitly.</p></dd>
+
+
+<dt id="arg-dry-run">dry_run<a class="anchor" aria-label="anchor" href="#arg-dry-run"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, previews mutating setup actions without
+installing, attaching, changing options, or prompting. Dry-run output is
+shown even when <code>quiet = TRUE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

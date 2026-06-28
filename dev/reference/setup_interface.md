@@ -17,7 +17,8 @@ setup_interface(
   check_updates = FALSE,
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan"),
-  rstan_auto_write = TRUE
+  rstan_auto_write = TRUE,
+  dry_run = FALSE
 )
 ```
 
@@ -67,9 +68,16 @@ setup_interface(
   Logical. If `TRUE` (default), sets
   `rstan::rstan_options(auto_write = TRUE)`
 
+- dry_run:
+
+  Logical. If `TRUE`, previews mutating setup actions without
+  installing, attaching, changing options, or prompting. Dry-run output
+  is shown even when `quiet = TRUE`.
+
 ## Value
 
-Returns attached package names invisibly.
+Returns attached package names invisibly. With `dry_run = TRUE`, returns
+the package names that would be attached.
 
 ## Details
 

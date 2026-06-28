@@ -9,7 +9,7 @@ defaults; `setup_rstan()` assumes inputs are already checked.
 ## Usage
 
 ``` r
-setup_rstan(quiet, cores, rstan_auto_write)
+setup_rstan(quiet, cores, rstan_auto_write, dry_run = FALSE)
 ```
 
 ## Arguments
@@ -28,6 +28,12 @@ setup_rstan(quiet, cores, rstan_auto_write)
 
   Logical. If `TRUE` (default), sets
   `rstan::rstan_options(auto_write = TRUE)`
+
+- dry_run:
+
+  Logical. If `TRUE`, previews mutating setup actions without
+  installing, attaching, changing options, or prompting. Dry-run output
+  is shown even when `quiet = TRUE`.
 
 ## Value
 

@@ -9,7 +9,14 @@ defaults; `setup_cmdstanr()` assumes inputs are already checked.
 ## Usage
 
 ``` r
-setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = FALSE, cores)
+setup_cmdstanr(
+  quiet,
+  force,
+  reinstall = FALSE,
+  check_updates = FALSE,
+  cores,
+  dry_run = FALSE
+)
 ```
 
 ## Arguments
@@ -35,6 +42,12 @@ setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = FALSE, cores)
 
   Integer. Number of cores to use. Defaults to `getOption("mc.cores")`.
   You must set `options(mc.cores = ...)` or pass `cores` explicitly.
+
+- dry_run:
+
+  Logical. If `TRUE`, previews mutating setup actions without
+  installing, attaching, changing options, or prompting. Dry-run output
+  is shown even when `quiet = TRUE`.
 
 ## Value
 
