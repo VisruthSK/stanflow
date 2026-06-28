@@ -664,7 +664,10 @@ test_that("setup_cmdstanr dry_run does not perform update checks", {
   out <- paste(out, collapse = "\n")
   expect_match(out, "Would check and fix")
   expect_match(out, "Found CmdStan")
-  expect_match(out, "Would check for CmdStan updates")
+  expect_match(
+    out,
+    "Would install or upgrade CmdStan if a newer release is found"
+  )
   expect_no_match(out, "Could not check for CmdStan updates")
   expect_match(out, "Would configure")
 })

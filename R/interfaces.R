@@ -22,8 +22,10 @@
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
 #' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE)`
-#' @param dry_run Logical. If `TRUE`, prints commands without executing them. Dry-run output is shown even when `quiet = TRUE`.
-#' @return Returns attached package names invisibly.
+#' @param dry_run Logical. If `TRUE`, previews mutating setup actions without
+#'   installing, attaching, changing options, or prompting. Dry-run output is
+#'   shown even when `quiet = TRUE`.
+#' @return Returns attached package names invisibly. With `dry_run = TRUE`, returns the package names that would be attached.
 #' @export
 #' @examples
 #' \dontrun{
@@ -276,7 +278,9 @@ setup_cmdstanr <- function(
   latest_ver <- NULL
   if (cmdstan_ready && check_updates) {
     if (dry_run) {
-      cli::cli_alert_info("Would check for CmdStan updates.")
+      cli::cli_alert_info(
+        "Would install or upgrade CmdStan if a newer release is found."
+      )
     } else {
       latest_ver <- try_fetch_latest_cmdstan_version()
       if (is.null(latest_ver)) {
