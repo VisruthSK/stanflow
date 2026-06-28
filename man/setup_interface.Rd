@@ -13,7 +13,8 @@ setup_interface(
   check_updates = FALSE,
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan"),
-  rstan_auto_write = TRUE
+  rstan_auto_write = TRUE,
+  dry_run = FALSE
 )
 }
 \arguments{
@@ -39,9 +40,13 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 \code{c("cmdstanr", "rstan")}.}
 
 \item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \code{rstan::rstan_options(auto_write = TRUE)}}
+
+\item{dry_run}{Logical. If \code{TRUE}, previews mutating setup actions without
+installing, attaching, changing options, or prompting. Dry-run output is
+shown even when \code{quiet = TRUE}.}
 }
 \value{
-Returns attached package names invisibly.
+Returns attached package names invisibly. With \code{dry_run = TRUE}, returns the package names that would be attached.
 }
 \description{
 This function ensures specific Stan interfaces are installed, configured,

@@ -3,6 +3,28 @@ write_file <- \(path, lines) {
   path
 }
 
+local_env_binding <- function(name, value, env) {
+  caller <- parent.frame()
+  had_binding <- exists(name, envir = env, inherits = FALSE)
+  old_value <- if (had_binding) {
+    get(name, envir = env, inherits = FALSE)
+  } else {
+    NULL
+  }
+
+  assign(name, value, envir = env)
+  withr::defer(
+    {
+      if (had_binding) {
+        assign(name, old_value, envir = env)
+      } else {
+        base::remove(list = name, envir = env)
+      }
+    },
+    envir = caller
+  )
+}
+
 test_that("stan_cite returns bibtex or bibentry", {
   tmp <- withr::local_tempdir()
   path <- write_file(
@@ -15,35 +37,27 @@ test_that("stan_cite returns bibtex or bibentry", {
 
   pkg_env <- getFromNamespace(".stan_citation_pkgs", "stanflow")
   fun_env <- getFromNamespace(".stan_citation_funs", "stanflow")
-  pkg_snapshot <- as.list(pkg_env, all.names = TRUE)
-  fun_snapshot <- as.list(fun_env, all.names = TRUE)
-
-  withr::defer({
-    rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
-    if (length(pkg_snapshot)) {
-      list2env(pkg_snapshot, envir = pkg_env)
-    }
-    rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
-    if (length(fun_snapshot)) {
-      list2env(fun_snapshot, envir = fun_env)
-    }
-  })
-
-  rm(list = ls(pkg_env, all.names = TRUE), envir = pkg_env)
-  rm(list = ls(fun_env, all.names = TRUE), envir = fun_env)
-  pkg_env$posterior <- utils::bibentry(
-    "Manual",
-    key = "posterior",
-    title = "Posterior",
-    author = "A",
-    year = "2020"
+  local_env_binding(
+    "posterior",
+    utils::bibentry(
+      "Manual",
+      key = "posterior",
+      title = "Posterior",
+      author = "A",
+      year = "2020"
+    ),
+    pkg_env
   )
-  fun_env$`posterior::as_draws` <- utils::bibentry(
-    "Manual",
-    key = "posterior-as_draws",
-    title = "As Draws",
-    author = "B",
-    year = "2021"
+  local_env_binding(
+    "posterior::as_draws",
+    utils::bibentry(
+      "Manual",
+      key = "posterior-as_draws",
+      title = "As Draws",
+      author = "B",
+      year = "2021"
+    ),
+    fun_env
   )
 
   bibtex <- stan_cite(path, quiet = TRUE)

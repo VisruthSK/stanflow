@@ -137,6 +137,48 @@ test_that("stanflow_update installs when user accepts interactive prompt", {
   expect_identical(result, behind)
 })
 
+test_that("stanflow_update dry_run reports package installs without installing", {
+  withr::local_options(list(
+    repos = c(CRAN = "https://cloud.r-project.org")
+  ))
+
+  behind <- data.frame(
+    package = c("cmdstanr", "posterior"),
+    remote = c("1.2.0", "1.6.0"),
+    local = c("1.1.0", "1.5.0"),
+    behind = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  installed <- FALSE
+  observed <- NULL
+
+  withr::local_output_sink(withr::local_tempfile())
+  result <- with_mocked_bindings(
+    stanflow_deps = function(recursive, dev, check_updates) {
+      observed <<- check_updates
+      behind
+    },
+    is_interactive_session = function() FALSE,
+    with_mocked_bindings(
+      menu = function(...) stop("should not prompt"),
+      install.packages = function(...) {
+        installed <<- TRUE
+        invisible(NULL)
+      },
+      capture_messages(stanflow_update(dry_run = TRUE)),
+      .package = "utils"
+    ),
+    .package = "stanflow"
+  )
+
+  expect_true(observed)
+  expect_false(installed)
+  result <- paste(result, collapse = "\n")
+  expect_match(result, "Would install")
+  expect_match(result, "cmdstanr")
+  expect_match(result, "posterior")
+})
+
 test_that("stanflow_deps computes remote/local state", {
   fake_available <- matrix(
     c("1.2.0", "1.6.0", "2.8.0"),
@@ -387,10 +429,11 @@ test_that("stanflow_deps uses recursive fallback dependencies", {
 })
 
 test_that("stanflow_update aborts in non-interactive sessions", {
-  withr::local_options(list(
-    stanflow.testing = FALSE,
-    stanflow.force_interactive = FALSE
-  ))
+  withr::local_options(list(stanflow.testing = FALSE))
+  local_mocked_bindings(
+    is_interactive_session = function() FALSE,
+    .package = "stanflow"
+  )
   expect_error(stanflow_update(), "must be run interactively")
 })
 

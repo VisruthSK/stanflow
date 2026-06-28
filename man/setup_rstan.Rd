@@ -4,7 +4,7 @@
 \alias{setup_rstan}
 \title{Setup rstan}
 \usage{
-setup_rstan(quiet, cores, rstan_auto_write)
+setup_rstan(quiet, cores, rstan_auto_write, dry_run = FALSE)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
@@ -14,6 +14,10 @@ setup_rstan(quiet, cores, rstan_auto_write)
 \code{cores} explicitly.}
 
 \item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \code{rstan::rstan_options(auto_write = TRUE)}}
+
+\item{dry_run}{Logical. If \code{TRUE}, previews mutating setup actions without
+installing, attaching, changing options, or prompting. Dry-run output is
+shown even when \code{quiet = TRUE}.}
 }
 \value{
 Returns \code{NULL} invisibly.

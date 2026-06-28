@@ -4,7 +4,14 @@
 \alias{setup_cmdstanr}
 \title{Setup cmdstanr and CmdStan}
 \usage{
-setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = FALSE, cores)
+setup_cmdstanr(
+  quiet,
+  force,
+  reinstall = FALSE,
+  check_updates = FALSE,
+  cores,
+  dry_run = FALSE
+)
 }
 \arguments{
 \item{quiet}{Logical. If \code{TRUE}, suppresses status messages. This cannot suppress cmdstan messages.}
@@ -18,6 +25,10 @@ setup_cmdstanr(quiet, force, reinstall = FALSE, check_updates = FALSE, cores)
 \item{cores}{Integer. Number of cores to use. Defaults to
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
 \code{cores} explicitly.}
+
+\item{dry_run}{Logical. If \code{TRUE}, previews mutating setup actions without
+installing, attaching, changing options, or prompting. Dry-run output is
+shown even when \code{quiet = TRUE}.}
 }
 \value{
 Returns \code{TRUE} invisibly when no install/upgrade is needed.

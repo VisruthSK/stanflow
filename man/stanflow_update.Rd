@@ -4,7 +4,7 @@
 \alias{stanflow_update}
 \title{Update stanflow packages}
 \usage{
-stanflow_update(recursive = FALSE, dev = FALSE)
+stanflow_update(recursive = FALSE, dev = FALSE, dry_run = FALSE)
 }
 \arguments{
 \item{recursive}{If \code{TRUE}, will also list dependencies of dependencies. When
@@ -15,6 +15,9 @@ recursively.}
 \item{dev}{If \code{FALSE} (default), checks for updates in the R-multiverse or CRAN
 (stable releases). If \code{TRUE}, checks the Stan R-universe (dev versions). This is
 only cogent for Stan packages, and cannot compare two dev versions.}
+
+\item{dry_run}{Logical. If \code{TRUE}, previews update steps without installing
+packages or prompting.}
 }
 \value{
 Invisibly returns a data frame of outdated packages (same columns as
@@ -23,7 +26,9 @@ needed.
 }
 \description{
 Checks for outdated Stan workflow packages and installs updates. This function
-requires an interactive R session and will error otherwise.
+requires an interactive R session for installation unless \code{dry_run = TRUE}.
+Dry runs check repositories and preview installs without prompting or
+installing packages.
 Adapted from \code{\link[tidyverse:tidyverse_update]{tidyverse::tidyverse_update()}}.
 }
 \examples{

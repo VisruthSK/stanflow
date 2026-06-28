@@ -93,6 +93,121 @@ test_that("setup_interface installs missing packages when not installed", {
   expect_equal(installed, "brms")
 })
 
+test_that("setup_interface dry_run reports missing package setup without side effects", {
+  calls <- character()
+
+  local_mocked_bindings(
+    is_installed = function(pkg) FALSE,
+    is_interactive_session = function() FALSE,
+    .same_library = function(pkg) {
+      calls <<- c(calls, paste0("library:", pkg))
+    },
+    .package = "stanflow"
+  )
+
+  withr::local_options(list(mc.cores = NULL, brms.backend = NULL))
+  out <- capture_messages(
+    setup_interface(
+      interface = "brms",
+      brms_backend = "rstan",
+      force = FALSE,
+      cores = 2,
+      quiet = FALSE,
+      dry_run = TRUE
+    )
+  )
+
+  expect_equal(calls, character())
+  expect_null(getOption("mc.cores"))
+  expect_null(getOption("brms.backend"))
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would install")
+  expect_match(out, "Would attach")
+  expect_match(out, "Would configure")
+  expect_false(grepl("Setup complete", out))
+})
+
+expect_setup_interface_dry_run_snapshot <- function(interface) {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    is_interactive_session = function() FALSE,
+    .same_library = function(pkg) stop("dry run should not attach packages"),
+    .package = "stanflow"
+  )
+
+  if ("cmdstanr" %in% interface) {
+    skip_on_cran()
+    skip_if_not_installed("cmdstanr")
+    local_mocked_bindings(
+      check_cmdstan_toolchain = function(...) TRUE,
+      cmdstan_path = function() stop("missing"),
+      cmdstan_version = function() stop("missing"),
+      .package = "cmdstanr"
+    )
+  }
+
+  expect_snapshot(
+    setup_interface(
+      interface = interface,
+      brms_backend = "rstan",
+      cores = 1,
+      quiet = FALSE,
+      dry_run = TRUE
+    )
+  )
+}
+
+local({
+  interfaces <- c("brms", "cmdstanr", "rstan", "rstanarm")
+  combinations <- do.call(
+    c,
+    Map(\(k) combn(interfaces, k, simplify = FALSE), seq_along(interfaces))
+  )
+
+  for (interface in combinations) {
+    label <- paste(interface, collapse = ", ")
+    test_that(paste0("setup_interface dry_run output is stable for ", label), {
+      expect_setup_interface_dry_run_snapshot(interface)
+    })
+  }
+})
+
+test_that("setup_interface dry_run emits output even when quiet = TRUE", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .same_library = function(pkg) stop("should not attach"),
+    .package = "stanflow"
+  )
+
+  out <- capture_messages(
+    setup_interface(
+      interface = "brms",
+      brms_backend = "rstan",
+      cores = 2,
+      quiet = TRUE,
+      dry_run = TRUE
+    )
+  )
+
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would configure")
+  expect_match(out, "Would attach")
+})
+
+test_that("setup_interface dry_run returns packages that would be attached", {
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .same_library = function(pkg) stop("dry run should not attach packages"),
+    setup_rstan = function(...) invisible(NULL),
+    .package = "stanflow"
+  )
+
+  expect_equal(
+    setup_interface("rstan", brms_backend = "rstan", cores = 2, dry_run = TRUE),
+    "rstan"
+  )
+})
+
 test_that("setup_interface runs backend setup helpers", {
   calls <- character()
 
@@ -373,6 +488,22 @@ test_that("setup_rstan emits configuration message when quiet = FALSE", {
   expect_match(msg, "auto_write = FALSE")
 })
 
+test_that("setup_rstan dry_run does not require rstan or set options", {
+  withr::local_options(list(mc.cores = NULL))
+
+  out <- capture_messages(
+    setup_rstan(
+      quiet = FALSE,
+      cores = 6,
+      rstan_auto_write = FALSE,
+      dry_run = TRUE
+    )
+  )
+
+  expect_null(getOption("mc.cores"))
+  expect_match(out, "Would configure")
+})
+
 test_that("setup_rstanarm emits configuration message when quiet = FALSE", {
   withr::local_options(list(mc.cores = NULL))
   msg <- NULL
@@ -390,6 +521,38 @@ test_that("setup_rstanarm emits configuration message when quiet = FALSE", {
 
   expect_match(msg, "Configured")
   expect_match(msg, "rstanarm")
+})
+
+test_that("setup_rstanarm dry_run does not set options", {
+  withr::local_options(list(mc.cores = NULL))
+
+  out <- capture_messages(
+    setup_rstanarm(
+      quiet = FALSE,
+      cores = 5,
+      dry_run = TRUE
+    )
+  )
+
+  expect_null(getOption("mc.cores"))
+  expect_match(out, "Would configure")
+})
+
+test_that("setup_brms dry_run does not set options", {
+  withr::local_options(list(mc.cores = NULL, brms.backend = NULL))
+
+  out <- capture_messages(
+    setup_brms(
+      quiet = FALSE,
+      brms_backend = "cmdstanr",
+      cores = 8,
+      dry_run = TRUE
+    )
+  )
+
+  expect_null(getOption("mc.cores"))
+  expect_null(getOption("brms.backend"))
+  expect_match(out, "Would configure")
 })
 
 
@@ -428,6 +591,134 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
   invisible(setup_cmdstanr(quiet = TRUE, force = TRUE, cores = 2))
 
   expect_true(installed)
+})
+
+test_that("setup_cmdstanr dry_run does not require cmdstanr to be installed", {
+  withr::local_options(list(mc.cores = NULL))
+  local_mocked_bindings(
+    is_interactive_session = function() FALSE,
+    .package = "stanflow"
+  )
+
+  out <- capture_messages(
+    setup_cmdstanr(
+      quiet = FALSE,
+      force = FALSE,
+      cores = 2,
+      dry_run = TRUE
+    )
+  )
+
+  expect_null(getOption("mc.cores"))
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would check and fix")
+  expect_match(out, "cmdstanr::check_cmdstan_toolchain")
+  expect_match(out, "Would configure")
+})
+
+test_that("setup_cmdstanr dry_run skips mutations but runs detection", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+  calls <- character()
+
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) {
+      calls <<- c(calls, "toolchain")
+      TRUE
+    },
+    cmdstan_path = function() {
+      calls <<- c(calls, "path")
+      stop("missing")
+    },
+    cmdstan_version = function() {
+      calls <<- c(calls, "version")
+      stop("missing")
+    },
+    install_cmdstan = function(...) {
+      calls <<- c(calls, "install")
+      invisible(NULL)
+    },
+    .package = "cmdstanr"
+  )
+  local_mocked_bindings(
+    is_interactive_session = function() FALSE,
+    .package = "stanflow"
+  )
+
+  withr::local_options(list(mc.cores = NULL))
+  out <- capture_messages(
+    setup_cmdstanr(
+      quiet = FALSE,
+      force = FALSE,
+      cores = 2,
+      dry_run = TRUE
+    )
+  )
+
+  expect_equal(calls, "path")
+  expect_null(getOption("mc.cores"))
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would check and fix")
+  expect_match(out, "cmdstanr::check_cmdstan_toolchain")
+  expect_false(grepl("Found CmdStan", out))
+  expect_match(out, "Would install or upgrade CmdStan")
+  expect_match(out, "Would configure")
+})
+
+test_that("setup_cmdstanr dry_run does not perform update checks", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+  calls <- character()
+
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) {
+      calls <<- c(calls, "toolchain")
+      TRUE
+    },
+    cmdstan_path = function() {
+      calls <<- c(calls, "path")
+      "/tmp"
+    },
+    cmdstan_version = function() {
+      calls <<- c(calls, "version")
+      "2.31.0"
+    },
+    install_cmdstan = function(...) {
+      calls <<- c(calls, "install")
+      invisible(NULL)
+    },
+    .package = "cmdstanr"
+  )
+  local_mocked_bindings(
+    readLines = function(...) {
+      calls <<- c(calls, "updates")
+      stop("dry run should not check updates")
+    },
+    .package = "base"
+  )
+
+  withr::local_options(list(mc.cores = NULL))
+  out <- capture_messages(
+    setup_cmdstanr(
+      quiet = FALSE,
+      force = FALSE,
+      check_updates = TRUE,
+      cores = 2,
+      dry_run = TRUE
+    )
+  )
+
+  expect_equal(calls, c("path", "version"))
+  expect_null(getOption("mc.cores"))
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would check and fix")
+  expect_match(out, "Found CmdStan")
+  expect_match(
+    out,
+    "Would install or upgrade CmdStan if a newer release is found"
+  )
+  expect_no_match(out, "Could not check for CmdStan updates")
+  expect_match(out, "Would configure")
 })
 
 test_that("setup_cmdstanr returns invisibly when up to date", {

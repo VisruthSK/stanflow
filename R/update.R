@@ -134,7 +134,9 @@ stanflow_deps <- function(
 #'
 #' @description
 #' Checks for outdated Stan workflow packages and installs updates. This function
-#' requires an interactive R session and will error otherwise.
+#' requires an interactive R session for installation unless `dry_run = TRUE`.
+#' Dry runs check repositories and preview installs without prompting or
+#' installing packages.
 #' Adapted from [tidyverse::tidyverse_update()].
 #'
 #' @return Invisibly returns a data frame of outdated packages (same columns as
@@ -150,9 +152,17 @@ stanflow_deps <- function(
 #' }
 #'
 #' @inheritParams stanflow_deps
+#' @param dry_run Logical. If `TRUE`, previews update steps without installing
+#'   packages or prompting.
 #' @export
-stanflow_update <- function(recursive = FALSE, dev = FALSE) {
-  if (!is_interactive_session()) {
+stanflow_update <- function(
+  recursive = FALSE,
+  dev = FALSE,
+  dry_run = FALSE
+) {
+  run_side_effect <- dry_runner(dry_run)
+
+  if (!dry_run && !is_interactive_session()) {
     cli::cli_abort(
       c(
         "{.fn stanflow_update} must be run interactively.",
@@ -186,7 +196,7 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
   )
   cli::cat_line()
 
-  if (is_interactive_session()) {
+  if (!dry_run && is_interactive_session()) {
     title <- if (dev) {
       "Update packages from Stan Universe (Dev)?"
     } else {
@@ -206,25 +216,36 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE) {
   }
 
   # Muffle all warnings except cannot install
-  withCallingHandlers(
-    utils::install.packages(behind$package, repos = repos, quiet = TRUE),
-    warning = function(w) {
-      if (
-        grepl(
-          "cannot remove prior installation of package",
-          w$message,
-          fixed = TRUE
-        )
-      ) {
-        m <- regexpr("[\u2018'](.+?)[\u2019']", w$message)
-        if (m != -1) {
-          pkg <- substring(w$message, m + 1, m + attr(m, "match.length") - 2)
-          pkgs_to_report <<- c(pkgs_to_report, pkg)
+  package_list <- paste0("{.pkg ", behind$package, "}", collapse = ", ")
+  run_side_effect(
+    "install {package_list}",
+    {
+      withCallingHandlers(
+        utils::install.packages(behind$package, repos = repos, quiet = TRUE),
+        warning = function(w) {
+          if (
+            grepl(
+              "cannot remove prior installation of package",
+              w$message,
+              fixed = TRUE
+            )
+          ) {
+            m <- regexpr("[\u2018'](.+?)[\u2019']", w$message)
+            if (m != -1) {
+              pkg <- substring(
+                w$message,
+                m + 1,
+                m + attr(m, "match.length") - 2
+              )
+              pkgs_to_report <<- c(pkgs_to_report, pkg)
+            }
+          } else {
+            invokeRestart("muffleWarning")
+          }
         }
-      } else {
-        invokeRestart("muffleWarning")
-      }
-    }
+      )
+    },
+    code = dry_code_install_package(behind$package, dev, TRUE)
   )
 
   if (length(pkgs_to_report)) {

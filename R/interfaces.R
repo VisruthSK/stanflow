@@ -22,7 +22,10 @@
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
 #' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE)`
-#' @return Returns attached package names invisibly.
+#' @param dry_run Logical. If `TRUE`, previews mutating setup actions without
+#'   installing, attaching, changing options, or prompting. Dry-run output is
+#'   shown even when `quiet = TRUE`.
+#' @return Returns attached package names invisibly. With `dry_run = TRUE`, returns the package names that would be attached.
 #' @export
 #' @examples
 #' \dontrun{
@@ -43,9 +46,10 @@ setup_interface <- function(
   check_updates = FALSE,
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan"),
-  rstan_auto_write = TRUE
+  rstan_auto_write = TRUE,
+  dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
 
   if (missing(interface)) {
     cli::cli_abort(
@@ -86,7 +90,14 @@ setup_interface <- function(
 
   for (pkg in interface) {
     if (!is_installed(pkg) || reinstall) {
-      install_backend_package(pkg, dev, quiet, force, reinstall)
+      install_backend_package(
+        pkg,
+        dev,
+        quiet,
+        force,
+        reinstall,
+        dry_run = dry_run
+      )
     }
 
     switch(
@@ -96,18 +107,22 @@ setup_interface <- function(
         force,
         reinstall,
         check_updates,
-        cores
+        cores,
+        dry_run = dry_run
       ),
-      "rstan" = setup_rstan(quiet, cores, rstan_auto_write),
-      "brms" = setup_brms(quiet, brms_backend, cores),
-      "rstanarm" = setup_rstanarm(quiet, cores)
+      "rstan" = setup_rstan(quiet, cores, rstan_auto_write, dry_run),
+      "brms" = setup_brms(quiet, brms_backend, cores, dry_run),
+      "rstanarm" = setup_rstanarm(quiet, cores, dry_run)
     )
 
-    cli::cli_alert_info("Attaching {.pkg {pkg}}...")
-    suppressPackageStartupMessages(.same_library(pkg))
+    attach_backend_package(pkg, dry_run)
   }
 
   attached_pkgs <- unique(interface)
+  if (dry_run) {
+    return(invisible(attached_pkgs))
+  }
+
   attached_pkgs_cli <- paste0("{.pkg ", attached_pkgs, "}", collapse = ", ")
   pkg_count <- cli::qty(length(attached_pkgs))
   pkg_phrase <- cli::pluralize("{pkg_count}{?is/are}")
@@ -121,8 +136,16 @@ setup_interface <- function(
 }
 
 # nocov start
-install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
-  local_cli_quiet(quiet)
+install_backend_package <- function(
+  pkg,
+  dev,
+  quiet,
+  force,
+  reinstall,
+  dry_run = FALSE
+) {
+  local_cli_quiet(quiet && !dry_run)
+  run_side_effect <- dry_runner(dry_run)
 
   if (reinstall) {
     cli::cli_alert_warning(
@@ -132,7 +155,7 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
     cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
   }
 
-  if (!is_interactive_session() && !force) {
+  if (!dry_run && !is_interactive_session() && !force) {
     cli::cli_abort(
       c(
         "Package {.pkg {pkg}} is missing.",
@@ -142,7 +165,7 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
     )
   }
 
-  if (is_interactive_session() && !force) {
+  if (!dry_run && is_interactive_session() && !force) {
     title <- if (dev) {
       "Install from Stan Universe (Dev)?"
     } else {
@@ -154,9 +177,28 @@ install_backend_package <- function(pkg, dev, quiet, force, reinstall) {
     }
   }
 
-  cli::cli_progress_step("Installing {.pkg {pkg}}...")
-  utils::install.packages(pkg, repos = stan_repos(dev), quiet = quiet)
-  cli::cli_progress_done()
+  run_side_effect(
+    "install {.pkg {pkg}}",
+    {
+      cli::cli_progress_step("Installing {.pkg {pkg}}...")
+      utils::install.packages(pkg, repos = stan_repos(dev), quiet = quiet)
+      cli::cli_progress_done()
+    },
+    code = dry_code_install_package(pkg, dev, quiet)
+  )
+}
+
+attach_backend_package <- function(pkg, dry_run = FALSE) {
+  run_side_effect <- dry_runner(dry_run)
+
+  run_side_effect(
+    "attach {.pkg {pkg}}",
+    {
+      cli::cli_alert_info("Attaching {.pkg {pkg}}...")
+      suppressPackageStartupMessages(.same_library(pkg))
+    },
+    code = dry_code_attach(pkg)
+  )
 }
 
 #' Setup cmdstanr and CmdStan
@@ -185,13 +227,24 @@ setup_cmdstanr <- function(
   force,
   reinstall = FALSE,
   check_updates = FALSE,
-  cores
+  cores,
+  dry_run = FALSE
 ) {
-  local_cli_quiet(quiet)
+  local_cli_quiet(quiet && !dry_run)
+  run_side_effect <- dry_runner(dry_run)
 
   toolchain_ok <- tryCatch(
     {
-      cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
+      run_side_effect(
+        "check and fix the CmdStan toolchain",
+        {
+          cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
+        },
+        code = sprintf(
+          "cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = %s)",
+          deparse1(quiet)
+        )
+      )
       TRUE
     },
     error = function(e) {
@@ -224,11 +277,17 @@ setup_cmdstanr <- function(
 
   latest_ver <- NULL
   if (cmdstan_ready && check_updates) {
-    latest_ver <- try_fetch_latest_cmdstan_version()
-    if (is.null(latest_ver)) {
-      cli::cli_alert_warning(
-        "Could not check for CmdStan updates; using installed CmdStan v{local_ver}."
+    if (dry_run) {
+      cli::cli_alert_info(
+        "Would install or upgrade CmdStan if a newer release is found."
       )
+    } else {
+      latest_ver <- try_fetch_latest_cmdstan_version()
+      if (is.null(latest_ver)) {
+        cli::cli_alert_warning(
+          "Could not check for CmdStan updates; using installed CmdStan v{local_ver}."
+        )
+      }
     }
   }
 
@@ -242,16 +301,13 @@ setup_cmdstanr <- function(
   } else if (needs_update) {
     action_msg <- sprintf("Update available: v%s -> v%s", local_ver, latest_ver)
   } else {
-    options(mc.cores = cores)
-    cli::cli_alert_info(
-      "Configured {.pkg cmdstanr}: set {.code options(mc.cores = {cores})}"
-    )
+    set_mc_cores(run_side_effect, cores, "cmdstanr")
     return(invisible(TRUE))
   }
 
   cli::cli_alert_warning(action_msg)
 
-  if (!is_interactive_session() && !force) {
+  if (!dry_run && !is_interactive_session() && !force) {
     if (needs_update && !needs_install) {
       cli::cli_alert_info(
         "Skipping update in non-interactive mode (set {.code force = TRUE} to upgrade)."
@@ -267,7 +323,7 @@ setup_cmdstanr <- function(
     )
   }
 
-  if (is_interactive_session() && !force) {
+  if (!dry_run && is_interactive_session() && !force) {
     title <- if (needs_install) {
       "Download and compile CmdStan now?"
     } else {
@@ -282,16 +338,21 @@ setup_cmdstanr <- function(
     }
   }
 
-  cli::cli_process_start("Installing CmdStan (this can take some time)...")
-
-  cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
-
-  cli::cli_process_done()
-
-  options(mc.cores = cores)
-  cli::cli_alert_info(
-    "Configured {.pkg cmdstanr}: set {.code options(mc.cores = {cores})}"
+  run_side_effect(
+    "install or upgrade CmdStan",
+    {
+      cli::cli_process_start("Installing CmdStan (this can take some time)...")
+      cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
+      cli::cli_process_done()
+    },
+    code = sprintf(
+      "cmdstanr::install_cmdstan(quiet = %s, overwrite = TRUE, cores = %s)",
+      deparse1(quiet),
+      deparse1(cores)
+    )
   )
+
+  set_mc_cores(run_side_effect, cores, "cmdstanr")
   invisible(NULL)
 }
 # nocov end
@@ -334,16 +395,27 @@ try_fetch_latest_cmdstan_version <- function() {
 #' \dontrun{
 #' setup_rstan(quiet = TRUE, cores = 2, rstan_auto_write = TRUE)
 #' }
-setup_rstan <- function(quiet, cores, rstan_auto_write) {
-  local_cli_quiet(quiet)
+setup_rstan <- function(
+  quiet,
+  cores,
+  rstan_auto_write,
+  dry_run = FALSE
+) {
+  local_cli_quiet(quiet && !dry_run)
+  run_side_effect <- dry_runner(dry_run)
 
-  options(mc.cores = cores)
-  rstan::rstan_options(auto_write = rstan_auto_write)
-
-  cli::format_inline(
-    "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = {rstan_auto_write})}"
-  ) |>
-    cli::cli_alert_info()
+  run_side_effect(
+    "configure {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = {rstan_auto_write})}",
+    {
+      options(mc.cores = cores)
+      rstan::rstan_options(auto_write = rstan_auto_write)
+      cli::format_inline(
+        "Configured {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = {rstan_auto_write})}"
+      ) |>
+        cli::cli_alert_info()
+    },
+    code = dry_code_rstan(cores, rstan_auto_write)
+  )
   invisible(NULL)
 }
 
@@ -360,15 +432,26 @@ setup_rstan <- function(quiet, cores, rstan_auto_write) {
 #' \dontrun{
 #' setup_brms(quiet = TRUE, brms_backend = "cmdstanr", cores = 2)
 #' }
-setup_brms <- function(quiet, brms_backend, cores) {
-  local_cli_quiet(quiet)
+setup_brms <- function(
+  quiet,
+  brms_backend,
+  cores,
+  dry_run = FALSE
+) {
+  local_cli_quiet(quiet && !dry_run)
+  run_side_effect <- dry_runner(dry_run)
   brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
 
-  options(mc.cores = cores)
-  options(brms.backend = brms_backend)
-
-  cli::cli_alert_info(
-    "Configured {.pkg brms}: set {.code options(mc.cores = {cores})} and {.code options(brms.backend = '{brms_backend}')}"
+  run_side_effect(
+    "configure {.pkg brms}: set {.code options(mc.cores = {cores})} and {.code options(brms.backend = '{brms_backend}')}",
+    {
+      options(mc.cores = cores)
+      options(brms.backend = brms_backend)
+      cli::cli_alert_info(
+        "Configured {.pkg brms}: set {.code options(mc.cores = {cores})} and {.code options(brms.backend = '{brms_backend}')}"
+      )
+    },
+    code = dry_code_brms(cores, brms_backend)
   )
   invisible(NULL)
 }
@@ -386,13 +469,28 @@ setup_brms <- function(quiet, brms_backend, cores) {
 #' \dontrun{
 #' setup_rstanarm(quiet = TRUE, cores = 2)
 #' }
-setup_rstanarm <- function(quiet, cores) {
-  local_cli_quiet(quiet)
+setup_rstanarm <- function(
+  quiet,
+  cores,
+  dry_run = FALSE
+) {
+  local_cli_quiet(quiet && !dry_run)
+  run_side_effect <- dry_runner(dry_run)
 
-  options(mc.cores = cores)
-
-  cli::cli_alert_info(
-    "Configured {.pkg rstanarm}: set {.code options(mc.cores = {cores})}"
-  )
+  set_mc_cores(run_side_effect, cores, "rstanarm")
   invisible(NULL)
+}
+
+set_mc_cores <- function(run_side_effect, cores, pkg) {
+  run_side_effect(
+    "configure {.pkg {pkg}}: set {.code options(mc.cores = {cores})}",
+    {
+      options(mc.cores = cores)
+      cli::format_inline(
+        "Configured {.pkg {pkg}}: set {.code options(mc.cores = {cores})}"
+      ) |>
+        cli::cli_alert_info()
+    },
+    code = dry_code_mc_cores(cores)
+  )
 }
