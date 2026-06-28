@@ -17,7 +17,7 @@ setup_brms(quiet, brms_backend, cores, dry_run = FALSE)
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
 \code{cores} explicitly.}
 
-\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them.}
+\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them. Dry-run output is shown even when \code{quiet = TRUE}.}
 }
 \value{
 Returns \code{NULL} invisibly.

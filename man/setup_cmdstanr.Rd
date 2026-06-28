@@ -26,7 +26,7 @@ setup_cmdstanr(
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
 \code{cores} explicitly.}
 
-\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them.}
+\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them. Dry-run output is shown even when \code{quiet = TRUE}.}
 }
 \value{
 Returns \code{TRUE} invisibly when no install/upgrade is needed.

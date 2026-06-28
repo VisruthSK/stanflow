@@ -16,7 +16,7 @@ recursively.}
 (stable releases). If \code{TRUE}, checks the Stan R-universe (dev versions). This is
 only cogent for Stan packages, and cannot compare two dev versions.}
 
-\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them.}
+\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them. Dry-run output is shown even when \code{quiet = TRUE}.}
 }
 \value{
 Invisibly returns a data frame of outdated packages (same columns as

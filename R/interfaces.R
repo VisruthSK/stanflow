@@ -22,7 +22,7 @@
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
 #' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE)`
-#' @param dry_run Logical. If `TRUE`, prints commands without executing them.
+#' @param dry_run Logical. If `TRUE`, prints commands without executing them. Dry-run output is shown even when `quiet = TRUE`.
 #' @return Returns attached package names invisibly.
 #' @export
 #' @examples
