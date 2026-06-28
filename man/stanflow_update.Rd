@@ -4,12 +4,7 @@
 \alias{stanflow_update}
 \title{Update stanflow packages}
 \usage{
-stanflow_update(
-  recursive = FALSE,
-  dev = FALSE,
-  dry_run = FALSE,
-  check_updates = !dry_run
-)
+stanflow_update(recursive = FALSE, dev = FALSE, dry_run = FALSE)
 }
 \arguments{
 \item{recursive}{If \code{TRUE}, will also list dependencies of dependencies. When
@@ -22,11 +17,7 @@ recursively.}
 only cogent for Stan packages, and cannot compare two dev versions.}
 
 \item{dry_run}{Logical. If \code{TRUE}, previews update steps without installing
-packages or prompting. By default, this also skips repository checks.}
-
-\item{check_updates}{Logical. Defaults to \code{FALSE} for dry runs and \code{TRUE}
-otherwise. With \code{dry_run = TRUE}, set \code{check_updates = TRUE} to query package
-repositories and list exact outdated packages without installing.}
+packages or prompting.}
 }
 \value{
 Invisibly returns a data frame of outdated packages (same columns as
@@ -36,9 +27,8 @@ needed.
 \description{
 Checks for outdated Stan workflow packages and installs updates. This function
 requires an interactive R session for installation unless \code{dry_run = TRUE}.
-By default, dry runs do not query package repositories. Use
-\verb{dry_run = TRUE, check_updates = TRUE} to list exact outdated packages without
-installing.
+Dry runs check repositories and preview installs without prompting or
+installing packages.
 Adapted from \code{\link[tidyverse:tidyverse_update]{tidyverse::tidyverse_update()}}.
 }
 \examples{

@@ -137,30 +137,7 @@ test_that("stanflow_update installs when user accepts interactive prompt", {
   expect_identical(result, behind)
 })
 
-test_that("stanflow_update dry_run previews steps without checking updates", {
-  withr::local_options(list(
-    repos = c(CRAN = "https://cloud.r-project.org")
-  ))
-
-  withr::local_output_sink(withr::local_tempfile())
-  result <- with_mocked_bindings(
-    stanflow_deps = function(...) stop("should not check updates"),
-    is_interactive_session = function() FALSE,
-    with_mocked_bindings(
-      menu = function(...) stop("should not prompt"),
-      install.packages = function(...) stop("should not install"),
-      capture_messages(stanflow_update(dry_run = TRUE)),
-      .package = "utils"
-    ),
-    .package = "stanflow"
-  )
-
-  result <- paste(result, collapse = "\n")
-  expect_match(result, "Would check direct dependencies")
-  expect_match(result, "Would prompt before installing")
-})
-
-test_that("stanflow_update dry_run with check_updates lists packages without installing", {
+test_that("stanflow_update dry_run reports package installs without installing", {
   withr::local_options(list(
     repos = c(CRAN = "https://cloud.r-project.org")
   ))
@@ -173,10 +150,14 @@ test_that("stanflow_update dry_run with check_updates lists packages without ins
     stringsAsFactors = FALSE
   )
   installed <- FALSE
+  observed <- NULL
 
   withr::local_output_sink(withr::local_tempfile())
   result <- with_mocked_bindings(
-    stanflow_deps = function(...) behind,
+    stanflow_deps = function(recursive, dev, check_updates) {
+      observed <<- check_updates
+      behind
+    },
     is_interactive_session = function() FALSE,
     with_mocked_bindings(
       menu = function(...) stop("should not prompt"),
@@ -184,12 +165,13 @@ test_that("stanflow_update dry_run with check_updates lists packages without ins
         installed <<- TRUE
         invisible(NULL)
       },
-      capture_messages(stanflow_update(dry_run = TRUE, check_updates = TRUE)),
+      capture_messages(stanflow_update(dry_run = TRUE)),
       .package = "utils"
     ),
     .package = "stanflow"
   )
 
+  expect_true(observed)
   expect_false(installed)
   result <- paste(result, collapse = "\n")
   expect_match(result, "Would install")

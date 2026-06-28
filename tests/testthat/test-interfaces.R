@@ -488,17 +488,8 @@ test_that("setup_rstan emits configuration message when quiet = FALSE", {
   expect_match(msg, "auto_write = FALSE")
 })
 
-test_that("setup_rstan dry_run does not set options or call rstan_options", {
+test_that("setup_rstan dry_run does not require rstan or set options", {
   withr::local_options(list(mc.cores = NULL))
-  skip_if_not_installed("rstan")
-  rstan_called <- FALSE
-
-  local_mocked_bindings(
-    rstan_options = function(...) {
-      rstan_called <<- TRUE
-    },
-    .package = "rstan"
-  )
 
   out <- capture_messages(
     setup_rstan(
@@ -510,7 +501,6 @@ test_that("setup_rstan dry_run does not set options or call rstan_options", {
   )
 
   expect_null(getOption("mc.cores"))
-  expect_false(rstan_called)
   expect_match(out, "Would configure")
 })
 
@@ -601,6 +591,29 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
   invisible(setup_cmdstanr(quiet = TRUE, force = TRUE, cores = 2))
 
   expect_true(installed)
+})
+
+test_that("setup_cmdstanr dry_run does not require cmdstanr to be installed", {
+  withr::local_options(list(mc.cores = NULL))
+  local_mocked_bindings(
+    is_interactive_session = function() FALSE,
+    .package = "stanflow"
+  )
+
+  out <- capture_messages(
+    setup_cmdstanr(
+      quiet = FALSE,
+      force = FALSE,
+      cores = 2,
+      dry_run = TRUE
+    )
+  )
+
+  expect_null(getOption("mc.cores"))
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would check and fix")
+  expect_match(out, "cmdstanr::check_cmdstan_toolchain")
+  expect_match(out, "Would configure")
 })
 
 test_that("setup_cmdstanr dry_run skips mutations but runs detection", {

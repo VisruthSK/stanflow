@@ -135,9 +135,8 @@ stanflow_deps <- function(
 #' @description
 #' Checks for outdated Stan workflow packages and installs updates. This function
 #' requires an interactive R session for installation unless `dry_run = TRUE`.
-#' By default, dry runs do not query package repositories. Use
-#' `dry_run = TRUE, check_updates = TRUE` to list exact outdated packages without
-#' installing.
+#' Dry runs check repositories and preview installs without prompting or
+#' installing packages.
 #' Adapted from [tidyverse::tidyverse_update()].
 #'
 #' @return Invisibly returns a data frame of outdated packages (same columns as
@@ -154,30 +153,14 @@ stanflow_deps <- function(
 #'
 #' @inheritParams stanflow_deps
 #' @param dry_run Logical. If `TRUE`, previews update steps without installing
-#'   packages or prompting. By default, this also skips repository checks.
-#' @param check_updates Logical. Defaults to `FALSE` for dry runs and `TRUE`
-#'   otherwise. With `dry_run = TRUE`, set `check_updates = TRUE` to query package
-#'   repositories and list exact outdated packages without installing.
+#'   packages or prompting.
 #' @export
 stanflow_update <- function(
   recursive = FALSE,
   dev = FALSE,
-  dry_run = FALSE,
-  check_updates = !dry_run
+  dry_run = FALSE
 ) {
   run_side_effect <- dry_runner(dry_run)
-
-  if (dry_run && !check_updates) {
-    repo_label <- if (dev) "Stan Universe (Dev)" else "R-multiverse (Stable)"
-    scope <- if (recursive) "full dependency tree" else "direct dependencies"
-    cli::cli_alert_info(
-      "Would check {scope} for available updates from {repo_label}."
-    )
-    cli::cli_alert_info(
-      "Would prompt before installing any outdated packages."
-    )
-    return(invisible(NULL))
-  }
 
   if (!dry_run && !is_interactive_session()) {
     cli::cli_abort(
@@ -189,7 +172,7 @@ stanflow_update <- function(
     )
   }
 
-  deps <- stanflow_deps(recursive, dev = dev, check_updates = check_updates)
+  deps <- stanflow_deps(recursive, dev = dev, check_updates = TRUE)
   behind <- deps[deps$behind, ]
 
   if (nrow(behind) == 0) {
