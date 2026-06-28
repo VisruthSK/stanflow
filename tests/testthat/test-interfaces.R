@@ -526,7 +526,7 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
   expect_true(installed)
 })
 
-test_that("setup_cmdstanr dry_run skips mutations and detection", {
+test_that("setup_cmdstanr dry_run skips mutations but runs detection", {
   skip_on_cran()
   skip_if_not_installed("cmdstanr")
   calls <- character()
@@ -565,12 +565,65 @@ test_that("setup_cmdstanr dry_run skips mutations and detection", {
     )
   )
 
-  expect_equal(calls, character())
+  expect_equal(calls, "path")
   expect_null(getOption("mc.cores"))
   out <- paste(out, collapse = "\n")
   expect_match(out, "Would check and fix")
   expect_match(out, "cmdstanr::check_cmdstan_toolchain")
   expect_false(grepl("Found CmdStan", out))
+  expect_match(out, "Would install or upgrade CmdStan")
+  expect_match(out, "Would configure")
+})
+
+test_that("setup_cmdstanr dry_run tolerates failed update checks", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+  calls <- character()
+
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) {
+      calls <<- c(calls, "toolchain")
+      TRUE
+    },
+    cmdstan_path = function() {
+      calls <<- c(calls, "path")
+      "/tmp"
+    },
+    cmdstan_version = function() {
+      calls <<- c(calls, "version")
+      "2.31.0"
+    },
+    install_cmdstan = function(...) {
+      calls <<- c(calls, "install")
+      invisible(NULL)
+    },
+    .package = "cmdstanr"
+  )
+  local_mocked_bindings(
+    readLines = function(...) {
+      calls <<- c(calls, "updates")
+      stop("offline")
+    },
+    .package = "base"
+  )
+
+  withr::local_options(list(mc.cores = NULL))
+  out <- capture_messages(
+    setup_cmdstanr(
+      quiet = FALSE,
+      force = FALSE,
+      check_updates = TRUE,
+      cores = 2,
+      dry_run = TRUE
+    )
+  )
+
+  expect_equal(calls, c("path", "version", "updates"))
+  expect_null(getOption("mc.cores"))
+  out <- paste(out, collapse = "\n")
+  expect_match(out, "Would check and fix")
+  expect_match(out, "Found CmdStan")
+  expect_match(out, "Could not check for CmdStan updates")
   expect_match(out, "Would configure")
 })
 

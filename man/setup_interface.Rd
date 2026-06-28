@@ -41,9 +41,7 @@ R-multiverse or CRAN. If \code{TRUE}, installs development versions from Stan R-
 
 \item{rstan_auto_write}{Logical. If \code{TRUE} (default), sets \code{rstan::rstan_options(auto_write = TRUE)}}
 
-\item{dry_run}{Logical. If \code{TRUE}, prints the setup actions that would run
-without installing packages, attaching packages, changing options, fixing
-the toolchain, or installing CmdStan. Defaults to \code{FALSE}.}
+\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them.}
 }
 \value{
 Returns attached package names invisibly.

@@ -16,7 +16,7 @@ dry_runner <- function(dry_run = FALSE) {
   }
 }
 
-dry_code_attach <- \(pkg) sprintf("stanflow:::.same_library(%s)", deparse1(pkg))
+dry_code_attach <- \(pkg) sprintf("library(%s)", deparse1(pkg))
 dry_code_mc_cores <- \(cores) sprintf("options(mc.cores = %s)", deparse1(cores))
 dry_code_install_package <- function(pkg, dev, quiet) {
   sprintf(

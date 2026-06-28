@@ -26,9 +26,7 @@ setup_cmdstanr(
 \code{getOption("mc.cores")}. You must set \code{options(mc.cores = ...)} or pass
 \code{cores} explicitly.}
 
-\item{dry_run}{Logical. If \code{TRUE}, prints the setup actions that would run
-without installing packages, attaching packages, changing options, fixing
-the toolchain, or installing CmdStan. Defaults to \code{FALSE}.}
+\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them.}
 }
 \value{
 Returns \code{TRUE} invisibly when no install/upgrade is needed.

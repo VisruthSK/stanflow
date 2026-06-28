@@ -16,9 +16,7 @@ recursively.}
 (stable releases). If \code{TRUE}, checks the Stan R-universe (dev versions). This is
 only cogent for Stan packages, and cannot compare two dev versions.}
 
-\item{dry_run}{Logical. If \code{TRUE}, prints the setup actions that would run
-without installing packages, attaching packages, changing options, fixing
-the toolchain, or installing CmdStan. Defaults to \code{FALSE}.}
+\item{dry_run}{Logical. If \code{TRUE}, prints commands without executing them.}
 }
 \value{
 Invisibly returns a data frame of outdated packages (same columns as

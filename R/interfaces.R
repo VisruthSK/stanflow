@@ -22,9 +22,7 @@
 #' @param reinstall Logical. If `TRUE`, forces re-installation.
 #' @param check_updates Logical. If `TRUE`, checks for CmdStan updates.
 #' @param rstan_auto_write Logical. If `TRUE` (default), sets `rstan::rstan_options(auto_write = TRUE)`
-#' @param dry_run Logical. If `TRUE`, prints the setup actions that would run
-#'   without installing packages, attaching packages, changing options, fixing
-#'   the toolchain, or installing CmdStan. Defaults to `FALSE`.
+#' @param dry_run Logical. If `TRUE`, prints commands without executing them.
 #' @return Returns attached package names invisibly.
 #' @export
 #' @examples
@@ -263,11 +261,6 @@ setup_cmdstanr <- function(
     )
   }
 
-  if (dry_run) {
-    set_mc_cores(run_side_effect, cores, "cmdstanr")
-    return(invisible(NULL))
-  }
-
   cmdstan_ready <- FALSE
   local_ver <- NULL
   tryCatch(
@@ -282,6 +275,9 @@ setup_cmdstanr <- function(
 
   latest_ver <- NULL
   if (cmdstan_ready && check_updates) {
+    if (dry_run) {
+      cli::cli_alert_info("Would check for CmdStan updates.")
+    }
     latest_ver <- try_fetch_latest_cmdstan_version()
     if (is.null(latest_ver)) {
       cli::cli_alert_warning(
@@ -306,24 +302,12 @@ setup_cmdstanr <- function(
 
   cli::cli_alert_warning(action_msg)
 
-  if (!is_interactive_session() && !force) {
+  if (!dry_run && !is_interactive_session() && !force) {
     if (needs_update && !needs_install) {
-      if (dry_run) {
-        cli::cli_alert_info(
-          "Would skip update in non-interactive mode (set {.code force = TRUE} to upgrade)."
-        )
-        return(invisible(NULL))
-      }
       cli::cli_alert_info(
         "Skipping update in non-interactive mode (set {.code force = TRUE} to upgrade)."
       )
       return(invisible(TRUE))
-    }
-    if (dry_run) {
-      cli::cli_alert_warning(
-        "Would not install CmdStan in a non-interactive session because {.code force = FALSE}."
-      )
-      return(invisible(NULL))
     }
     cli::cli_abort(
       c(
@@ -334,13 +318,7 @@ setup_cmdstanr <- function(
     )
   }
 
-  if (is_interactive_session() && !force) {
-    if (dry_run) {
-      cli::cli_alert_info(
-        "Would ask before installing/upgrading CmdStan."
-      )
-      return(invisible(NULL))
-    }
+  if (!dry_run && is_interactive_session() && !force) {
     title <- if (needs_install) {
       "Download and compile CmdStan now?"
     } else {
@@ -356,7 +334,7 @@ setup_cmdstanr <- function(
   }
 
   run_side_effect(
-    "install CmdStan",
+    "install or upgrade CmdStan",
     {
       cli::cli_process_start("Installing CmdStan (this can take some time)...")
       cmdstanr::install_cmdstan(quiet = quiet, overwrite = TRUE, cores = cores)
