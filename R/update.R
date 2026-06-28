@@ -134,7 +134,7 @@ stanflow_deps <- function(
 #'
 #' @description
 #' Checks for outdated Stan workflow packages and installs updates. This function
-#' requires an interactive R session and will error otherwise.
+#' requires an interactive R session for installation unless `dry_run = TRUE`.
 #' Adapted from [tidyverse::tidyverse_update()].
 #'
 #' @return Invisibly returns a data frame of outdated packages (same columns as

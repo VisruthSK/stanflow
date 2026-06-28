@@ -277,12 +277,13 @@ setup_cmdstanr <- function(
   if (cmdstan_ready && check_updates) {
     if (dry_run) {
       cli::cli_alert_info("Would check for CmdStan updates.")
-    }
-    latest_ver <- try_fetch_latest_cmdstan_version()
-    if (is.null(latest_ver)) {
-      cli::cli_alert_warning(
-        "Could not check for CmdStan updates; using installed CmdStan v{local_ver}."
-      )
+    } else {
+      latest_ver <- try_fetch_latest_cmdstan_version()
+      if (is.null(latest_ver)) {
+        cli::cli_alert_warning(
+          "Could not check for CmdStan updates; using installed CmdStan v{local_ver}."
+        )
+      }
     }
   }
 

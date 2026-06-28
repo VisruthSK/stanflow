@@ -452,6 +452,32 @@ test_that("setup_rstan emits configuration message when quiet = FALSE", {
   expect_match(msg, "auto_write = FALSE")
 })
 
+test_that("setup_rstan dry_run does not set options or call rstan_options", {
+  withr::local_options(list(mc.cores = NULL))
+  skip_if_not_installed("rstan")
+  rstan_called <- FALSE
+
+  local_mocked_bindings(
+    rstan_options = function(...) {
+      rstan_called <<- TRUE
+    },
+    .package = "rstan"
+  )
+
+  out <- capture_messages(
+    setup_rstan(
+      quiet = FALSE,
+      cores = 6,
+      rstan_auto_write = FALSE,
+      dry_run = TRUE
+    )
+  )
+
+  expect_null(getOption("mc.cores"))
+  expect_false(rstan_called)
+  expect_match(out, "Would configure")
+})
+
 test_that("setup_rstanarm emits configuration message when quiet = FALSE", {
   withr::local_options(list(mc.cores = NULL))
   msg <- NULL
@@ -469,6 +495,21 @@ test_that("setup_rstanarm emits configuration message when quiet = FALSE", {
 
   expect_match(msg, "Configured")
   expect_match(msg, "rstanarm")
+})
+
+test_that("setup_rstanarm dry_run does not set options", {
+  withr::local_options(list(mc.cores = NULL))
+
+  out <- capture_messages(
+    setup_rstanarm(
+      quiet = FALSE,
+      cores = 5,
+      dry_run = TRUE
+    )
+  )
+
+  expect_null(getOption("mc.cores"))
+  expect_match(out, "Would configure")
 })
 
 test_that("setup_brms dry_run does not set options", {
@@ -575,7 +616,7 @@ test_that("setup_cmdstanr dry_run skips mutations but runs detection", {
   expect_match(out, "Would configure")
 })
 
-test_that("setup_cmdstanr dry_run tolerates failed update checks", {
+test_that("setup_cmdstanr dry_run does not perform update checks", {
   skip_on_cran()
   skip_if_not_installed("cmdstanr")
   calls <- character()
@@ -602,7 +643,7 @@ test_that("setup_cmdstanr dry_run tolerates failed update checks", {
   local_mocked_bindings(
     readLines = function(...) {
       calls <<- c(calls, "updates")
-      stop("offline")
+      stop("dry run should not check updates")
     },
     .package = "base"
   )
@@ -618,12 +659,13 @@ test_that("setup_cmdstanr dry_run tolerates failed update checks", {
     )
   )
 
-  expect_equal(calls, c("path", "version", "updates"))
+  expect_equal(calls, c("path", "version"))
   expect_null(getOption("mc.cores"))
   out <- paste(out, collapse = "\n")
   expect_match(out, "Would check and fix")
   expect_match(out, "Found CmdStan")
-  expect_match(out, "Could not check for CmdStan updates")
+  expect_match(out, "Would check for CmdStan updates")
+  expect_no_match(out, "Could not check for CmdStan updates")
   expect_match(out, "Would configure")
 })
 

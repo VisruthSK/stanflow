@@ -16,7 +16,18 @@ dry_runner <- function(dry_run = FALSE) {
   }
 }
 
-dry_code_attach <- \(pkg) sprintf("library(%s)", deparse1(pkg))
+dry_code_attach <- function(pkg) {
+  sprintf(
+    paste0(
+      "library(%s, lib.loc = if (%s %%in%% loadedNamespaces()) ",
+      "dirname(getNamespaceInfo(%s, \"path\")), character.only = TRUE, ",
+      "warn.conflicts = FALSE)"
+    ),
+    deparse1(pkg),
+    deparse1(pkg),
+    deparse1(pkg)
+  )
+}
 dry_code_mc_cores <- \(cores) sprintf("options(mc.cores = %s)", deparse1(cores))
 dry_code_install_package <- function(pkg, dev, quiet) {
   sprintf(

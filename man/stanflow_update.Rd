@@ -25,7 +25,7 @@ needed.
 }
 \description{
 Checks for outdated Stan workflow packages and installs updates. This function
-requires an interactive R session and will error otherwise.
+requires an interactive R session for installation unless \code{dry_run = TRUE}.
 Adapted from \code{\link[tidyverse:tidyverse_update]{tidyverse::tidyverse_update()}}.
 }
 \examples{
