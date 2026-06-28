@@ -100,8 +100,6 @@ setup_interface <- function(
       )
     }
 
-    attach_backend_package(pkg, dry_run)
-
     switch(
       pkg,
       "cmdstanr" = setup_cmdstanr(
@@ -116,6 +114,8 @@ setup_interface <- function(
       "brms" = setup_brms(quiet, brms_backend, cores, dry_run),
       "rstanarm" = setup_rstanarm(quiet, cores, dry_run)
     )
+
+    attach_backend_package(pkg, dry_run)
   }
 
   attached_pkgs <- unique(interface)
@@ -155,13 +155,7 @@ install_backend_package <- function(
     cli::cli_alert_warning("Package {.pkg {pkg}} is not installed.")
   }
 
-  if (!is_interactive_session() && !force) {
-    if (dry_run) {
-      cli::cli_alert_warning(
-        "Would not install {.pkg {pkg}} in a non-interactive session because {.code force = FALSE}."
-      )
-      return(invisible(NULL))
-    }
+  if (!dry_run && !is_interactive_session() && !force) {
     cli::cli_abort(
       c(
         "Package {.pkg {pkg}} is missing.",
@@ -171,13 +165,7 @@ install_backend_package <- function(
     )
   }
 
-  if (is_interactive_session() && !force) {
-    if (dry_run) {
-      cli::cli_alert_info(
-        "Would ask before installing {.pkg {pkg}}."
-      )
-      return(invisible(NULL))
-    }
+  if (!dry_run && is_interactive_session() && !force) {
     title <- if (dev) {
       "Install from Stan Universe (Dev)?"
     } else {
@@ -193,10 +181,10 @@ install_backend_package <- function(
     "install {.pkg {pkg}}",
     {
       cli::cli_progress_step("Installing {.pkg {pkg}}...")
-      utils::install.packages(pkg, repos = stan_repos(dev), quiet = TRUE)
+      utils::install.packages(pkg, repos = stan_repos(dev), quiet = quiet)
       cli::cli_progress_done()
     },
-    code = dry_code_install_package(pkg, dev)
+    code = dry_code_install_package(pkg, dev, quiet)
   )
 }
 
@@ -238,7 +226,7 @@ setup_cmdstanr <- function(
   quiet,
   force,
   reinstall = FALSE,
-  check_updates = TRUE,
+  check_updates = FALSE,
   cores,
   dry_run = FALSE
 ) {
@@ -275,6 +263,11 @@ setup_cmdstanr <- function(
     )
   }
 
+  if (dry_run) {
+    set_mc_cores(run_side_effect, cores, "cmdstanr")
+    return(invisible(NULL))
+  }
+
   cmdstan_ready <- FALSE
   local_ver <- NULL
   tryCatch(
@@ -289,35 +282,12 @@ setup_cmdstanr <- function(
 
   latest_ver <- NULL
   if (cmdstan_ready && check_updates) {
-    tryCatch(
-      {
-        raw_json <- suppressWarnings(
-          readLines(
-            "https://api.github.com/repos/stan-dev/cmdstan/releases/latest",
-            warn = FALSE
-          )
-        )
-        tag_line <- grep('"tag_name":', raw_json, value = TRUE)[1]
-        if (!is.na(tag_line)) {
-          latest_ver <- numeric_version(
-            sub(
-              '.*"tag_name":\\s*"v?([^"]+)".*',
-              "\\1",
-              tag_line
-            )
-          )
-        }
-      },
-      error = function(e) {
-        cli::cli_abort(
-          c(
-            "Could not check for CmdStan updates.",
-            "x" = "Network or parsing error while reaching GitHub.",
-            "i" = "Set {.code check_updates = FALSE} to skip update checks."
-          )
-        )
-      }
-    )
+    latest_ver <- try_fetch_latest_cmdstan_version()
+    if (is.null(latest_ver)) {
+      cli::cli_alert_warning(
+        "Could not check for CmdStan updates; using installed CmdStan v{local_ver}."
+      )
+    }
   }
 
   needs_install <- !cmdstan_ready || reinstall
@@ -403,6 +373,31 @@ setup_cmdstanr <- function(
   invisible(NULL)
 }
 # nocov end
+
+try_fetch_latest_cmdstan_version <- function() {
+  tryCatch(
+    {
+      raw_json <- suppressWarnings(
+        readLines(
+          "https://api.github.com/repos/stan-dev/cmdstan/releases/latest",
+          warn = FALSE
+        )
+      )
+      tag_line <- grep('"tag_name"\\s*:', raw_json, value = TRUE)
+      if (!length(tag_line)) {
+        return(NULL)
+      }
+      numeric_version(
+        sub(
+          '.*"tag_name":\\s*"v?([^"]+)".*',
+          "\\1",
+          tag_line
+        )
+      )
+    },
+    error = \(e) NULL
+  )
+}
 
 #' Setup rstan
 #'

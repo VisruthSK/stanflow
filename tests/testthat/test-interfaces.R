@@ -121,9 +121,7 @@ test_that("setup_interface dry_run reports missing package setup without side ef
   expect_null(getOption("mc.cores"))
   expect_null(getOption("brms.backend"))
   out <- paste(out, collapse = "\n")
-  expect_match(out, "Would not install")
-  expect_match(out, "non-interactive session")
-  expect_match(out, "force = FALSE")
+  expect_match(out, "Would install")
   expect_match(out, "Would attach")
   expect_match(out, "Would configure")
   expect_false(grepl("Setup complete", out))
@@ -215,14 +213,14 @@ test_that("setup_interface runs backend setup helpers", {
   expect_equal(
     calls,
     c(
-      "library:cmdstanr",
       "setup_cmdstanr",
-      "library:rstan",
+      "library:cmdstanr",
       "setup_rstan",
-      "library:brms",
+      "library:rstan",
       "setup_brms",
-      "library:rstanarm",
-      "setup_rstanarm"
+      "library:brms",
+      "setup_rstanarm",
+      "library:rstanarm"
     )
   )
 })
@@ -291,6 +289,27 @@ test_that("install_backend_package installs from Stan universe when dev = TRUE",
 
   expect_equal(called$pkg, "cmdstanr")
   expect_equal(unname(called$repos[1]), "https://stan-dev.r-universe.dev")
+})
+
+test_that("install_backend_package respects quiet = FALSE", {
+  called <- list()
+
+  local_mocked_bindings(
+    install.packages = function(pkg, repos, quiet) {
+      called <<- list(pkg = pkg, repos = repos, quiet = quiet)
+    },
+    .package = "utils"
+  )
+
+  install_backend_package(
+    "cmdstanr",
+    dev = FALSE,
+    quiet = FALSE,
+    force = TRUE,
+    reinstall = FALSE
+  )
+
+  expect_false(called$quiet)
 })
 
 test_that("install_backend_package installs from multiverse when dev = FALSE", {
@@ -507,7 +526,7 @@ test_that("setup_cmdstanr installs CmdStan when not ready and force = TRUE", {
   expect_true(installed)
 })
 
-test_that("setup_cmdstanr dry_run skips mutations but runs detection", {
+test_that("setup_cmdstanr dry_run skips mutations and detection", {
   skip_on_cran()
   skip_if_not_installed("cmdstanr")
   calls <- character()
@@ -546,18 +565,13 @@ test_that("setup_cmdstanr dry_run skips mutations but runs detection", {
     )
   )
 
-  # Detection runs (cmdstan_path is called, throws, caught by tryCatch)
-  expect_equal(calls, "path")
-  # Mutations are skipped
-  expect_false("toolchain" %in% calls)
-  expect_false("install" %in% calls)
+  expect_equal(calls, character())
   expect_null(getOption("mc.cores"))
   out <- paste(out, collapse = "\n")
   expect_match(out, "Would check and fix")
   expect_match(out, "cmdstanr::check_cmdstan_toolchain")
   expect_false(grepl("Found CmdStan", out))
-  expect_match(out, "Would not install CmdStan")
-  expect_match(out, "non-interactive session")
+  expect_match(out, "Would configure")
 })
 
 test_that("setup_cmdstanr returns invisibly when up to date", {
@@ -582,6 +596,83 @@ test_that("setup_cmdstanr returns invisibly when up to date", {
   )
 
   expect_identical(result, TRUE)
+})
+
+test_that("setup_cmdstanr does not check updates by default", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() "/tmp",
+    cmdstan_version = function() "2.31.0",
+    install_cmdstan = function(...) stop("should not install"),
+    .package = "cmdstanr"
+  )
+
+  local_mocked_bindings(
+    readLines = function(...) stop("should not check updates"),
+    .package = "base"
+  )
+
+  expect_identical(
+    setup_cmdstanr(quiet = TRUE, force = FALSE, cores = 2),
+    TRUE
+  )
+})
+
+test_that("setup_cmdstanr ignores failed update checks when CmdStan is ready", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+  local_mocked_bindings(
+    check_cmdstan_toolchain = function(...) TRUE,
+    cmdstan_path = function() "/tmp",
+    cmdstan_version = function() "2.31.0",
+    install_cmdstan = function(...) stop("should not install"),
+    .package = "cmdstanr"
+  )
+  local_mocked_bindings(
+    readLines = function(...) stop("no network"),
+    .package = "base"
+  )
+
+  result <- setup_cmdstanr(
+    quiet = TRUE,
+    force = FALSE,
+    check_updates = TRUE,
+    cores = 2
+  )
+
+  expect_identical(result, TRUE)
+})
+
+test_that("try_fetch_latest_cmdstan_version parses latest release", {
+  local_mocked_bindings(
+    readLines = function(...) {
+      c(
+        "{",
+        '  "tag_name": "v2.37.0"',
+        "}"
+      )
+    },
+    .package = "base"
+  )
+
+  expect_equal(try_fetch_latest_cmdstan_version(), numeric_version("2.37.0"))
+})
+
+test_that("try_fetch_latest_cmdstan_version returns NULL on bad responses", {
+  local_mocked_bindings(
+    readLines = function(...) "{}",
+    .package = "base"
+  )
+  expect_null(try_fetch_latest_cmdstan_version())
+
+  local_mocked_bindings(
+    readLines = function(...) stop("offline"),
+    .package = "base"
+  )
+  expect_null(try_fetch_latest_cmdstan_version())
 })
 
 test_that("setup_cmdstanr is silent when quiet = TRUE", {
@@ -636,6 +727,24 @@ test_that("setup_interface handles same_library errors gracefully", {
     setup_interface(interface = "cmdstanr", quiet = TRUE, cores = 2),
     "library error"
   )
+})
+
+test_that("setup_interface does not attach packages before setup succeeds", {
+  attached <- character()
+  local_mocked_bindings(
+    is_installed = function(pkg) TRUE,
+    .same_library = function(pkg) {
+      attached <<- c(attached, pkg)
+    },
+    setup_cmdstanr = function(...) cli::cli_abort("Boom"),
+    .package = "stanflow"
+  )
+
+  expect_error(
+    setup_interface(interface = "cmdstanr", quiet = TRUE, cores = 2),
+    "Boom"
+  )
+  expect_equal(attached, character())
 })
 
 test_that("setup_interface warns when brms_backend adds cmdstanr", {

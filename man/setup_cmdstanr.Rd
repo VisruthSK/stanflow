@@ -8,7 +8,7 @@ setup_cmdstanr(
   quiet,
   force,
   reinstall = FALSE,
-  check_updates = TRUE,
+  check_updates = FALSE,
   cores,
   dry_run = FALSE
 )

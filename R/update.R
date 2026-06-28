@@ -238,11 +238,7 @@ stanflow_update <- function(recursive = FALSE, dev = FALSE, dry_run = FALSE) {
         }
       )
     },
-    code = sprintf(
-      "utils::install.packages(%s, repos = stanflow::stan_repos(%s), quiet = TRUE)",
-      deparse1(behind$package),
-      deparse1(dev)
-    )
+    code = dry_code_install_package(behind$package, dev, TRUE)
   )
 
   if (length(pkgs_to_report)) {

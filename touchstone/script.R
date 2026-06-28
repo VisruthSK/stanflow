@@ -1,5 +1,19 @@
 library(touchstone)
 
+# GHA has already resolved dependency versions. Do not let Touchstone upgrade them.
+local({
+  ns <- asNamespace("touchstone")
+  unlockBinding("install_missing_deps", ns)
+  assign(
+    "install_missing_deps",
+    function(path_pkg, quiet = FALSE) {
+      remotes::install_deps(pkgdir = path_pkg, upgrade = "never", quiet = quiet)
+    },
+    envir = ns
+  )
+  lockBinding("install_missing_deps", ns)
+})
+
 # Install both branches to benchmark
 branch_install()
 
@@ -48,13 +62,14 @@ for (repo in repos) {
   )
 }
 
+loo_path <- file.path(base_dir, "loo")
 benchmark_run(
   expr_before_benchmark = {
     library(stanflow)
   },
   n = n,
   loo_knitr := stan_cite(
-    path = file.path(base_dir, "loo"),
+    path = !!loo_path,
     strict = FALSE,
     quiet = TRUE,
     use_knitr = TRUE

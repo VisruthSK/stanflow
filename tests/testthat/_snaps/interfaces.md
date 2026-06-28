@@ -4,8 +4,8 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
+      i Would attach brms: stanflow:::.same_library("brms").
 
 # setup_interface dry_run output is stable for cmdstanr
 
@@ -13,10 +13,9 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
 
 # setup_interface dry_run output is stable for rstan
 
@@ -24,8 +23,8 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach rstan: stanflow:::.same_library("rstan").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
+      i Would attach rstan: stanflow:::.same_library("rstan").
 
 # setup_interface dry_run output is stable for rstanarm
 
@@ -33,8 +32,8 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface dry_run output is stable for brms, cmdstanr
 
@@ -42,12 +41,11 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
+      i Would attach brms: stanflow:::.same_library("brms").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
 
 # setup_interface dry_run output is stable for brms, rstan
 
@@ -55,10 +53,10 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
-      i Would attach rstan: stanflow:::.same_library("rstan").
+      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
+      i Would attach rstan: stanflow:::.same_library("rstan").
 
 # setup_interface dry_run output is stable for brms, rstanarm
 
@@ -66,10 +64,10 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
+      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface dry_run output is stable for cmdstanr, rstan
 
@@ -77,12 +75,11 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
-      i Would attach rstan: stanflow:::.same_library("rstan").
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
+      i Would attach rstan: stanflow:::.same_library("rstan").
 
 # setup_interface dry_run output is stable for cmdstanr, rstanarm
 
@@ -90,12 +87,11 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface dry_run output is stable for rstan, rstanarm
 
@@ -103,10 +99,10 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach rstan: stanflow:::.same_library("rstan").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
+      i Would attach rstan: stanflow:::.same_library("rstan").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface dry_run output is stable for brms, cmdstanr, rstan
 
@@ -114,14 +110,13 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
+      i Would attach brms: stanflow:::.same_library("brms").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
-      i Would attach rstan: stanflow:::.same_library("rstan").
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
+      i Would attach rstan: stanflow:::.same_library("rstan").
 
 # setup_interface dry_run output is stable for brms, cmdstanr, rstanarm
 
@@ -129,14 +124,13 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
+      i Would attach brms: stanflow:::.same_library("brms").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface dry_run output is stable for brms, rstan, rstanarm
 
@@ -144,12 +138,12 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
-      i Would attach rstan: stanflow:::.same_library("rstan").
+      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
+      i Would attach rstan: stanflow:::.same_library("rstan").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface dry_run output is stable for cmdstanr, rstan, rstanarm
 
@@ -157,14 +151,13 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
-      i Would attach rstan: stanflow:::.same_library("rstan").
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
+      i Would attach rstan: stanflow:::.same_library("rstan").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface dry_run output is stable for brms, cmdstanr, rstan, rstanarm
 
@@ -172,16 +165,15 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would attach brms: stanflow:::.same_library("brms").
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
-      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
+      i Would attach brms: stanflow:::.same_library("brms").
       i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
-      ! CmdStan binaries are missing or force-reinstall requested.
-      ! Would not install CmdStan in a non-interactive session because `force = FALSE`.
-      i Would attach rstan: stanflow:::.same_library("rstan").
+      i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach cmdstanr: stanflow:::.same_library("cmdstanr").
       i Would configure rstan: set `options(mc.cores = 1)` and `rstan::rstan_options(auto_write = TRUE)`: options(mc.cores = 1); rstan::rstan_options(auto_write = TRUE).
-      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
+      i Would attach rstan: stanflow:::.same_library("rstan").
       i Would configure rstanarm: set `options(mc.cores = 1)`: options(mc.cores = 1).
+      i Would attach rstanarm: stanflow:::.same_library("rstanarm").
 
 # setup_interface warns when brms_backend adds cmdstanr
 
