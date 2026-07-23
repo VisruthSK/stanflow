@@ -8,8 +8,8 @@ stan_cite(
   path = ".",
   strict = TRUE,
   format = c("bibtex", "bibentry"),
-  skip_dirs = .scan_skip_dirs,
-  ignore_unqualified_functions = .stdlib_funs,
+  skip_dirs = ascribe::scan_skip_dirs(),
+  ignore_unqualified_functions = ascribe::stdlib_funs(),
   use_knitr = FALSE,
   quiet = getOption("stanflow.quiet", FALSE)
 )
@@ -23,40 +23,30 @@ whose origin can be determined exactly from the static scan, including
 attachment-order tie-breaks when the winner is unambiguous from the file.
 Unresolved calls are warned about and omitted.}
 
-\item{format}{One of "bibtex" or "bibentry", specifying the return format.}
+\item{format}{One of \code{"bibtex"} or \code{"bibentry"}.}
 
-\item{skip_dirs}{Defaults to directories listed in \code{scan_skip_dirs}. Character
-vector of directory names to skip when scanning a directory.}
+\item{skip_dirs}{Character vector of directory names to skip when scanning a
+directory. Defaults to \code{scan_skip_dirs()}.}
 
 \item{ignore_unqualified_functions}{Defaults to exports from base R packages
 listed in \code{stdlib_funs()}. Character vector of function names to ignore when
-attributing (unqualified) calls to Stan packages. Calls like \code{rstan::plot()}
-will NOT be ignored even if \code{plot} is in \code{ignore_unqualified_functions}, since
-they are namespaced.}
+attributing (unqualified) calls. Calls like \code{pkg::fun()} will NOT be ignored
+even if \code{fun} is in \code{ignore_unqualified_functions}, since they are
+namespaced.}
 
 \item{use_knitr}{Logical. If \code{TRUE}, parse \code{.Rmd} and \code{.qmd} files with
-\code{knitr::purl()}. This is more accurate for knitr/quarto chunk extraction
+\code{knitr::purl()}. This is more accurate for knitr/quarto chunk handling
 but much slower than the default in-house parser. Defaults to \code{FALSE}.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppresses status messages.}
+\item{quiet}{Logical. If \code{TRUE}, suppresses status messages. Defaults to
+\code{FALSE}.}
 }
 \value{
 A BibTeX character vector or a bibentry object.
 }
 \description{
-\code{stan_cite()} generates the correct citations for Stan packages
-in a directory or set of files. Quarto (.qmd) and R Markdown (.Rmd)
-documents are scanned by extracting R code chunks directly from the
-source text by default. Setting \code{use_knitr = TRUE} switches to
-\code{knitr::purl()}, which is more accurate for knitr/quarto chunk handling
-but much slower. \code{stan_cite()} uses some simple heuristics to guess which
-packages export functions, and also attempts to map re-exports to their
-origin package. Calls to \code{library()}, \code{require()}, \code{requireNamespace()},
-or \code{use()} are all recognized as attaching a package.
-}
-\details{
-The parsing is handled by \code{scan_usage()}; \code{stan_cite()} owns
-the citation lookups.
+\code{stan_cite()} finds Stan packages and functions used in a project, then
+returns their citations as BibTeX or bibentry records.
 }
 \examples{
 path <- tempfile(fileext = ".R")

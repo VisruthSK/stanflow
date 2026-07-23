@@ -164,11 +164,14 @@ test_that("all package citations exist", {
   }
 })
 
-test_that("package citations use generated paper entries", {
-  pkg_cite <- getFromNamespace(".pkg_cite", "stanflow")
+test_that("package citations include generated paper entries", {
+  pkg_cite <- getExportedValue("ascribe", "cite_package")
+  extras <- getFromNamespace(".stan_citation_pkg_extras", "stanflow")
+  stan_url <- \(pkg) sprintf("https://mc-stan.org/%s/", pkg)
 
-  bayesplot_bibtex <- utils::toBibtex(pkg_cite("bayesplot"))
-  posterior_bibtex <- utils::toBibtex(pkg_cite("posterior"))
+  package_citation <- pkg_cite(extras, stan_url)
+  bayesplot_bibtex <- utils::toBibtex(package_citation("bayesplot"))
+  posterior_bibtex <- utils::toBibtex(package_citation("posterior"))
 
   expect_true(any(grepl("@Article\\{gabry-2019-vis,", bayesplot_bibtex)))
   expect_true(any(grepl("@Article\\{vehtari-2021-rhat,", posterior_bibtex)))
