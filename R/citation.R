@@ -34,6 +34,7 @@ stan_cite <- function(
   quiet = getOption("stanflow.quiet", FALSE)
 ) {
   local_cli_quiet(quiet)
+  fmt <- match.arg(format)
   ascribe::scan_usage(
     path = path,
     allowed_packages = .stan_pkgs,
@@ -49,17 +50,54 @@ stan_cite <- function(
     ascribe::cite_usage(
       package_citations = .stan_citation_pkgs,
       function_citations = .stan_citation_funs,
-      package_citation = ascribe::cite_package(
-        extras = .stan_citation_pkg_extras,
-        url = \(pkg) sprintf("https://mc-stan.org/%s/", pkg),
-        note = \(pkg, meta) {
-          sprintf(
+      package_citation = .pkg_cite,
+      always_cite = "stanflow",
+      format = "bibentry"
+    ) |>
+    (\(entries) {
+      if (is.null(entries) || !length(entries)) {
+        if (fmt == "bibentry") entries else character()
+      } else if (fmt == "bibentry") {
+        entries
+      } else {
+        utils::toBibtex(entries)
+      }
+    })()
+}
+
+#' Build Stan package bibentry citations
+#'
+#' Helper function to build standardized package citations.
+#' This mostly matches how each Stan R package wants to be cited.
+#' Some Stan packages have additional paper citations generated in
+#' `data-raw/sysdata.R` and stored in `.stan_citation_pkg_extras`.
+#'
+#' @param pkg Stan package name as a character scalar.
+#' @return Vector of bibentries for citing that package.
+#' @keywords internal
+.pkg_cite <- function(pkg) {
+  pkg |>
+    utils::packageDescription() |>
+    (\(meta) {
+      c(
+        utils::bibentry(
+          bibtype = "Manual",
+          key = pkg,
+          title = meta[["Title"]],
+          author = utils::citation(meta[["Package"]])[[1]]$author,
+          year = sub("-.*", "", meta[["Date"]]),
+          note = sprintf(
             "R package version %s, https://discourse.mc-stan.org",
             meta$Version
-          )
-        }
-      ),
-      always_cite = "stanflow",
-      format = format
-    )
+          ),
+          url = sprintf("https://mc-stan.org/%s/", pkg)
+        ),
+        mget(
+          pkg,
+          envir = .stan_citation_pkg_extras,
+          inherits = TRUE,
+          ifnotfound = list(NULL)
+        )[[1L]]
+      )
+    })()
 }

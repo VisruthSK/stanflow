@@ -18,10 +18,8 @@ stan_cite(
 \item{path}{A single project directory (searched recursively) or a vector of
 files (.R/.Rmd/.qmd).}
 
-\item{strict}{If \code{TRUE} (default), only count unqualified function calls
-whose origin can be determined exactly from the static scan, including
-attachment-order tie-breaks when the winner is unambiguous from the file.
-Unresolved calls are warned about and omitted.}
+\item{strict}{If \code{FALSE} (default), warn on ambiguous function calls whose
+origin cannot be determined exactly. If \code{TRUE}, abort on ambiguous calls.}
 
 \item{format}{One of \code{"bibtex"} or \code{"bibentry"}.}
 
