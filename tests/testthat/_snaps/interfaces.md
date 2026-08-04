@@ -218,6 +218,41 @@
     Message
       i Configured brms: set `options(mc.cores = 4)` and `options(brms.backend = 'rstan')`
 
+# setup_rstan emits configuration message when quiet = FALSE
+
+    Code
+      setup_rstan(quiet = FALSE, cores = 3, rstan_auto_write = FALSE)
+    Message
+      i Configured rstan: set `options(mc.cores = 3)` and `rstan::rstan_options(auto_write = FALSE)`
+
+# setup_rstan dry_run does not require rstan or set options
+
+    Code
+      setup_rstan(quiet = FALSE, cores = 6, rstan_auto_write = FALSE, dry_run = TRUE)
+    Message
+      i Would configure rstan: options(mc.cores = 6); rstan::rstan_options(auto_write = FALSE).
+
+# setup_rstanarm emits configuration message when quiet = FALSE
+
+    Code
+      setup_rstanarm(quiet = FALSE, cores = 5)
+    Message
+      i Configured rstanarm: set `options(mc.cores = 5)`
+
+# setup_rstanarm dry_run does not set options
+
+    Code
+      setup_rstanarm(quiet = FALSE, cores = 5, dry_run = TRUE)
+    Message
+      i Would configure rstanarm: options(mc.cores = 5).
+
+# setup_brms dry_run does not set options
+
+    Code
+      setup_brms(quiet = FALSE, brms_backend = "cmdstanr", cores = 8, dry_run = TRUE)
+    Message
+      i Would configure brms: options(mc.cores = 8); options(brms.backend = "cmdstanr").
+
 # setup_cmdstanr dry_run does not require cmdstanr to be installed
 
     Code

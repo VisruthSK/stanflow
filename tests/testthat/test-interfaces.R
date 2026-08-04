@@ -446,32 +446,20 @@ test_that("setup_rstan configures parallel cores and rstan options", {
 test_that("setup_rstan emits configuration message when quiet = FALSE", {
   withr::local_options(list(mc.cores = NULL))
   skip_if_not_installed("rstan")
-  msg <- NULL
-  cli_alert_info <- function(...) {
-    msg <<- paste0(...)
-    invisible(NULL)
-  }
-
   local_mocked_bindings(
     rstan_options = function(...) NULL,
     .package = "rstan"
   )
-  local_mocked_bindings(
-    cli_alert_info = cli_alert_info,
-    .package = "cli"
+
+  expect_snapshot(
+    setup_rstan(quiet = FALSE, cores = 3, rstan_auto_write = FALSE)
   )
-
-  setup_rstan(quiet = FALSE, cores = 3, rstan_auto_write = FALSE)
-
-  expect_match(msg, "Configured")
-  expect_match(msg, "rstan")
-  expect_match(msg, "auto_write = FALSE")
 })
 
 test_that("setup_rstan dry_run does not require rstan or set options", {
   withr::local_options(list(mc.cores = NULL))
 
-  out <- capture_messages(
+  expect_snapshot(
     setup_rstan(
       quiet = FALSE,
       cores = 6,
@@ -479,49 +467,34 @@ test_that("setup_rstan dry_run does not require rstan or set options", {
       dry_run = TRUE
     )
   )
-
   expect_null(getOption("mc.cores"))
-  expect_match(out, "Would configure")
 })
 
 test_that("setup_rstanarm emits configuration message when quiet = FALSE", {
   withr::local_options(list(mc.cores = NULL))
-  msg <- NULL
-  cli_alert_info <- function(...) {
-    msg <<- paste0(...)
-    invisible(NULL)
-  }
 
-  local_mocked_bindings(
-    cli_alert_info = cli_alert_info,
-    .package = "cli"
+  expect_snapshot(
+    setup_rstanarm(quiet = FALSE, cores = 5)
   )
-
-  setup_rstanarm(quiet = FALSE, cores = 5)
-
-  expect_match(msg, "Configured")
-  expect_match(msg, "rstanarm")
 })
 
 test_that("setup_rstanarm dry_run does not set options", {
   withr::local_options(list(mc.cores = NULL))
 
-  out <- capture_messages(
+  expect_snapshot(
     setup_rstanarm(
       quiet = FALSE,
       cores = 5,
       dry_run = TRUE
     )
   )
-
   expect_null(getOption("mc.cores"))
-  expect_match(out, "Would configure")
 })
 
 test_that("setup_brms dry_run does not set options", {
   withr::local_options(list(mc.cores = NULL, brms.backend = NULL))
 
-  out <- capture_messages(
+  expect_snapshot(
     setup_brms(
       quiet = FALSE,
       brms_backend = "cmdstanr",
@@ -529,10 +502,8 @@ test_that("setup_brms dry_run does not set options", {
       dry_run = TRUE
     )
   )
-
   expect_null(getOption("mc.cores"))
   expect_null(getOption("brms.backend"))
-  expect_match(out, "Would configure")
 })
 
 

@@ -187,13 +187,8 @@ test_that("update_check_message prints update list", {
 })
 
 test_that("message_packages balances odd package counts", {
-  header <- "Header"
-  packages <- c("pkgA", "pkgB", "pkgC")
-  output <- message_packages(packages, header)
-
-  expect_match(output, "^Header", perl = TRUE)
-  expect_match(output, "pkgA", fixed = TRUE)
-  expect_match(output, "pkgC", fixed = TRUE)
+  output <- message_packages(c("pkgA", "pkgB", "pkgC"), "Header")
+  expect_snapshot(cat(output))
 })
 
 test_that("package_version_h highlights development versions", {

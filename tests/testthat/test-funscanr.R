@@ -710,7 +710,7 @@ test_that(".extract_code extracts Rmd chunks", {
     )
   )
   out <- .extract_code(path)
-  expect_match(out, "as_draws\\(")
+  expect_snapshot(out)
 })
 
 test_that(".extract_code extracts Qmd chunks", {
@@ -728,7 +728,7 @@ test_that(".extract_code extracts Qmd chunks", {
     )
   )
   out <- .extract_code(path)
-  expect_match(out, "as_draws\\(")
+  expect_snapshot(out)
 })
 
 test_that(".extract_code handles chunk options and tilde fences", {
@@ -751,8 +751,7 @@ test_that(".extract_code handles chunk options and tilde fences", {
   )
 
   out <- .extract_code(path)
-  expect_match(out, "as_draws\\(")
-  expect_match(out, "rhat\\(")
+  expect_snapshot(out)
 })
 
 test_that(".extract_code returns empty string when file has no allowed packages", {
@@ -816,7 +815,7 @@ test_that(".extract_code keeps fast-extracted non-R display chunks in default mo
   )
 
   out <- .extract_code(path)
-  expect_match(out, "^/\\*\\*", perl = TRUE)
+  expect_snapshot(out)
 })
 
 test_that(".extract_code uses knitr when requested", {
@@ -832,7 +831,7 @@ test_that(".extract_code uses knitr when requested", {
   )
 
   out <- .extract_code(path, use_knitr = TRUE)
-  expect_match(out, "as_draws\\(")
+  expect_snapshot(out)
 })
 
 test_that(".extract_code matches knitr::purl on ordinary Rmd documents", {
@@ -1016,7 +1015,7 @@ test_that(".extract_code default mode does not depend on knitr for invalid extra
   )
 
   out <- .extract_code(path)
-  expect_match(out, "^/\\*\\*", perl = TRUE)
+  expect_snapshot(out)
 })
 
 test_that(".extract_code errors on unsupported extensions", {
@@ -1043,7 +1042,7 @@ test_that(".extract_markdown_code skips non-closing fence candidates inside chun
     "```"
   ))
 
-  expect_match(out, "x <- 1", fixed = TRUE)
+  expect_snapshot(out)
 })
 
 test_that(".scan_tokens warns on parse errors with unknown file path", {

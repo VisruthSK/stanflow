@@ -47,3 +47,12 @@
     -- Available updates -------------------------------------- stanflow_update() --
     x cmdstanr  1.1.0 -> 1.2.0     x posterior 1.5.0 -> 1.6.0 
 
+# message_packages balances odd package counts
+
+    Code
+      cat(output)
+    Output
+      Header
+      pkgA     pkgC
+      pkgB     
+

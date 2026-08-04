@@ -152,31 +152,28 @@ test_that("stanflow_update dry_run reports package installs without installing",
   installed <- FALSE
   observed <- NULL
 
-  withr::local_output_sink(withr::local_tempfile())
-  result <- with_mocked_bindings(
-    stanflow_deps = function(recursive, dev, check_updates) {
-      observed <<- check_updates
-      behind
-    },
-    is_interactive_session = function() FALSE,
+  expect_snapshot(
     with_mocked_bindings(
-      menu = function(...) stop("should not prompt"),
-      install.packages = function(...) {
-        installed <<- TRUE
-        invisible(NULL)
+      stanflow_deps = function(recursive, dev, check_updates) {
+        observed <<- check_updates
+        behind
       },
-      capture_messages(stanflow_update(dry_run = TRUE)),
-      .package = "utils"
-    ),
-    .package = "stanflow"
+      is_interactive_session = function() FALSE,
+      with_mocked_bindings(
+        menu = function(...) stop("should not prompt"),
+        install.packages = function(...) {
+          installed <<- TRUE
+          invisible(NULL)
+        },
+        stanflow_update(dry_run = TRUE),
+        .package = "utils"
+      ),
+      .package = "stanflow"
+    )
   )
 
   expect_true(observed)
   expect_false(installed)
-  result <- paste(result, collapse = "\n")
-  expect_match(result, "Would install")
-  expect_match(result, "cmdstanr")
-  expect_match(result, "posterior")
 })
 
 test_that("stanflow_deps computes remote/local state", {
