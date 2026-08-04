@@ -13,7 +13,7 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
@@ -45,7 +45,7 @@
     Message
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
       i Would attach brms: library("brms", lib.loc = if ("brms" %in% loadedNamespaces()) dirname(getNamespaceInfo("brms", "path")), character.only = TRUE, warn.conflicts = FALSE).
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
@@ -79,7 +79,7 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
@@ -93,7 +93,7 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
@@ -120,7 +120,7 @@
     Message
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
       i Would attach brms: library("brms", lib.loc = if ("brms" %in% loadedNamespaces()) dirname(getNamespaceInfo("brms", "path")), character.only = TRUE, warn.conflicts = FALSE).
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
@@ -136,7 +136,7 @@
     Message
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
       i Would attach brms: library("brms", lib.loc = if ("brms" %in% loadedNamespaces()) dirname(getNamespaceInfo("brms", "path")), character.only = TRUE, warn.conflicts = FALSE).
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
@@ -163,7 +163,7 @@
       setup_interface(interface = interface, brms_backend = "rstan", cores = 1,
         quiet = FALSE, dry_run = TRUE)
     Message
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).
@@ -181,7 +181,7 @@
     Message
       i Would configure brms: set `options(mc.cores = 1)` and `options(brms.backend = 'rstan')`: options(mc.cores = 1); options(brms.backend = "rstan").
       i Would attach brms: library("brms", lib.loc = if ("brms" %in% loadedNamespaces()) dirname(getNamespaceInfo("brms", "path")), character.only = TRUE, warn.conflicts = FALSE).
-      i Would check and fix the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE).
+      i Would check the CmdStan toolchain: cmdstanr::check_cmdstan_toolchain(quiet = FALSE).
       ! CmdStan binaries are missing or force-reinstall requested.
       i Would install or upgrade CmdStan: cmdstanr::install_cmdstan(quiet = FALSE, overwrite = TRUE, cores = 1).
       i Would configure cmdstanr: set `options(mc.cores = 1)`: options(mc.cores = 1).

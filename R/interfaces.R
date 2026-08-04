@@ -236,12 +236,12 @@ setup_cmdstanr <- function(
   toolchain_ok <- tryCatch(
     {
       run_side_effect(
-        "check and fix the CmdStan toolchain",
+        "check the CmdStan toolchain",
         {
-          cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
+          cmdstanr::check_cmdstan_toolchain(quiet = quiet)
         },
         code = sprintf(
-          "cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = %s)",
+          "cmdstanr::check_cmdstan_toolchain(quiet = %s)",
           deparse1(quiet)
         )
       )
@@ -258,7 +258,7 @@ setup_cmdstanr <- function(
       c(
         "CmdStan toolchain check failed.",
         "i" = "You need a C++ compiler (RTools on Windows, Xcode on Mac) to run Stan.",
-        "i" = "Re-run {.code cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)} for detailed diagnostics."
+        "i" = "Re-run {.code cmdstanr::check_cmdstan_toolchain(quiet = FALSE)} for detailed diagnostics."
       )
     )
   }

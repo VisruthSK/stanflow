@@ -611,7 +611,7 @@ test_that("setup_cmdstanr dry_run does not require cmdstanr to be installed", {
 
   expect_null(getOption("mc.cores"))
   out <- paste(out, collapse = "\n")
-  expect_match(out, "Would check and fix")
+  expect_match(out, "Would check the CmdStan toolchain")
   expect_match(out, "cmdstanr::check_cmdstan_toolchain")
   expect_match(out, "Would configure")
 })
@@ -658,7 +658,7 @@ test_that("setup_cmdstanr dry_run skips mutations but runs detection", {
   expect_equal(calls, "path")
   expect_null(getOption("mc.cores"))
   out <- paste(out, collapse = "\n")
-  expect_match(out, "Would check and fix")
+  expect_match(out, "Would check the CmdStan toolchain")
   expect_match(out, "cmdstanr::check_cmdstan_toolchain")
   expect_false(grepl("Found CmdStan", out))
   expect_match(out, "Would install or upgrade CmdStan")
@@ -711,7 +711,7 @@ test_that("setup_cmdstanr dry_run does not perform update checks", {
   expect_equal(calls, c("path", "version"))
   expect_null(getOption("mc.cores"))
   out <- paste(out, collapse = "\n")
-  expect_match(out, "Would check and fix")
+  expect_match(out, "Would check the CmdStan toolchain")
   expect_match(out, "Found CmdStan")
   expect_match(
     out,
