@@ -197,5 +197,5 @@ test_that("package_version_h highlights development versions", {
     .package = "utils",
     .package_version_h("dummy")
   )
-  expect_match(col_version, "9000")
+  expect_snapshot(col_version)
 })

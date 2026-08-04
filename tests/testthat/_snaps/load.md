@@ -56,3 +56,10 @@
       pkgA     pkgC
       pkgB     
 
+# package_version_h highlights development versions
+
+    Code
+      col_version
+    Output
+      [1] "1.2.9000"
+
