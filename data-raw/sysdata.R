@@ -122,5 +122,6 @@ ascribe::generate_universe_sysdata(
     .stan_citation_pkgs = .stan_citation_pkgs,
     .stan_citation_funs = .stan_citation_funs,
     .stan_citation_pkg_extras = .stan_citation_pkg_extras
-  )
+  ),
+  file = "R/sysdata.rda"
 )

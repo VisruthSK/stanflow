@@ -5,6 +5,8 @@
 #'
 #' @inheritParams ascribe::scan_usage
 #' @param format One of `"bibtex"` or `"bibentry"`.
+#' @param quiet Logical. If `TRUE`, suppresses status messages. Defaults to
+#'   `FALSE`.
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
 #' @examples
@@ -37,15 +39,16 @@ stan_cite <- function(
   fmt <- match.arg(format)
   ascribe::scan_usage(
     path = path,
-    allowed_packages = .stan_pkgs,
-    export_index = .stan_export_index,
-    origin_map = .stan_origin_map,
+    universe = list(
+      packages = .stan_pkgs,
+      export_index = .stan_export_index,
+      origin_map = .stan_origin_map
+    ),
     ignore_unqualified_functions = ignore_unqualified_functions,
     strict = strict,
     skip_dirs = skip_dirs,
     metapackages = list(stanflow = core),
-    use_knitr = use_knitr,
-    quiet = quiet
+    use_knitr = use_knitr
   ) |>
     ascribe::cite_usage(
       package_citations = .stan_citation_pkgs,

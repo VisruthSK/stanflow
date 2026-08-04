@@ -20,7 +20,7 @@ BugReports: https://github.com/VisruthSK/stanflow/issues/
 Depends:
     R (>= 4.2.0)
 Imports:
-    ascribe,
+    ascribe (>= 0.2.0),
     bayesplot,
     cli,
     loo,
