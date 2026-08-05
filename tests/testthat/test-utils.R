@@ -59,7 +59,7 @@ test_that("wrapped_startup handles NULL and quiet option", {
 
 test_that("wrapped_startup emits startup messages when enabled", {
   withr::local_options(list(stanflow.quiet = FALSE))
-  expect_message(wrapped_startup("hello from stanflow"), "hello from stanflow")
+  expect_snapshot(wrapped_startup("hello from stanflow"))
 })
 
 test_that("local_cli_quiet suppresses cli messages within caller", {
@@ -73,7 +73,7 @@ test_that("local_cli_quiet suppresses cli messages within caller", {
   }
 
   expect_equal(capture(TRUE), character())
-  expect_match(capture(FALSE), "hello from cli")
+  expect_snapshot(capture(FALSE))
 })
 
 test_that("local_cli_quiet restores cli output after caller exits", {
@@ -84,8 +84,7 @@ test_that("local_cli_quiet restores cli output after caller exits", {
   }
   capture_messages(f())
 
-  out <- capture_messages(cli::cli_alert_info("audible"))
-  expect_match(out, "audible")
+  expect_snapshot(cli::cli_alert_info("audible"))
 })
 
 test_that(".same_library uses the package library path when loaded", {

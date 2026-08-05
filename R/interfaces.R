@@ -236,12 +236,12 @@ setup_cmdstanr <- function(
   toolchain_ok <- tryCatch(
     {
       run_side_effect(
-        "check and fix the CmdStan toolchain",
+        "check the CmdStan toolchain",
         {
-          cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = quiet)
+          cmdstanr::check_cmdstan_toolchain(quiet = quiet)
         },
         code = sprintf(
-          "cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = %s)",
+          "cmdstanr::check_cmdstan_toolchain(quiet = %s)",
           deparse1(quiet)
         )
       )
@@ -258,7 +258,7 @@ setup_cmdstanr <- function(
       c(
         "CmdStan toolchain check failed.",
         "i" = "You need a C++ compiler (RTools on Windows, Xcode on Mac) to run Stan.",
-        "i" = "Re-run {.code cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)} for detailed diagnostics."
+        "i" = "Re-run {.code cmdstanr::check_cmdstan_toolchain(quiet = FALSE)} for detailed diagnostics."
       )
     )
   }
@@ -405,7 +405,7 @@ setup_rstan <- function(
   run_side_effect <- dry_runner(dry_run)
 
   run_side_effect(
-    "configure {.pkg rstan}: set {.code options(mc.cores = {cores})} and {.code rstan::rstan_options(auto_write = {rstan_auto_write})}",
+    "configure {.pkg rstan}",
     {
       options(mc.cores = cores)
       rstan::rstan_options(auto_write = rstan_auto_write)
@@ -443,7 +443,7 @@ setup_brms <- function(
   brms_backend <- match.arg(brms_backend, c("cmdstanr", "rstan"))
 
   run_side_effect(
-    "configure {.pkg brms}: set {.code options(mc.cores = {cores})} and {.code options(brms.backend = '{brms_backend}')}",
+    "configure {.pkg brms}",
     {
       options(mc.cores = cores)
       options(brms.backend = brms_backend)
@@ -483,7 +483,7 @@ setup_rstanarm <- function(
 
 set_mc_cores <- function(run_side_effect, cores, pkg) {
   run_side_effect(
-    "configure {.pkg {pkg}}: set {.code options(mc.cores = {cores})}",
+    "configure {.pkg {pkg}}",
     {
       options(mc.cores = cores)
       cli::format_inline(

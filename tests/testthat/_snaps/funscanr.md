@@ -1,7 +1,56 @@
+# .extract_code extracts Rmd chunks
+
+    Code
+      out
+    Output
+      [1] "as_draws(1)\n"
+
+# .extract_code extracts Qmd chunks
+
+    Code
+      out
+    Output
+      [1] "as_draws(1)\n"
+
+# .extract_code handles chunk options and tilde fences
+
+    Code
+      out
+    Output
+      [1] "as_draws(1)\n\nrhat(1)\n"
+
+# .extract_code keeps fast-extracted non-R display chunks in default mode
+
+    Code
+      out
+    Output
+      [1] "/**\n * not R code\n */\n"
+
+# .extract_code uses knitr when requested
+
+    Code
+      out
+    Output
+      [1] "as_draws(1)"
+
+# .extract_code default mode does not depend on knitr for invalid extracted code
+
+    Code
+      out
+    Output
+      [1] "/**\n * not R code\n */\n"
+
 # .extract_code errors on unsupported extensions
 
     Unsupported file extension: "txt".
     i Supported extensions are '.R', '.Rmd', and '.qmd'.
+
+# .extract_markdown_code skips non-closing fence candidates inside chunks
+
+    Code
+      out
+    Output
+      [1] "x <- 1\n```{python}\nprint('not a close fence')\n"
 
 # print.scan_usage shows functions with no packages
 
