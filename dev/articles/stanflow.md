@@ -13,7 +13,7 @@ install/configure Stan interfaces (`cmdstanr`, `rstan`, `brms`,
 library(stanflow)
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.10.0     ✔ shinystan 2.7.0 
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
 #> ✔ posterior 1.7.0
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
@@ -53,7 +53,7 @@ or just the namespace conflicts with
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.10.0     ✔ shinystan 2.7.0 
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
 #> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
@@ -155,7 +155,7 @@ setup_interface(
 flow_check()
 #> ── Attaching Stan processing packages ─────────────────── stanflow 0.1.0.9000 ──
 #> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.10.0     ✔ shinystan 2.7.0 
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
 #> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.23.0     • rstan    2.32.7
@@ -246,7 +246,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1724141 secs
+#> Time difference of 0.1656959 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
@@ -271,7 +271,7 @@ citations
 #> Models},
 #>   author = {Aki Vehtari and Jonah Gabry and Måns Magnusson and Yuling Yao and Paul-Christian Bürkner and Topi Paananen and Andrew Gelman},
 #>   year = {2026},
-#>   note = {R package version 2.10.0, https://discourse.mc-stan.org},
+#>   note = {R package version 2.10.1, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/loo/},
 #> }
 #> 

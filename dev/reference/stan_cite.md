@@ -103,7 +103,7 @@ stan_cite(path, quiet = TRUE)
 #> Models},
 #>   author = {Aki Vehtari and Jonah Gabry and Måns Magnusson and Yuling Yao and Paul-Christian Bürkner and Topi Paananen and Andrew Gelman},
 #>   year = {2026},
-#>   note = {R package version 2.10.0, https://discourse.mc-stan.org},
+#>   note = {R package version 2.10.1, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/loo/},
 #> }
 #> 
@@ -183,7 +183,7 @@ stan_cite(path, quiet = TRUE)
 stan_cite(path, format = "bibentry", quiet = TRUE)
 #> Vehtari A, Gabry J, Magnusson M, Yao Y, Bürkner P, Paananen T, Gelman A
 #> (2026). _Efficient Leave-One-Out Cross-Validation and WAIC for Bayesian
-#> Models_. R package version 2.10.0, https://discourse.mc-stan.org,
+#> Models_. R package version 2.10.1, https://discourse.mc-stan.org,
 #> <https://mc-stan.org/loo/>.
 #> 
 #> Bürkner P, Gabry J, Kay M, Vehtari A (2026). _Tools for Working with
