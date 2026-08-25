@@ -1,4 +1,4 @@
-url: https://visruthsk.github.io/stanflow/
+url: https://stanflow.visruth.com/
 
 template:
   package: pkgdownconfig
@@ -10,7 +10,6 @@ reference:
   - title: Citation
     contents:
       - stan_cite
-      - scan_usage
   - title: Setup Interfaces
     contents:
       - setup_interface

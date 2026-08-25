@@ -77,7 +77,7 @@ stanflow_deps <- function(
     "utils",
     # non-Stan dependencies
     "cli",
-    "fastmatch",
+    "ascribe",
     "withr"
   )
 

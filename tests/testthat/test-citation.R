@@ -115,6 +115,9 @@ test_that("stan_cite returns empty when no citations are found", {
 
   out <- stan_cite(path, format = "bibtex", quiet = TRUE)
   expect_identical(out, character())
+
+  out_bibentry <- stan_cite(path, format = "bibentry", quiet = TRUE)
+  expect_null(out_bibentry)
 })
 
 test_that("stan_cite quiet suppresses cli messages", {
@@ -164,7 +167,7 @@ test_that("all package citations exist", {
   }
 })
 
-test_that("package citations use generated paper entries", {
+test_that("package citations include generated paper entries", {
   pkg_cite <- getFromNamespace(".pkg_cite", "stanflow")
 
   bayesplot_bibtex <- utils::toBibtex(pkg_cite("bayesplot"))

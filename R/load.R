@@ -103,7 +103,7 @@ backends_attach_message <- function() {
 update_check_message <- function() {
   deps <- stanflow_deps(FALSE, check_updates = TRUE)
   deps <- deps[
-    !(deps$package %in% c("fastmatch", "withr", "knitr", "quarto", "testthat")),
+    !(deps$package %in% c("ascribe", "withr", "knitr", "quarto", "testthat")),
   ]
   behind <- deps[deps$behind, , drop = FALSE]
 
