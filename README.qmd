@@ -22,7 +22,7 @@ NB: `stanflow` is currently under active development--breaking changes may be ma
 
 ---
 
-`stanflow` is a R package for a mildly opinionated Stan based [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [tidyverse package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches Stan R packages, serving as a one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration from `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R.
+`stanflow` is a R package for faciliting [Bayesian Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much like the famous [`tidyverse` package](https://github.com/tidyverse/tidyverse), `stanflow` is a metapackage which installs and attaches Stan R packages, serving as a one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration from `tidyverse`, and reuses portions of its codebase--however, `stanflow` eschews `tidyverse` packages (i.e., `purrr`, `dplyr`, etc.) for base R.
 
 ## Features
 

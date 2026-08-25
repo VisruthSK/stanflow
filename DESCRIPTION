@@ -1,6 +1,6 @@
 Package: stanflow
 Title: A Mildly Opinionated Stan Bayesian Workflow
-Version: 0.1.0.9000
+Version: 0.2.0
 Date: 2026-01-24
 Authors@R: c(
     person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre", "cph"),

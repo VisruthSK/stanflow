@@ -17,9 +17,9 @@ milestone). `stanflow` will join `stan-dev` once stable as well.
 
 ------------------------------------------------------------------------
 
-`stanflow` is a R package for a mildly opinionated Stan based [Bayesian
+`stanflow` is a R package for faciliting [Bayesian
 Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much
-like the famous [tidyverse
+like the famous [`tidyverse`
 package](https://github.com/tidyverse/tidyverse), `stanflow` is a
 metapackage which installs and attaches Stan R packages, serving as a
 one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration
@@ -66,31 +66,44 @@ Here, we load `stanflow` and use `cmdstanr` as the backend for `brms`.
 
 ``` r
 library(stanflow)
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──
+#> ✔ bayesplot 1.16.0     ✔ projpred  2.10.0
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
+#> ✔ posterior 1.7.1
+#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
+#> • brms     2.23.0     • rstan    2.32.7
+#> • cmdstanr 0.9.0      • rstanarm 2.32.2
+#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 setup_interface(
   interface = "brms",
   brms_backend = "cmdstanr",
   cores = 2
 )
 #> ℹ Adding cmdstanr to setup because `brms_backend = 'cmdstanr'`
-#> ℹ Attaching brms...
 #> ℹ Configured brms: set `options(mc.cores = 2)` and `options(brms.backend = 'cmdstanr')`
-#> ℹ Attaching cmdstanr...
-#> ℹ Found CmdStan v2.38.0 at '//wsl$/Ubuntu/home/visru/.cmdstan/cmdstan-2.38.0'
+#> ℹ Attaching brms...
+#> The C++ toolchain required for CmdStan is setup properly!
+#> ℹ Found CmdStan v2.39.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.39.0'
 #> ℹ Configured cmdstanr: set `options(mc.cores = 2)`
-#> ✔ Setup complete. brms, cmdstanr  packages are attached; you do not need to run `library()`.
+#> ℹ Attaching cmdstanr...
+#> ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.
 set.seed(0)
 flow_check()
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
-#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──
+#> ✔ bayesplot 1.16.0     ✔ projpred  2.10.0
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
+#> ✔ posterior 1.7.1      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.23.0     • rstan    2.32.7
 #> ✔ cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ brms::ar()      masks stats::ar()
-#> ✖ brms::do_call() masks projpred::do_call()
-#> ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()
+#> ✖ brms::ar()          masks stats::ar()
+#> ✖ brms::do_call()     masks projpred::do_call()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ brms::rhat()        masks posterior::rhat(), bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
@@ -128,14 +141,14 @@ fit1 <- brm(
 #> Start sampling
 #> Running MCMC with 4 chains, at most 2 in parallel...
 #> 
-#> Chain 2 finished in 7.0 seconds.
-#> Chain 1 finished in 7.0 seconds.
-#> Chain 3 finished in 7.0 seconds.
-#> Chain 4 finished in 7.4 seconds.
+#> Chain 1 finished in 11.3 seconds.
+#> Chain 2 finished in 11.2 seconds.
+#> Chain 3 finished in 8.7 seconds.
+#> Chain 4 finished in 9.2 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 7.1 seconds.
-#> Total execution time: 14.7 seconds.
+#> Mean chain execution time: 10.1 seconds.
+#> Total execution time: 20.7 seconds.
 summary(fit1)
 #>  Family: poisson 
 #>   Links: mu = log 
@@ -179,14 +192,14 @@ fit2 <- brm(
 #> Start sampling
 #> Running MCMC with 4 chains, at most 2 in parallel...
 #> 
-#> Chain 1 finished in 11.3 seconds.
-#> Chain 2 finished in 11.5 seconds.
-#> Chain 4 finished in 13.6 seconds.
-#> Chain 3 finished in 14.8 seconds.
+#> Chain 1 finished in 25.1 seconds.
+#> Chain 2 finished in 25.4 seconds.
+#> Chain 4 finished in 24.2 seconds.
+#> Chain 3 finished in 25.4 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 12.8 seconds.
-#> Total execution time: 26.3 seconds.
+#> Mean chain execution time: 25.0 seconds.
+#> Total execution time: 50.7 seconds.
 summary(fit2)
 #>  Family: poisson 
 #>   Links: mu = log 
@@ -262,9 +275,13 @@ loo(fit1, fit2)
 #> See help('pareto-k-diagnostic') for details.
 #> 
 #> Model comparisons:
-#>      elpd_diff se_diff
-#> fit2   0.0       0.0  
-#> fit1 -77.3      27.4
+#>  model elpd_diff se_diff p_worse diag_diff       diag_elpd
+#>   fit2       0.0     0.0      NA           58 k_psis > 0.7
+#>   fit1     -77.3    27.4    1.00            6 k_psis > 0.7
+#> 
+#> Diagnostic flags present.
+#> See ?`loo-glossary` (sections `diag_diff` and `diag_elpd`)
+#> or https://mc-stan.org/loo/reference/loo-glossary.html.
 ```
 
 Code snippets above are taken from the [`brms`
