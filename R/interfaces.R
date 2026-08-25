@@ -312,6 +312,7 @@ setup_cmdstanr <- function(
       cli::cli_alert_info(
         "Skipping update in non-interactive mode (set {.code force = TRUE} to upgrade)."
       )
+      set_mc_cores(run_side_effect, cores, "cmdstanr")
       return(invisible(TRUE))
     }
     cli::cli_abort(
@@ -334,7 +335,10 @@ setup_cmdstanr <- function(
       if (needs_install) {
         cli::cli_abort("CmdStan setup aborted.")
       }
-      if (needs_update) return(invisible(TRUE))
+      if (needs_update) {
+        set_mc_cores(run_side_effect, cores, "cmdstanr")
+        return(invisible(TRUE))
+      }
     }
   }
 

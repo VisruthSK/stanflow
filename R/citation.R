@@ -28,7 +28,7 @@
 #' unlink(path)
 stan_cite <- function(
   path = ".",
-  strict = TRUE,
+  strict = FALSE,
   format = c("bibtex", "bibentry"),
   skip_dirs = ascribe::scan_skip_dirs(),
   ignore_unqualified_functions = ascribe::stdlib_funs(),
