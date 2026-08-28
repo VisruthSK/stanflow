@@ -88,7 +88,7 @@ stan_cite <- function(
           key = pkg,
           title = meta[["Title"]],
           author = utils::citation(meta[["Package"]])[[1]]$author,
-          year = sub("-.*", "", meta[["Date"]]),
+          year = format(utils::packageDate(pkg), "%Y"),
           note = sprintf(
             "R package version %s, https://discourse.mc-stan.org",
             meta$Version
