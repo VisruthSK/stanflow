@@ -1,6 +1,6 @@
 Package: stanflow
 Title: A Mildly Opinionated Stan Bayesian Workflow
-Version: 0.1.0.9000
+Version: 0.2.0
 Date: 2026-01-24
 Authors@R: c(
     person("Visruth", "Srimath Kandali", , "public@visruth.com", role = c("aut", "cre", "cph"),
@@ -20,9 +20,9 @@ BugReports: https://github.com/VisruthSK/stanflow/issues/
 Depends:
     R (>= 4.2.0)
 Imports:
+    ascribe (>= 0.2.0),
     bayesplot,
     cli,
-    fastmatch,
     loo,
     posterior,
     projpred,
@@ -39,9 +39,9 @@ Suggests:
 VignetteBuilder: 
     quarto
 Additional_repositories:
-    https://community.r-multiverse.org
+    https://community.r-multiverse.org,
     https://stan-dev.r-universe.dev
+Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-Config/roxygen2/version: 8.0.0

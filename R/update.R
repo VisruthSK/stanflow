@@ -77,7 +77,7 @@ stanflow_deps <- function(
     "utils",
     # non-Stan dependencies
     "cli",
-    "fastmatch",
+    "ascribe",
     "withr"
   )
 
@@ -218,7 +218,7 @@ stanflow_update <- function(
   # Muffle all warnings except cannot install
   package_list <- paste0("{.pkg ", behind$package, "}", collapse = ", ")
   run_side_effect(
-    "install {package_list}",
+    paste0("install ", package_list),
     {
       withCallingHandlers(
         utils::install.packages(behind$package, repos = repos, quiet = TRUE),

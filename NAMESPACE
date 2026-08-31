@@ -2,8 +2,6 @@
 
 S3method(print,stanflow_conflicts)
 export(flow_check)
-export(scan_skip_dirs)
-export(scan_usage)
 export(setup_brms)
 export(setup_cmdstanr)
 export(setup_interface)
@@ -16,9 +14,10 @@ export(stanflow_conflicts)
 export(stanflow_deps)
 export(stanflow_logo)
 export(stanflow_update)
-export(stdlib_funs)
-importFrom(utils,citation)
-importFrom(utils,packageDescription)
-importFrom(utils,person)
-importFrom(utils,toBibtex)
+importFrom(utils,
+  citation,
+  packageDescription,
+  person,
+  toBibtex
+)
 importFrom(withr,local_options)

@@ -1,36 +1,12 @@
 #' Cite Stan packages in a project/files
 #'
-#' `stan_cite()` generates the correct citations for Stan packages
-#' in a directory or set of files. Quarto (.qmd) and R Markdown (.Rmd)
-#' documents are scanned by extracting R code chunks directly from the
-#' source text by default. Setting `use_knitr = TRUE` switches to
-#' `knitr::purl()`, which is more accurate for knitr/quarto chunk handling
-#' but much slower. `stan_cite()` uses some simple heuristics to guess which
-#' packages export functions, and also attempts to map re-exports to their
-#' origin package. Calls to `library()`, `require()`, `requireNamespace()`,
-#' or `use()` are all recognized as attaching a package.
+#' `stan_cite()` finds Stan packages and functions used in a project, then
+#' returns their citations as BibTeX or bibentry records.
 #'
-#' The parsing is handled by `scan_usage()`; `stan_cite()` owns
-#' the citation lookups.
-#'
-#' @param path A single project directory (searched recursively) or a vector of
-#'   files (.R/.Rmd/.qmd).
-#' @param ignore_unqualified_functions Defaults to exports from base R packages
-#'   listed in `stdlib_funs()`. Character vector of function names to ignore when
-#'   attributing (unqualified) calls to Stan packages. Calls like `rstan::plot()`
-#'   will NOT be ignored even if `plot` is in `ignore_unqualified_functions`, since
-#'   they are namespaced.
-#' @param strict If `TRUE` (default), only count unqualified function calls
-#'   whose origin can be determined exactly from the static scan, including
-#'   attachment-order tie-breaks when the winner is unambiguous from the file.
-#'   Unresolved calls are warned about and omitted.
-#' @param skip_dirs Defaults to directories listed in `scan_skip_dirs`. Character
-#'   vector of directory names to skip when scanning a directory.
-#' @param use_knitr Logical. If `TRUE`, parse `.Rmd` and `.qmd` files with
-#'   `knitr::purl()`. This is more accurate for knitr/quarto chunk extraction
-#'   but much slower than the default in-house parser. Defaults to `FALSE`.
-#' @param format One of "bibtex" or "bibentry", specifying the return format.
-#' @param quiet Logical. If `TRUE`, suppresses status messages.
+#' @inheritParams ascribe::scan_usage
+#' @param format One of `"bibtex"` or `"bibentry"`.
+#' @param quiet Logical. If `TRUE`, suppresses status messages. Defaults to
+#'   `FALSE`.
 #' @return A BibTeX character vector or a bibentry object.
 #' @export
 #' @examples
@@ -52,73 +28,42 @@
 #' unlink(path)
 stan_cite <- function(
   path = ".",
-  strict = TRUE,
+  strict = FALSE,
   format = c("bibtex", "bibentry"),
-  skip_dirs = .scan_skip_dirs,
-  ignore_unqualified_functions = .stdlib_funs,
+  skip_dirs = ascribe::scan_skip_dirs(),
+  ignore_unqualified_functions = ascribe::stdlib_funs(),
   use_knitr = FALSE,
   quiet = getOption("stanflow.quiet", FALSE)
 ) {
   local_cli_quiet(quiet)
-
-  scan_usage(
+  fmt <- match.arg(format)
+  ascribe::scan_usage(
     path = path,
-    allowed_packages = .stan_pkgs,
-    export_index = .stan_export_index,
-    origin_map = .stan_origin_map,
+    universe = list(
+      packages = .stan_pkgs,
+      export_index = .stan_export_index,
+      origin_map = .stan_origin_map
+    ),
     ignore_unqualified_functions = ignore_unqualified_functions,
     strict = strict,
     skip_dirs = skip_dirs,
     metapackages = list(stanflow = core),
-    use_knitr = use_knitr,
-    quiet = quiet
+    use_knitr = use_knitr
   ) |>
-    (\(x) {
-      list(
-        pkgs = unique(c(x$packages, "stanflow")),
-        funs = unique(x$functions)
-      )
-    })() |>
-    (\(k) {
-      c(
-        # Build package citations by first looking them up in the `.stan_citation_pkgs`
-        # environment generated in `data-raw/sysdata.R`, then appealing to `.pkg_cite()`.
-        packages = mget(
-          k$pkgs,
-          envir = .stan_citation_pkgs,
-          inherits = TRUE,
-          ifnotfound = list(NULL)
-        ) |>
-          Map(
-            \(pkg, entry) {
-              if (is.null(entry)) .pkg_cite(pkg) else entry
-            },
-            pkg = k$pkgs,
-            entry = _
-          ),
-        # Build function citations by pure lookup against `.stan_citation_funs`
-        # environment generated in `data-raw/sysdata.R`
-        functions = mget(
-          k$funs,
-          envir = .stan_citation_funs,
-          inherits = TRUE,
-          ifnotfound = list(NULL)
-        )
-      ) |>
-        Filter(Negate(is.null), x = _) # ignore functions without citations
-    })() |>
+    ascribe::cite_usage(
+      package_citations = .stan_citation_pkgs,
+      function_citations = .stan_citation_funs,
+      package_citation = .pkg_cite,
+      always_cite = "stanflow",
+      format = "bibentry"
+    ) |>
     (\(entries) {
-      if (!length(entries)) {
-        cli::cli_alert_info("No citations found.")
-        character()
+      if (is.null(entries) || !length(entries)) {
+        if (fmt == "bibentry") entries else character()
+      } else if (fmt == "bibentry") {
+        entries
       } else {
-        # Add base R citation, and format as requested
-        entries <- do.call(c, entries) |> c(utils::citation("base"))
-        if (match.arg(format, c("bibtex", "bibentry")) == "bibentry") {
-          entries
-        } else {
-          toBibtex(entries)
-        }
+        utils::toBibtex(entries)
       }
     })()
 }
@@ -135,20 +80,19 @@ stan_cite <- function(
 #' @keywords internal
 .pkg_cite <- function(pkg) {
   pkg |>
-    packageDescription() |>
+    utils::packageDescription() |>
     (\(meta) {
       c(
         utils::bibentry(
           bibtype = "Manual",
           key = pkg,
           title = meta[["Title"]],
-          author = citation(meta[["Package"]])[[1]]$author,
-          year = sub("-.*", "", meta[["Date"]]),
+          author = utils::citation(meta[["Package"]])[[1]]$author,
+          year = format(utils::packageDate(pkg), "%Y"),
           note = sprintf(
             "R package version %s, https://discourse.mc-stan.org",
             meta$Version
           ),
-          # rstan url will point to rstan package site instead of main Stan site here.
           url = sprintf("https://mc-stan.org/%s/", pkg)
         ),
         mget(
