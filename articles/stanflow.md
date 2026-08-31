@@ -115,8 +115,8 @@ setup_interface(
 #> * Building CmdStan binaries...
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a
-#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a
+#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a
 #> /home/runner/.cmdstan/cmdstan-2.39.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.17.0
 #> In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:
 #> ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template<class _Category, class _Tp, class _Distance, class _Pointer, class _Reference> struct std::iterator’ is deprecated [-Wdeprecated-declarations]
@@ -246,7 +246,7 @@ start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1077428 secs
+#> Time difference of 0.1100044 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
