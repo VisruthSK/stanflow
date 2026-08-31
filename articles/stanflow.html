@@ -13,8 +13,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <!-- mathjax math --><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js" integrity="sha256-qoRlVrS5NAnXSSSiMfFXwK8C9obG11Iybe4h2+bQYR4=" crossorigin="anonymous">
   </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Source_Sans_3-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Source_Sans_3-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/Source_Code_Pro-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -34,11 +34,11 @@
 
     <a class="navbar-brand me-2" href="../index.html">
       <!-- Add Stan logo -->
-      <picture><source type="image/svg+xml" srcset="../logo.svg"><img src="../logo.png" class="stan-logo" alt="Stan blue hex logo"></source></picture>
+      <img src="../reference/figures/logo.svg" class="stan-logo" alt="Stan blue hex logo">
       stanflow
     </a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,7 @@
 <li class="nav-item"><a class="nav-link" href="../index.html" aria-label="Go to homepage"><span class="fa fa-home fa-lg"></span></a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Vignettes</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-other-packages" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Other Packages</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-other-packages">
@@ -110,16 +111,17 @@
 </h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://visruthsk.github.io/stanflow/">stanflow</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
-<span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stanflow.visruth.com/">stanflow</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──</span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.16.0     ✔ projpred  2.10.0</span></span>
+<span><span class="co">#&gt; ✔ loo       2.10.1     ✔ shinystan 2.7.0 </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.7.0</span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
 <span><span class="co">#&gt; • brms     2.23.0     • rstan    2.32.7</span></span>
 <span><span class="co">#&gt; • cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat()   masks bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
 <span><span class="fu"><a href="../reference/stan_logo.html">stan_logo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            G08GLG80G           </span></span>
@@ -144,19 +146,21 @@
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flow_check.html">flow_check</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
-<span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
+<span><span class="co">#&gt; ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──</span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.16.0     ✔ projpred  2.10.0</span></span>
+<span><span class="co">#&gt; ✔ loo       2.10.1     ✔ shinystan 2.7.0 </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.7.0      </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
 <span><span class="co">#&gt; • brms     2.23.0     • rstan    2.32.7</span></span>
 <span><span class="co">#&gt; • cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat()   masks bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
 <span><span class="fu"><a href="../reference/stanflow_conflicts.html">stanflow_conflicts</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ posterior::rhat()   masks bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="keep-the-flow-fresh">Keep the flow fresh<a class="anchor" aria-label="anchor" href="#keep-the-flow-fresh"></a>
@@ -169,19 +173,7 @@
 <p>You can also check if stanflow’s direct dependencies are up to date using <code><a href="../reference/flow_check.html">flow_check()</a></code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/flow_check.html">flow_check</a></span><span class="op">(</span>check_updates <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
-<span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
-<span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
-<span><span class="co">#&gt; • brms     2.23.0     • rstan    2.32.7</span></span>
-<span><span class="co">#&gt; • cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
-<span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ posterior::rhat() masks bayesplot::rhat()</span></span>
-<span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
-<span><span class="co">#&gt; ── Available updates ────────────────────────────────────── stanflow_update() ──</span></span>
-<span><span class="co">#&gt; ✔ All stanflow packages up-to-date</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/flow_check.html">flow_check</a></span><span class="op">(</span>check_updates <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="choose-interface-backends">Choose interface backends<a class="anchor" aria-label="anchor" href="#choose-interface-backends"></a>
 </h2>
@@ -195,17 +187,17 @@
 <span>  quiet <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># only silences R output</span></span>
 <span>  force <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># only required for non-interactive usage</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; * Latest CmdStan release is v2.38.0</span></span>
-<span><span class="co">#&gt; * Installing CmdStan v2.38.0 in /home/runner/.cmdstan/cmdstan-2.38.0</span></span>
-<span><span class="co">#&gt; * Downloading cmdstan-2.38.0.tar.gz from GitHub...</span></span>
+<span><span class="co">#&gt; * Latest CmdStan release is v2.39.0</span></span>
+<span><span class="co">#&gt; * Installing CmdStan v2.39.0 in /home/runner/.cmdstan/cmdstan-2.39.0</span></span>
+<span><span class="co">#&gt; * Downloading cmdstan-2.39.0.tar.gz from GitHub...</span></span>
 <span><span class="co">#&gt; * Download complete</span></span>
 <span><span class="co">#&gt; * Unpacking archive...</span></span>
 <span><span class="co">#&gt; * Building CmdStan binaries...</span></span>
 <span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a</span></span>
 <span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a</span></span>
-<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a</span></span>
 <span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a</span></span>
-<span><span class="co">#&gt; /home/runner/.cmdstan/cmdstan-2.38.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.11.0</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a</span></span>
+<span><span class="co">#&gt; /home/runner/.cmdstan/cmdstan-2.39.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.17.0</span></span>
 <span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:</span></span>
 <span><span class="co">#&gt; ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
 <span><span class="co">#&gt;   347 |         : public std::iterator&lt;std::forward_iterator_tag,Value&gt;</span></span>
@@ -238,20 +230,21 @@
 <span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
 <span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
 <span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
-<span><span class="co">#&gt; * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.38.0</span></span>
-<span><span class="co">#&gt; CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.38.0</span></span>
+<span><span class="co">#&gt; * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.39.0</span></span>
+<span><span class="co">#&gt; CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.39.0</span></span>
 <span><span class="fu"><a href="../reference/flow_check.html">flow_check</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──</span></span>
-<span><span class="co">#&gt; ✔ bayesplot 1.15.0     ✔ projpred  2.10.0</span></span>
-<span><span class="co">#&gt; ✔ loo       2.9.0      ✔ shinystan 2.7.0 </span></span>
-<span><span class="co">#&gt; ✔ posterior 1.6.1      </span></span>
+<span><span class="co">#&gt; ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──</span></span>
+<span><span class="co">#&gt; ✔ bayesplot 1.16.0     ✔ projpred  2.10.0</span></span>
+<span><span class="co">#&gt; ✔ loo       2.10.1     ✔ shinystan 2.7.0 </span></span>
+<span><span class="co">#&gt; ✔ posterior 1.7.0      </span></span>
 <span><span class="co">#&gt; ── Available Stan interfaces ────────────────────────────── setup_interface() ──</span></span>
 <span><span class="co">#&gt; ✔ brms     2.23.0     • rstan    2.32.7</span></span>
 <span><span class="co">#&gt; ✔ cmdstanr 0.9.0      • rstanarm 2.32.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ brms::ar()      masks stats::ar()</span></span>
-<span><span class="co">#&gt; ✖ brms::do_call() masks projpred::do_call()</span></span>
-<span><span class="co">#&gt; ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()</span></span>
+<span><span class="co">#&gt; ✖ brms::ar()          masks stats::ar()</span></span>
+<span><span class="co">#&gt; ✖ brms::do_call()     masks projpred::do_call()</span></span>
+<span><span class="co">#&gt; ✖ posterior::gpdfit() masks loo::gpdfit()</span></span>
+<span><span class="co">#&gt; ✖ brms::rhat()        masks posterior::rhat(), bayesplot::rhat()</span></span>
 <span><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span></code></pre></div>
 </div>
 <p>If you prefer <code>RStan</code>, you could load it alongside <code>brms</code>.</p>
@@ -321,24 +314,23 @@
 <span><span class="va">citations</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_cite.html">stan_cite</a></span><span class="op">(</span><span class="st">"stanflow.qmd"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">start</span></span>
-<span><span class="co">#&gt; Time difference of 0.1377647 secs</span></span>
+<span><span class="co">#&gt; Time difference of 0.1170814 secs</span></span>
 <span><span class="va">citations</span></span>
 <span><span class="co">#&gt; @Manual{bayesplot,</span></span>
 <span><span class="co">#&gt;   title = {Plotting for Bayesian Models},</span></span>
 <span><span class="co">#&gt;   author = {Jonah Gabry and Tristan Mahr},</span></span>
-<span><span class="co">#&gt;   year = {2025},</span></span>
-<span><span class="co">#&gt;   note = {R package version 1.15.0, https://discourse.mc-stan.org},</span></span>
+<span><span class="co">#&gt;   year = {2026},</span></span>
+<span><span class="co">#&gt;   note = {R package version 1.16.0, https://discourse.mc-stan.org},</span></span>
 <span><span class="co">#&gt;   url = {https://mc-stan.org/bayesplot/},</span></span>
 <span><span class="co">#&gt; }</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; @Article{bayesplot-2019,</span></span>
+<span><span class="co">#&gt; @Article{gabry-2019-vis,</span></span>
 <span><span class="co">#&gt;   title = {Visualization in Bayesian workflow},</span></span>
 <span><span class="co">#&gt;   author = {Jonah Gabry and Daniel Simpson and Aki Vehtari and Michael Betancourt and Andrew Gelman},</span></span>
-<span><span class="co">#&gt;   year = {2019},</span></span>
 <span><span class="co">#&gt;   journal = {J. R. Stat. Soc. A},</span></span>
+<span><span class="co">#&gt;   year = {2019},</span></span>
 <span><span class="co">#&gt;   volume = {182},</span></span>
-<span><span class="co">#&gt;   issue = {2},</span></span>
-<span><span class="co">#&gt;   pages = {389-402},</span></span>
+<span><span class="co">#&gt;   pages = {389--402},</span></span>
 <span><span class="co">#&gt;   doi = {10.1111/rssa.12378},</span></span>
 <span><span class="co">#&gt; }</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -346,27 +338,42 @@
 <span><span class="co">#&gt;   title = {Efficient Leave-One-Out Cross-Validation and WAIC for Bayesian</span></span>
 <span><span class="co">#&gt; Models},</span></span>
 <span><span class="co">#&gt;   author = {Aki Vehtari and Jonah Gabry and Måns Magnusson and Yuling Yao and Paul-Christian Bürkner and Topi Paananen and Andrew Gelman},</span></span>
-<span><span class="co">#&gt;   year = {2025},</span></span>
-<span><span class="co">#&gt;   note = {R package version 2.9.0, https://discourse.mc-stan.org},</span></span>
+<span><span class="co">#&gt;   year = {2026},</span></span>
+<span><span class="co">#&gt;   note = {R package version 2.10.1, https://discourse.mc-stan.org},</span></span>
 <span><span class="co">#&gt;   url = {https://mc-stan.org/loo/},</span></span>
 <span><span class="co">#&gt; }</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; @Manual{posterior,</span></span>
 <span><span class="co">#&gt;   title = {Tools for Working with Posterior Distributions},</span></span>
 <span><span class="co">#&gt;   author = {Paul-Christian Bürkner and Jonah Gabry and Matthew Kay and Aki Vehtari},</span></span>
-<span><span class="co">#&gt;   year = {2025},</span></span>
-<span><span class="co">#&gt;   note = {R package version 1.6.1, https://discourse.mc-stan.org},</span></span>
+<span><span class="co">#&gt;   year = {2026},</span></span>
+<span><span class="co">#&gt;   note = {R package version 1.7.0, https://discourse.mc-stan.org},</span></span>
 <span><span class="co">#&gt;   url = {https://mc-stan.org/posterior/},</span></span>
 <span><span class="co">#&gt; }</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; @Article{rhat-2021,</span></span>
-<span><span class="co">#&gt;   title = {Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)},</span></span>
-<span><span class="co">#&gt;   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\"urkner},</span></span>
+<span><span class="co">#&gt; @Article{burkner-2026-posterior,</span></span>
+<span><span class="co">#&gt;   title = {posterior: Tools for Working with Posterior Distributions in R},</span></span>
+<span><span class="co">#&gt;   author = {Paul-Christian B\u00fcrkner and Jonah Gabry and Matthew Kay and Aki Vehtari},</span></span>
+<span><span class="co">#&gt;   journal = {Journal of Open Source Software},</span></span>
+<span><span class="co">#&gt;   year = {2026},</span></span>
+<span><span class="co">#&gt;   volume = {11},</span></span>
+<span><span class="co">#&gt;   number = {122},</span></span>
+<span><span class="co">#&gt;   pages = {10526},</span></span>
+<span><span class="co">#&gt;   doi = {10.21105/joss.10526},</span></span>
+<span><span class="co">#&gt;   url = {https://doi.org/10.21105/joss.10526},</span></span>
+<span><span class="co">#&gt;   publisher = {The Open Journal},</span></span>
+<span><span class="co">#&gt;   encoding = {UTF-8},</span></span>
+<span><span class="co">#&gt; }</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; @Article{vehtari-2021-rhat,</span></span>
+<span><span class="co">#&gt;   title = {Rank-normalization, folding, and localization: An improved R-hat for assessing convergence of MCMC (with discussion)},</span></span>
+<span><span class="co">#&gt;   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\u00fcrkner},</span></span>
 <span><span class="co">#&gt;   journal = {Bayesian Analysis},</span></span>
 <span><span class="co">#&gt;   year = {2021},</span></span>
 <span><span class="co">#&gt;   volume = {16},</span></span>
 <span><span class="co">#&gt;   number = {2},</span></span>
-<span><span class="co">#&gt;   pages = {667-718},</span></span>
+<span><span class="co">#&gt;   pages = {667--718},</span></span>
+<span><span class="co">#&gt;   doi = {10.1214/20-BA1221},</span></span>
 <span><span class="co">#&gt; }</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; @Manual{projpred,</span></span>
@@ -390,8 +397,18 @@
 <span><span class="co">#&gt;   title = {A Mildly Opinionated Stan Bayesian Workflow},</span></span>
 <span><span class="co">#&gt;   author = {Visruth {Srimath Kandali}},</span></span>
 <span><span class="co">#&gt;   year = {2026},</span></span>
-<span><span class="co">#&gt;   note = {R package version 0.1.0, https://discourse.mc-stan.org},</span></span>
+<span><span class="co">#&gt;   note = {R package version 0.2.0, https://discourse.mc-stan.org},</span></span>
 <span><span class="co">#&gt;   url = {https://mc-stan.org/stanflow/},</span></span>
+<span><span class="co">#&gt; }</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; @Manual{,</span></span>
+<span><span class="co">#&gt;   title = {R: A Language and Environment for Statistical Computing},</span></span>
+<span><span class="co">#&gt;   author = {{R Core Team}},</span></span>
+<span><span class="co">#&gt;   organization = {R Foundation for Statistical Computing},</span></span>
+<span><span class="co">#&gt;   address = {Vienna, Austria},</span></span>
+<span><span class="co">#&gt;   year = {2026},</span></span>
+<span><span class="co">#&gt;   doi = {10.32614/R.manuals},</span></span>
+<span><span class="co">#&gt;   url = {https://www.R-project.org/},</span></span>
 <span><span class="co">#&gt; }</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; @Article{vehtari-2017-loo,</span></span>
@@ -415,15 +432,6 @@
 <span><span class="co">#&gt;   number = {72},</span></span>
 <span><span class="co">#&gt;   pages = {1--58},</span></span>
 <span><span class="co">#&gt;   url = {https://jmlr.org/papers/v25/19-556.html},</span></span>
-<span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; @Manual{,</span></span>
-<span><span class="co">#&gt;   title = {R: A Language and Environment for Statistical Computing},</span></span>
-<span><span class="co">#&gt;   author = {{R Core Team}},</span></span>
-<span><span class="co">#&gt;   organization = {R Foundation for Statistical Computing},</span></span>
-<span><span class="co">#&gt;   address = {Vienna, Austria},</span></span>
-<span><span class="co">#&gt;   year = {2025},</span></span>
-<span><span class="co">#&gt;   url = {https://www.R-project.org/},</span></span>
 <span><span class="co">#&gt; }</span></span></code></pre></div>
 </div>
 </section><script id="quarto-html-after-body" type="application/javascript">
@@ -519,7 +527,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -17,7 +17,8 @@ setup_interface(
   check_updates = FALSE,
   dev = FALSE,
   brms_backend = c("cmdstanr", "rstan"),
-  rstan_auto_write = TRUE
+  rstan_auto_write = TRUE,
+  dry_run = FALSE
 )
 ```
 
@@ -67,13 +68,34 @@ setup_interface(
   Logical. If `TRUE` (default), sets
   `rstan::rstan_options(auto_write = TRUE)`
 
+- dry_run:
+
+  Logical. If `TRUE`, previews mutating setup actions without
+  installing, attaching, changing options, or prompting. Dry-run output
+  is shown even when `quiet = TRUE`.
+
 ## Value
 
-Returns the attached packages invisibly.
+Returns attached package names invisibly. With `dry_run = TRUE`, returns
+the package names that would be attached.
 
 ## Details
 
 The setup functions are exported (e.g.,
-[`setup_brms()`](https://visruthsk.github.io/stanflow/reference/setup_brms.md))
+[`setup_brms()`](https://stanflow.visruth.com/reference/setup_brms.md))
 for transparency. Each function has some side effects, mainly setting
 `mc.cores`, see the function for specifics.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+options(mc.cores = 2)
+setup_interface("cmdstanr", quiet = TRUE)
+setup_interface(
+  c("brms", "cmdstanr"),
+  brms_backend = "cmdstanr",
+  quiet = TRUE
+)
+} # }
+```

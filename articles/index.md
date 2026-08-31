@@ -3,4 +3,4 @@
 ### All vignettes
 
 - [stanflow: quick
-  tour](https://visruthsk.github.io/stanflow/articles/stanflow.md):
+  tour](https://stanflow.visruth.com/articles/stanflow.md):

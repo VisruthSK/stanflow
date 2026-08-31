@@ -6,9 +6,9 @@ milestone). `stanflow` will join `stan-dev` once stable as well.
 
 ------------------------------------------------------------------------
 
-`stanflow` is a R package for a mildly opinionated Stan based [Bayesian
+`stanflow` is a R package for faciliting [Bayesian
 Workflow](https://arxiv.org/abs/2011.01808) (Gelman et al. 2020). Much
-like the famous [tidyverse
+like the famous [`tidyverse`
 package](https://github.com/tidyverse/tidyverse), `stanflow` is a
 metapackage which installs and attaches Stan R packages, serving as a
 one-stop-shop for Bayesian modelling. `stanflow` draws heavy inspiration
@@ -18,21 +18,21 @@ for base R.
 
 ## Features
 
-- Install common Stan packages in one step[¹](#fn1):
+- Install common Stan packages in one step[^1]:
   - Installing (or attaching) `stanflow` installs (attaches)
     `bayesplot`, `loo`, `posterior`, `projpred`, and `shinystan`
 - Generate proper Stan citations for your research project:
-  - [`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
+  - [`stan_cite()`](https://stanflow.visruth.com/reference/stan_cite.md)
     scans a directory (or a provided list of files) to find all used
     Stan functions, and outputs a BibTeX with the correct citations for
     every package and function you used.
 - Setup Stan interfaces:
-  - [`setup_interface()`](https://visruthsk.github.io/stanflow/reference/setup_interface.md)
+  - [`setup_interface()`](https://stanflow.visruth.com/reference/setup_interface.md)
     automatically handles installing/attaching any of the compatible
     Stan backends: `brms`, `cmdstanr`, `rstan`, `rstanarm`, with some
     mild defaults.
-- Update packages[²](#fn2):
-  - [`stanflow_update()`](https://visruthsk.github.io/stanflow/reference/stanflow_update.md)
+- Update packages[^2]:
+  - [`stanflow_update()`](https://stanflow.visruth.com/reference/stanflow_update.md)
     attempts to automatically update out of date packages, and can
     optionally search for dependencies’ dependencies. `stanflow`
     natively relies on the [`multiverse`](https://r-multiverse.org/) for
@@ -47,6 +47,7 @@ You can install the development version of stanflow from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # install.packages("pak")
 pak::pak("VisruthSK/stanflow")
 ```
@@ -56,32 +57,46 @@ pak::pak("VisruthSK/stanflow")
 Here, we load `stanflow` and use `cmdstanr` as the backend for `brms`.
 
 ``` r
+
 library(stanflow)
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──
+#> ✔ bayesplot 1.16.0     ✔ projpred  2.10.0
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
+#> ✔ posterior 1.7.1
+#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
+#> • brms     2.23.0     • rstan    2.32.7
+#> • cmdstanr 0.9.0      • rstanarm 2.32.2
+#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 setup_interface(
   interface = "brms",
   brms_backend = "cmdstanr",
   cores = 2
 )
 #> ℹ Adding cmdstanr to setup because `brms_backend = 'cmdstanr'`
-#> ℹ Attaching brms...
 #> ℹ Configured brms: set `options(mc.cores = 2)` and `options(brms.backend = 'cmdstanr')`
-#> ℹ Attaching cmdstanr...
-#> ℹ Found CmdStan v2.38.0 at '//wsl$/Ubuntu/home/visru/.cmdstan/cmdstan-2.38.0'
+#> ℹ Attaching brms...
+#> The C++ toolchain required for CmdStan is setup properly!
+#> ℹ Found CmdStan v2.39.0 at 'C:/Users/visru/.cmdstan/cmdstan-2.39.0'
 #> ℹ Configured cmdstanr: set `options(mc.cores = 2)`
-#> ✔ Setup complete. brms, cmdstanr  packages are attached; you do not need to run `library()`.
+#> ℹ Attaching cmdstanr...
+#> ✔ Setup complete. brms, cmdstanr are attached; you do not need to run `library()`.
 set.seed(0)
 flow_check()
-#> ── Attaching Stan processing packages ─────────────────── stanflow 0.0.0.9000 ──
-#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──
+#> ✔ bayesplot 1.16.0     ✔ projpred  2.10.0
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
+#> ✔ posterior 1.7.1      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.23.0     • rstan    2.32.7
 #> ✔ cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ brms::ar()      masks stats::ar()
-#> ✖ brms::do_call() masks projpred::do_call()
-#> ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()
+#> ✖ brms::ar()          masks stats::ar()
+#> ✖ brms::do_call()     masks projpred::do_call()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ brms::rhat()        masks posterior::rhat(), bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
@@ -95,6 +110,7 @@ will load the core stanflow packages: `bayesplot`, `loo`, `posterior`,
 proceed with our analysis immediately.
 
 ``` r
+
 cmdstanr_example()
 #>    variable   mean median   sd  mad     q5    q95 rhat ess_bulk ess_tail
 #>  lp__       -65.94 -65.62 1.39 1.19 -68.67 -64.29 1.00     1996     2876
@@ -120,14 +136,14 @@ fit1 <- brm(
 #> Start sampling
 #> Running MCMC with 4 chains, at most 2 in parallel...
 #> 
-#> Chain 2 finished in 7.0 seconds.
-#> Chain 1 finished in 7.0 seconds.
-#> Chain 3 finished in 7.0 seconds.
-#> Chain 4 finished in 7.4 seconds.
+#> Chain 1 finished in 11.3 seconds.
+#> Chain 2 finished in 11.2 seconds.
+#> Chain 3 finished in 8.7 seconds.
+#> Chain 4 finished in 9.2 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 7.1 seconds.
-#> Total execution time: 14.7 seconds.
+#> Mean chain execution time: 10.1 seconds.
+#> Total execution time: 20.7 seconds.
 summary(fit1)
 #>  Family: poisson 
 #>   Links: mu = log 
@@ -160,6 +176,7 @@ plot(fit1, variable = c("b_Trt1", "b_zBase"))
 
 ``` r
 
+
 fit2 <- brm(
   count ~ zAge + zBase * Trt + (1 | patient) + (1 | obs),
   data = epilepsy,
@@ -170,14 +187,14 @@ fit2 <- brm(
 #> Start sampling
 #> Running MCMC with 4 chains, at most 2 in parallel...
 #> 
-#> Chain 1 finished in 11.3 seconds.
-#> Chain 2 finished in 11.5 seconds.
-#> Chain 4 finished in 13.6 seconds.
-#> Chain 3 finished in 14.8 seconds.
+#> Chain 1 finished in 25.1 seconds.
+#> Chain 2 finished in 25.4 seconds.
+#> Chain 4 finished in 24.2 seconds.
+#> Chain 3 finished in 25.4 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 12.8 seconds.
-#> Total execution time: 26.3 seconds.
+#> Mean chain execution time: 25.0 seconds.
+#> Total execution time: 50.7 seconds.
 summary(fit2)
 #>  Family: poisson 
 #>   Links: mu = log 
@@ -253,61 +270,62 @@ loo(fit1, fit2)
 #> See help('pareto-k-diagnostic') for details.
 #> 
 #> Model comparisons:
-#>      elpd_diff se_diff
-#> fit2   0.0       0.0  
-#> fit1 -77.3      27.4
+#>  model elpd_diff se_diff p_worse diag_diff       diag_elpd
+#>   fit2       0.0     0.0      NA           58 k_psis > 0.7
+#>   fit1     -77.3    27.4    1.00            6 k_psis > 0.7
+#> 
+#> Diagnostic flags present.
+#> See ?`loo-glossary` (sections `diag_diff` and `diag_elpd`)
+#> or https://mc-stan.org/loo/reference/loo-glossary.html.
 ```
 
 Code snippets above are taken from the [`brms`
 README](https://paulbuerkner.com/brms/) but results aren’t directly
 comparable.
 
-------------------------------------------------------------------------
+[^1]: This feature is adopted from the `tidyverse` package!
 
-1.  This feature is adopted from the `tidyverse` package!
-
-2.  This feature is adopted from the `tidyverse` package!
+[^2]: This feature is adopted from the `tidyverse` package!
 
 # Package index
 
 ## Citation
 
-- [`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
-  : Cite Stan packages in a project/files
-- [`scan_usage()`](https://visruthsk.github.io/stanflow/reference/scan_usage.md)
-  : Find used Functions and Packages
+- [`stan_cite()`](https://stanflow.visruth.com/reference/stan_cite.md) :
+  Cite Stan packages in a project/files
 
 ## Setup Interfaces
 
-- [`setup_interface()`](https://visruthsk.github.io/stanflow/reference/setup_interface.md)
+- [`setup_interface()`](https://stanflow.visruth.com/reference/setup_interface.md)
   : Setup and Load Stan Interfaces
-- [`setup_brms()`](https://visruthsk.github.io/stanflow/reference/setup_brms.md)
+- [`setup_brms()`](https://stanflow.visruth.com/reference/setup_brms.md)
   : Setup brms
-- [`setup_cmdstanr()`](https://visruthsk.github.io/stanflow/reference/setup_cmdstanr.md)
+- [`setup_cmdstanr()`](https://stanflow.visruth.com/reference/setup_cmdstanr.md)
   : Setup cmdstanr and CmdStan
-- [`setup_rstan()`](https://visruthsk.github.io/stanflow/reference/setup_rstan.md)
+- [`setup_rstan()`](https://stanflow.visruth.com/reference/setup_rstan.md)
   : Setup rstan
-- [`setup_rstanarm()`](https://visruthsk.github.io/stanflow/reference/setup_rstanarm.md)
+- [`setup_rstanarm()`](https://stanflow.visruth.com/reference/setup_rstanarm.md)
   : Setup rstanarm
 
 ## Update/Status Checks
 
-- [`flow_check()`](https://visruthsk.github.io/stanflow/reference/flow_check.md)
+- [`flow_check()`](https://stanflow.visruth.com/reference/flow_check.md)
   : Print stanflow status and conflicts
-- [`stanflow_update()`](https://visruthsk.github.io/stanflow/reference/stanflow_update.md)
+- [`stanflow_update()`](https://stanflow.visruth.com/reference/stanflow_update.md)
   : Update stanflow packages
-- [`stanflow_deps()`](https://visruthsk.github.io/stanflow/reference/stanflow_deps.md)
+- [`stanflow_deps()`](https://stanflow.visruth.com/reference/stanflow_deps.md)
   : List all stanflow dependencies
-- [`stanflow_conflicts()`](https://visruthsk.github.io/stanflow/reference/stanflow_conflicts.md)
+- [`stanflow_conflicts()`](https://stanflow.visruth.com/reference/stanflow_conflicts.md)
+  [`print(`*`<stanflow_conflicts>`*`)`](https://stanflow.visruth.com/reference/stanflow_conflicts.md)
   : Conflicts between stanflow and other packages
 
 ## Helpers/Miscellaneous
 
-- [`stan_repos()`](https://visruthsk.github.io/stanflow/reference/stan_repos.md)
+- [`stan_repos()`](https://stanflow.visruth.com/reference/stan_repos.md)
   : Stan package repositories
-- [`stan_logo()`](https://visruthsk.github.io/stanflow/reference/stan_logo.md)
-  : Print the Stan ASCII art logo
-- [`stanflow_logo()`](https://visruthsk.github.io/stanflow/reference/stanflow_logo.md)
+- [`stan_logo()`](https://stanflow.visruth.com/reference/stan_logo.md) :
+  Print the Stan ASCII art logo
+- [`stanflow_logo()`](https://stanflow.visruth.com/reference/stanflow_logo.md)
   : Print the stanflow ASCII art logo
 
 # Articles
@@ -315,4 +333,4 @@ comparable.
 ### All vignettes
 
 - [stanflow: quick
-  tour](https://visruthsk.github.io/stanflow/articles/stanflow.md):
+  tour](https://stanflow.visruth.com/articles/stanflow.md):

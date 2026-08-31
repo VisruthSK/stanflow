@@ -1,6 +1,6 @@
 # Generate conflict message
 
-Pulled from tidyverse. Builds the conflict message.
+Adapted from the helper code behind `tidyverse::tidyverse_conflicts()`.
 
 ## Usage
 

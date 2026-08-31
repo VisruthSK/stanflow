@@ -5,6 +5,8 @@ versions. When `check_updates = FALSE`, remote versions are not queried
 and the `remote` and `behind` columns are `NA` and `FALSE`,
 respectively.
 
+Adapted from `tidyverse::tidyverse_deps()`.
+
 ## Usage
 
 ``` r

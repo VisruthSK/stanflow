@@ -9,16 +9,18 @@ install/configure Stan interfaces (`cmdstanr`, `rstan`, `brms`,
 ## Attach `stanflow`
 
 ``` r
+
 library(stanflow)
-#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
-#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──
+#> ✔ bayesplot 1.16.0     ✔ projpred  2.10.0
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
+#> ✔ posterior 1.7.0
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
 #> • cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 stan_logo()
 #>            G08GLG80G           
@@ -42,25 +44,28 @@ stan_logo()
 
 Startup messages list attached packages and any namespace clashes. You
 can re-print that status later with
-[`flow_check()`](https://visruthsk.github.io/stanflow/reference/flow_check.md),
+[`flow_check()`](https://stanflow.visruth.com/reference/flow_check.md),
 or just the namespace conflicts with
-[`stanflow_conflicts()`](https://visruthsk.github.io/stanflow/reference/stanflow_conflicts.md).
+[`stanflow_conflicts()`](https://stanflow.visruth.com/reference/stanflow_conflicts.md).
 
 ``` r
+
 flow_check()
-#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
-#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──
+#> ✔ bayesplot 1.16.0     ✔ projpred  2.10.0
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
+#> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> • brms     2.23.0     • rstan    2.32.7
 #> • cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 stanflow_conflicts()
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ posterior::rhat()   masks bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
@@ -71,39 +76,30 @@ releases by default, or dev builds with `dev = TRUE`). Set `recursive`
 to check the full dependency closure.
 
 ``` r
+
 stanflow_update(recursive = TRUE)
 ```
 
 You can also check if stanflow’s direct dependencies are up to date
 using
-[`flow_check()`](https://visruthsk.github.io/stanflow/reference/flow_check.md).
+[`flow_check()`](https://stanflow.visruth.com/reference/flow_check.md).
 
 ``` r
+
 flow_check(check_updates = TRUE)
-#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
-#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
-#> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
-#> • brms     2.23.0     • rstan    2.32.7
-#> • cmdstanr 0.9.0      • rstanarm 2.32.2
-#> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ posterior::rhat() masks bayesplot::rhat()
-#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-#> ── Available updates ────────────────────────────────────── stanflow_update() ──
-#> ✔ All stanflow packages up-to-date
 ```
 
 ## Choose interface backends
 
 Use
-[`setup_interface()`](https://visruthsk.github.io/stanflow/reference/setup_interface.md)
+[`setup_interface()`](https://stanflow.visruth.com/reference/setup_interface.md)
 to install (if needed), attach, and configure interfaces. This example
 prefers the `cmdstanr` backend for `brms`. Running this command will
 attach both packages and ensure that `brms` calls rely on `cmdstanr` by
 default.
 
 ``` r
+
 setup_interface(
   interface = "brms",
   brms_backend = "cmdstanr",
@@ -111,17 +107,17 @@ setup_interface(
   quiet = TRUE, # only silences R output
   force = TRUE # only required for non-interactive usage
 )
-#> * Latest CmdStan release is v2.38.0
-#> * Installing CmdStan v2.38.0 in /home/runner/.cmdstan/cmdstan-2.38.0
-#> * Downloading cmdstan-2.38.0.tar.gz from GitHub...
+#> * Latest CmdStan release is v2.39.0
+#> * Installing CmdStan v2.39.0 in /home/runner/.cmdstan/cmdstan-2.39.0
+#> * Downloading cmdstan-2.39.0.tar.gz from GitHub...
 #> * Download complete
 #> * Unpacking archive...
 #> * Building CmdStan binaries...
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a
-#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a
 #> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a
-#> /home/runner/.cmdstan/cmdstan-2.38.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.11.0
+#> ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a
+#> /home/runner/.cmdstan/cmdstan-2.39.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.17.0
 #> In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:
 #> ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template<class _Category, class _Tp, class _Distance, class _Pointer, class _Reference> struct std::iterator’ is deprecated [-Wdeprecated-declarations]
 #>   347 |         : public std::iterator<std::forward_iterator_tag,Value>
@@ -154,26 +150,28 @@ setup_interface(
 #>   127 |     struct _GLIBCXX17_DEPRECATED iterator
 #>       |                                  ^~~~~~~~
 #> cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics
-#> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.38.0
-#> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.38.0
+#> * Finished installing CmdStan to /home/runner/.cmdstan/cmdstan-2.39.0
+#> CmdStan path set to: /home/runner/.cmdstan/cmdstan-2.39.0
 flow_check()
-#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.1.0 ──
-#> ✔ bayesplot 1.15.0     ✔ projpred  2.10.0
-#> ✔ loo       2.9.0      ✔ shinystan 2.7.0 
-#> ✔ posterior 1.6.1      
+#> ── Attaching Stan processing packages ──────────────────────── stanflow 0.2.0 ──
+#> ✔ bayesplot 1.16.0     ✔ projpred  2.10.0
+#> ✔ loo       2.10.1     ✔ shinystan 2.7.0 
+#> ✔ posterior 1.7.0      
 #> ── Available Stan interfaces ────────────────────────────── setup_interface() ──
 #> ✔ brms     2.23.0     • rstan    2.32.7
 #> ✔ cmdstanr 0.9.0      • rstanarm 2.32.2
 #> ── Conflicts ─────────────────────────────────────────── stanflow_conflicts() ──
-#> ✖ brms::ar()      masks stats::ar()
-#> ✖ brms::do_call() masks projpred::do_call()
-#> ✖ brms::rhat()    masks posterior::rhat(), bayesplot::rhat()
+#> ✖ brms::ar()          masks stats::ar()
+#> ✖ brms::do_call()     masks projpred::do_call()
+#> ✖ posterior::gpdfit() masks loo::gpdfit()
+#> ✖ brms::rhat()        masks posterior::rhat(), bayesplot::rhat()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 ```
 
 If you prefer `RStan`, you could load it alongside `brms`.
 
 ``` r
+
 setup_interface(
   interface = c("rstan", "brms"),
   cores = 2,
@@ -184,6 +182,7 @@ setup_interface(
 You can setup as many interfaces you’d like:
 
 ``` r
+
 setup_interface(
   interface = c("rstan", "rstanarm", "brms", "cmdstanr"),
   brms_backend = "cmdstanr",
@@ -198,6 +197,7 @@ With the core packages attached, you can generate, summarise, and
 visualise draws immediately.
 
 ``` r
+
 set.seed(0)
 draws <- as_draws_df(
   matrix(rnorm(4000), ncol = 1, dimnames = list(NULL, "theta"))
@@ -214,6 +214,7 @@ mcmc_hist(draws, pars = "theta")
 ![](stanflow_files/figure-html/unnamed-chunk-9-1.png)
 
 ``` r
+
 log_lik <- matrix(rnorm(4000 * 10, -1, 0.2), ncol = 10)
 loo(log_lik)
 #> 
@@ -235,33 +236,33 @@ loo(log_lik)
 
 Once you’ve finished your analysis and need to cite the Stan software
 you used, simply run
-[`stan_cite()`](https://visruthsk.github.io/stanflow/reference/stan_cite.md)
-on your project/files to quickly generate an appropriate BibTeX or
+[`stan_cite()`](https://stanflow.visruth.com/reference/stan_cite.md) on
+your project/files to quickly generate an appropriate BibTeX or
 bibentry.
 
 ``` r
+
 start <- Sys.time()
 citations <- stan_cite("stanflow.qmd")
 #> ℹ Searching '/home/runner/work/stanflow/stanflow/vignettes/stanflow.qmd'
 Sys.time() - start
-#> Time difference of 0.1377647 secs
+#> Time difference of 0.1170814 secs
 citations
 #> @Manual{bayesplot,
 #>   title = {Plotting for Bayesian Models},
 #>   author = {Jonah Gabry and Tristan Mahr},
-#>   year = {2025},
-#>   note = {R package version 1.15.0, https://discourse.mc-stan.org},
+#>   year = {2026},
+#>   note = {R package version 1.16.0, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/bayesplot/},
 #> }
 #> 
-#> @Article{bayesplot-2019,
+#> @Article{gabry-2019-vis,
 #>   title = {Visualization in Bayesian workflow},
 #>   author = {Jonah Gabry and Daniel Simpson and Aki Vehtari and Michael Betancourt and Andrew Gelman},
-#>   year = {2019},
 #>   journal = {J. R. Stat. Soc. A},
+#>   year = {2019},
 #>   volume = {182},
-#>   issue = {2},
-#>   pages = {389-402},
+#>   pages = {389--402},
 #>   doi = {10.1111/rssa.12378},
 #> }
 #> 
@@ -269,27 +270,42 @@ citations
 #>   title = {Efficient Leave-One-Out Cross-Validation and WAIC for Bayesian
 #> Models},
 #>   author = {Aki Vehtari and Jonah Gabry and Måns Magnusson and Yuling Yao and Paul-Christian Bürkner and Topi Paananen and Andrew Gelman},
-#>   year = {2025},
-#>   note = {R package version 2.9.0, https://discourse.mc-stan.org},
+#>   year = {2026},
+#>   note = {R package version 2.10.1, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/loo/},
 #> }
 #> 
 #> @Manual{posterior,
 #>   title = {Tools for Working with Posterior Distributions},
 #>   author = {Paul-Christian Bürkner and Jonah Gabry and Matthew Kay and Aki Vehtari},
-#>   year = {2025},
-#>   note = {R package version 1.6.1, https://discourse.mc-stan.org},
+#>   year = {2026},
+#>   note = {R package version 1.7.0, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/posterior/},
 #> }
 #> 
-#> @Article{rhat-2021,
-#>   title = {Rank-normalization, folding, and localization: An improved Rhat for assessing convergence of MCMC (with discussion)},
-#>   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\"urkner},
+#> @Article{burkner-2026-posterior,
+#>   title = {posterior: Tools for Working with Posterior Distributions in R},
+#>   author = {Paul-Christian B\u00fcrkner and Jonah Gabry and Matthew Kay and Aki Vehtari},
+#>   journal = {Journal of Open Source Software},
+#>   year = {2026},
+#>   volume = {11},
+#>   number = {122},
+#>   pages = {10526},
+#>   doi = {10.21105/joss.10526},
+#>   url = {https://doi.org/10.21105/joss.10526},
+#>   publisher = {The Open Journal},
+#>   encoding = {UTF-8},
+#> }
+#> 
+#> @Article{vehtari-2021-rhat,
+#>   title = {Rank-normalization, folding, and localization: An improved R-hat for assessing convergence of MCMC (with discussion)},
+#>   author = {Aki Vehtari and Andrew Gelman and Daniel Simpson and Bob Carpenter and Paul-Christian B\u00fcrkner},
 #>   journal = {Bayesian Analysis},
 #>   year = {2021},
 #>   volume = {16},
 #>   number = {2},
-#>   pages = {667-718},
+#>   pages = {667--718},
+#>   doi = {10.1214/20-BA1221},
 #> }
 #> 
 #> @Manual{projpred,
@@ -313,8 +329,18 @@ citations
 #>   title = {A Mildly Opinionated Stan Bayesian Workflow},
 #>   author = {Visruth {Srimath Kandali}},
 #>   year = {2026},
-#>   note = {R package version 0.1.0, https://discourse.mc-stan.org},
+#>   note = {R package version 0.2.0, https://discourse.mc-stan.org},
 #>   url = {https://mc-stan.org/stanflow/},
+#> }
+#> 
+#> @Manual{,
+#>   title = {R: A Language and Environment for Statistical Computing},
+#>   author = {{R Core Team}},
+#>   organization = {R Foundation for Statistical Computing},
+#>   address = {Vienna, Austria},
+#>   year = {2026},
+#>   doi = {10.32614/R.manuals},
+#>   url = {https://www.R-project.org/},
 #> }
 #> 
 #> @Article{vehtari-2017-loo,
@@ -338,14 +364,5 @@ citations
 #>   number = {72},
 #>   pages = {1--58},
 #>   url = {https://jmlr.org/papers/v25/19-556.html},
-#> }
-#> 
-#> @Manual{,
-#>   title = {R: A Language and Environment for Statistical Computing},
-#>   author = {{R Core Team}},
-#>   organization = {R Foundation for Statistical Computing},
-#>   address = {Vienna, Austria},
-#>   year = {2025},
-#>   url = {https://www.R-project.org/},
 #> }
 ```
